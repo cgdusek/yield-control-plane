@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.yield-control-plane/schemas/events/reconciliation-break-opened.v1.schema.json",
+  "title": "ReconciliationBreakOpenedV1",
+  "allOf": [
+    { "$ref": "event-envelope.schema.json" },
+    {
+      "type": "object",
+      "properties": {
+        "event_type": { "const": "reconciliation.break.opened.v1" },
+        "payload": {
+          "type": "object",
+          "required": ["break_id", "order_id", "reason"],
+          "properties": {
+            "break_id": { "type": "string", "format": "uuid" },
+            "order_id": { "type": "string", "format": "uuid" },
+            "reason": { "type": "string" }
+          }
+        }
+      }
+    }
+  ]
+}

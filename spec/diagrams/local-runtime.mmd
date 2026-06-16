@@ -1,0 +1,26 @@
+flowchart TB
+  subgraph Compose["Docker Compose"]
+    PG["postgres:5432"]
+    LS["localstack:4566"]
+    API["api:8080"]
+    WEB["react-console:5173"]
+    MOCK["mock-transfer-agent:8090"]
+    OP["outbox-publisher"]
+    TA["transfer-agent-worker"]
+    RC["reconciliation-worker"]
+    CW["chain-watcher"]
+    NW["notification-worker"]
+  end
+  WEB --> API
+  API --> PG
+  OP --> PG
+  OP --> LS
+  TA --> LS
+  TA --> MOCK
+  TA --> PG
+  RC --> LS
+  RC --> PG
+  CW --> LS
+  CW --> PG
+  NW --> LS
+  NW --> PG

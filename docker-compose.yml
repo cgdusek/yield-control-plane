@@ -1,0 +1,162 @@
+x-worker-env: &worker-env
+  APP_ENV: local
+  RUST_LOG: info
+  DATABASE_URL: postgres://yield:yield@postgres:5432/yield_control
+  LOCALSTACK_ENDPOINT: http://localstack:4566
+  AWS_REGION: us-east-1
+  AWS_ACCESS_KEY_ID: test
+  AWS_SECRET_ACCESS_KEY: test
+  MOCK_TRANSFER_AGENT_URL: http://mock-transfer-agent:8090
+  SNS_TOPIC_NAME: domain-events
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: yield
+      POSTGRES_PASSWORD: yield
+      POSTGRES_DB: yield_control
+    ports:
+      - "15432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U yield -d yield_control"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  localstack:
+    image: localstack/localstack:4
+    environment:
+      SERVICES: sns,sqs
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_DEFAULT_REGION: us-east-1
+      DEBUG: "0"
+    ports:
+      - "4566:4566"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:4566/_localstack/health >/dev/null"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    volumes:
+      - localstack-data:/var/lib/localstack
+
+  mock-transfer-agent:
+    image: yield-control-plane-mock-transfer-agent:local
+    build:
+      context: .
+      dockerfile: services/mock-transfer-agent/Dockerfile
+    environment:
+      MOCK_TRANSFER_AGENT_BIND_ADDR: 0.0.0.0:8090
+    ports:
+      - "8090:8090"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8090/health >/dev/null"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    image: yield-control-plane-api:local
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
+    environment:
+      APP_ENV: local
+      RUST_LOG: info
+      DATABASE_URL: postgres://yield:yield@postgres:5432/yield_control
+      API_BIND_ADDR: 0.0.0.0:8080
+      LOCALSTACK_ENDPOINT: http://localstack:4566
+      AWS_REGION: us-east-1
+      MOCK_TRANSFER_AGENT_URL: http://mock-transfer-agent:8090
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+      mock-transfer-agent:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health >/dev/null"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  outbox-publisher:
+    image: yield-control-plane-worker:local
+    build:
+      context: .
+      dockerfile: services/worker/Dockerfile
+    depends_on:
+      api:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+    environment:
+      <<: *worker-env
+      WORKER_KIND: outbox-publisher
+
+  transfer-agent-worker:
+    image: yield-control-plane-worker:local
+    environment:
+      <<: *worker-env
+      WORKER_KIND: transfer-agent
+      SQS_TRANSFER_AGENT_QUEUE: transfer-agent-worker-queue
+    depends_on:
+      api:
+        condition: service_healthy
+      mock-transfer-agent:
+        condition: service_healthy
+
+  reconciliation-worker:
+    image: yield-control-plane-worker:local
+    environment:
+      <<: *worker-env
+      WORKER_KIND: reconciliation
+      SQS_RECONCILIATION_QUEUE: reconciliation-worker-queue
+    depends_on:
+      api:
+        condition: service_healthy
+
+  chain-watcher:
+    image: yield-control-plane-worker:local
+    environment:
+      <<: *worker-env
+      WORKER_KIND: chain-watcher
+      SQS_CHAIN_WATCHER_QUEUE: chain-watcher-queue
+    depends_on:
+      api:
+        condition: service_healthy
+
+  notification-worker:
+    image: yield-control-plane-worker:local
+    environment:
+      <<: *worker-env
+      WORKER_KIND: notification
+      SQS_NOTIFICATION_QUEUE: notification-worker-queue
+    depends_on:
+      api:
+        condition: service_healthy
+
+  react-console:
+    image: yield-control-plane-react-console:local
+    build:
+      context: .
+      dockerfile: web/react-console/Dockerfile
+    environment:
+      VITE_API_BASE_URL: /api
+      VITE_PROXY_TARGET: http://api:8080
+    ports:
+      - "5173:5173"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
+  localstack-data:

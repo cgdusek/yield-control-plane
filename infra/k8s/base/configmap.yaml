@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  APP_ENV: local
+  RUST_LOG: info
+  API_BIND_ADDR: 0.0.0.0:8080
+  MOCK_TRANSFER_AGENT_BIND_ADDR: 0.0.0.0:8090
+  MOCK_TRANSFER_AGENT_URL: http://mock-transfer-agent:8090
+  LOCALSTACK_ENDPOINT: http://localstack:4566
+  AWS_REGION: us-east-1
+  AWS_DEFAULT_REGION: us-east-1
+  SNS_TOPIC_NAME: domain-events
+  SQS_TRANSFER_AGENT_QUEUE: transfer-agent-worker-queue
+  SQS_RECONCILIATION_QUEUE: reconciliation-worker-queue
+  SQS_NOTIFICATION_QUEUE: notification-worker-queue
+  SQS_CHAIN_WATCHER_QUEUE: chain-watcher-queue
+  VITE_API_BASE_URL: /api
+  VITE_PROXY_TARGET: http://api:8080
+

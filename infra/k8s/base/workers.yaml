@@ -1,0 +1,355 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: outbox-publisher
+  labels:
+    app.kubernetes.io/component: outbox-publisher
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: outbox-publisher
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: outbox-publisher
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:17-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - until pg_isready -h postgres -p 5432 -U yield -d yield_control; do sleep 2; done
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: local-dev-secrets
+                  key: POSTGRES_PASSWORD
+        - name: wait-for-topic
+          image: amazon/aws-cli:2.34.32
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -eu
+              for _ in $(seq 1 90); do
+                aws --endpoint-url "$LOCALSTACK_ENDPOINT" --region "$AWS_REGION" sns get-topic-attributes --topic-arn "arn:aws:sns:${AWS_REGION}:000000000000:${SNS_TOPIC_NAME}" && exit 0
+                sleep 2
+              done
+              exit 1
+          envFrom:
+            - configMapRef:
+                name: app-config
+            - secretRef:
+                name: local-dev-secrets
+      containers:
+        - name: worker
+          image: yield-control-plane-worker:local
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: WORKER_KIND
+              value: outbox-publisher
+          envFrom:
+            - configMapRef:
+                name: app-config
+            - secretRef:
+                name: local-dev-secrets
+          resources:
+            requests:
+              cpu: 25m
+              memory: 96Mi
+            limits:
+              cpu: 500m
+              memory: 384Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transfer-agent-worker
+  labels:
+    app.kubernetes.io/component: transfer-agent-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: transfer-agent-worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: transfer-agent-worker
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:17-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - until pg_isready -h postgres -p 5432 -U yield -d yield_control; do sleep 2; done
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: local-dev-secrets
+                  key: POSTGRES_PASSWORD
+        - name: wait-for-queue
+          image: amazon/aws-cli:2.34.32
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -eu
+              for _ in $(seq 1 90); do
+                aws --endpoint-url "$LOCALSTACK_ENDPOINT" --region "$AWS_REGION" sqs get-queue-url --queue-name "$SQS_TRANSFER_AGENT_QUEUE" && exit 0
+                sleep 2
+              done
+              exit 1
+          envFrom:
+            - configMapRef:
+                name: app-config
+            - secretRef:
+                name: local-dev-secrets
+      containers:
+        - name: worker
+          image: yield-control-plane-worker:local
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: WORKER_KIND
+              value: transfer-agent
+          envFrom:
+            - configMapRef:
+                name: app-config
+            - secretRef:
+                name: local-dev-secrets
+          resources:
+            requests:
+              cpu: 25m
+              memory: 96Mi
+            limits:
+              cpu: 500m
+              memory: 384Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reconciliation-worker
+  labels:
+    app.kubernetes.io/component: reconciliation-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: reconciliation-worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: reconciliation-worker
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:17-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - until pg_isready -h postgres -p 5432 -U yield -d yield_control; do sleep 2; done
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: local-dev-secrets
+                  key: POSTGRES_PASSWORD
+        - name: wait-for-queue
+          image: amazon/aws-cli:2.34.32
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -eu
+              for _ in $(seq 1 90); do
+                aws --endpoint-url "$LOCALSTACK_ENDPOINT" --region "$AWS_REGION" sqs get-queue-url --queue-name "$SQS_RECONCILIATION_QUEUE" && exit 0
+                sleep 2
+              done
+              exit 1
+          envFrom:
+            - configMapRef:
+                name: app-config
+            - secretRef:
+                name: local-dev-secrets
+      containers:
+        - name: worker
+          image: yield-control-plane-worker:local
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: WORKER_KIND
+              value: reconciliation
+          envFrom:
+            - configMapRef:
+                name: app-config
+            - secretRef:
+                name: local-dev-secrets
+          resources:
+            requests:
+              cpu: 25m
+              memory: 96Mi
+            limits:
+              cpu: 500m
+              memory: 384Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-worker
+  labels:
+    app.kubernetes.io/component: notification-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: notification-worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: notification-worker
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:17-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - until pg_isready -h postgres -p 5432 -U yield -d yield_control; do sleep 2; done
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: local-dev-secrets
+                  key: POSTGRES_PASSWORD
+        - name: wait-for-queue
+          image: amazon/aws-cli:2.34.32
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -eu
+              for _ in $(seq 1 90); do
+                aws --endpoint-url "$LOCALSTACK_ENDPOINT" --region "$AWS_REGION" sqs get-queue-url --queue-name "$SQS_NOTIFICATION_QUEUE" && exit 0
+                sleep 2
+              done
+              exit 1
+          envFrom:
+            - configMapRef:
+                name: app-config
+            - secretRef:
+                name: local-dev-secrets
+      containers:
+        - name: worker
+          image: yield-control-plane-worker:local
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: WORKER_KIND
+              value: notification
+          envFrom:
+            - configMapRef:
+                name: app-config
+            - secretRef:
+                name: local-dev-secrets
+          resources:
+            requests:
+              cpu: 25m
+              memory: 96Mi
+            limits:
+              cpu: 500m
+              memory: 384Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chain-watcher
+  labels:
+    app.kubernetes.io/component: chain-watcher
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: chain-watcher
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: chain-watcher
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:17-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - until pg_isready -h postgres -p 5432 -U yield -d yield_control; do sleep 2; done
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: local-dev-secrets
+                  key: POSTGRES_PASSWORD
+        - name: wait-for-queue
+          image: amazon/aws-cli:2.34.32
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -eu
+              for _ in $(seq 1 90); do
+                aws --endpoint-url "$LOCALSTACK_ENDPOINT" --region "$AWS_REGION" sqs get-queue-url --queue-name "$SQS_CHAIN_WATCHER_QUEUE" && exit 0
+                sleep 2
+              done
+              exit 1
+          envFrom:
+            - configMapRef:
+                name: app-config
+            - secretRef:
+                name: local-dev-secrets
+      containers:
+        - name: worker
+          image: yield-control-plane-worker:local
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: WORKER_KIND
+              value: chain-watcher
+          envFrom:
+            - configMapRef:
+                name: app-config
+            - secretRef:
+                name: local-dev-secrets
+          resources:
+            requests:
+              cpu: 25m
+              memory: 96Mi
+            limits:
+              cpu: 500m
+              memory: 384Mi
+

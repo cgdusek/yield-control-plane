@@ -1,0 +1,9 @@
+.git
+target
+node_modules
+web/react-console/node_modules
+web/react-console/dist
+**/.DS_Store
+**/*.log
+docker-compose.override.yml
+

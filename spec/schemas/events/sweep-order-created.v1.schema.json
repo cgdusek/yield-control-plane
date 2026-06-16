@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.yield-control-plane/schemas/events/sweep-order-created.v1.schema.json",
+  "title": "SweepOrderCreatedV1",
+  "allOf": [
+    { "$ref": "event-envelope.schema.json" },
+    {
+      "type": "object",
+      "properties": {
+        "event_type": { "const": "sweep.order.created.v1" },
+        "payload": {
+          "type": "object",
+          "required": ["order_id", "account_id", "amount", "cash_asset", "product_asset"],
+          "properties": {
+            "order_id": { "type": "string", "format": "uuid" },
+            "account_id": { "type": "string", "format": "uuid" },
+            "amount": { "type": "string" },
+            "cash_asset": { "type": "string" },
+            "product_asset": { "type": "string" }
+          }
+        }
+      }
+    }
+  ]
+}

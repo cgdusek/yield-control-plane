@@ -1,0 +1,13 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: yield-control-plane
+nodes:
+  - role: control-plane
+    extraPortMappings:
+      - containerPort: 30080
+        hostPort: 18080
+        protocol: TCP
+      - containerPort: 30173
+        hostPort: 15173
+        protocol: TCP
+

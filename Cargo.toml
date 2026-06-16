@@ -1,0 +1,46 @@
+[workspace]
+resolver = "2"
+members = [
+  "crates/config",
+  "crates/domain",
+  "crates/messaging",
+  "crates/observability",
+  "crates/persistence",
+  "services/api",
+  "services/mock-transfer-agent",
+  "services/worker"
+]
+
+[workspace.package]
+edition = "2021"
+license = "UNLICENSED"
+repository = "local"
+
+[workspace.dependencies]
+anyhow = "1"
+async-trait = "0.1"
+aws-config = "1"
+aws-credential-types = "1"
+aws-sdk-sns = "1"
+aws-sdk-sqs = "1"
+aws-types = "1"
+axum = "0.8"
+chrono = { version = "0.4", features = ["serde", "clock"] }
+hex = "0.4"
+http = "1"
+proptest = "1"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+rust_decimal = { version = "1", features = ["serde-with-str"] }
+rust_decimal_macros = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+sha2 = "0.10"
+sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio-rustls", "postgres", "uuid", "chrono", "rust_decimal", "json", "migrate", "macros", "derive"] }
+thiserror = "2"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "signal", "time"] }
+tower = { version = "0.5", features = ["util"] }
+tower-http = { version = "0.6", features = ["cors", "trace"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+uuid = { version = "1", features = ["serde", "v4", "v7"] }

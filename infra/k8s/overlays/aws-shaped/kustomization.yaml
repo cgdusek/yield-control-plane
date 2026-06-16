@@ -1,0 +1,39 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: yield-control-plane
+      app.kubernetes.io/managed-by: kustomize
+      yield-control-plane.local/runtime: aws-shaped-localstack
+patches:
+  - target:
+      kind: Deployment
+      name: api
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
+  - target:
+      kind: Deployment
+      name: outbox-publisher
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
+  - target:
+      kind: Deployment
+      name: transfer-agent-worker
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
+  - target:
+      kind: Deployment
+      name: reconciliation-worker
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
+

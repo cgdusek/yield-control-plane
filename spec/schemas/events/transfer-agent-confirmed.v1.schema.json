@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.yield-control-plane/schemas/events/transfer-agent-confirmed.v1.schema.json",
+  "title": "TransferAgentConfirmedV1",
+  "allOf": [
+    { "$ref": "event-envelope.schema.json" },
+    {
+      "type": "object",
+      "properties": {
+        "event_type": { "const": "sweep.transfer_agent.confirmed.v1" },
+        "payload": {
+          "type": "object",
+          "required": ["order_id", "confirmation_ref"],
+          "properties": {
+            "order_id": { "type": "string", "format": "uuid" },
+            "confirmation_ref": { "type": "string" }
+          }
+        }
+      }
+    }
+  ]
+}

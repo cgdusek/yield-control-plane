@@ -1,0 +1,8 @@
+packages:
+  - web/react-console
+
+onlyBuiltDependencies:
+  - esbuild
+
+allowBuilds:
+  esbuild: true

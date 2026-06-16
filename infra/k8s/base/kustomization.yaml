@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: yield-control-plane
+resources:
+  - namespace.yaml
+  - secrets.yaml
+  - configmap.yaml
+  - postgres.yaml
+  - localstack.yaml
+  - localstack-init-job.yaml
+  - mock-transfer-agent.yaml
+  - api.yaml
+  - workers.yaml
+  - react-console.yaml
+

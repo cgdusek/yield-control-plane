@@ -1,0 +1,174 @@
+machine: sweep_order
+version: 1
+initial_status: Created
+terminal_statuses:
+  - Active
+  - Settled
+  - Cancelled
+statuses:
+  - Created
+  - EligibilityChecked
+  - DisclosureChecked
+  - Approved
+  - CashLocked
+  - SubscriptionSubmitted
+  - TransferAgentConfirmed
+  - ChainMirrorObserved
+  - PositionBooked
+  - Reconciled
+  - Active
+  - RedemptionRequested
+  - SharesReserved
+  - RedemptionSubmitted
+  - RedemptionConfirmed
+  - CashCredited
+  - Settled
+  - ExceptionOpen
+  - ExceptionClosed
+  - Cancelled
+commands:
+  - CheckEligibility
+  - CheckDisclosures
+  - Approve
+  - LockCash
+  - SubmitSubscription
+  - ConfirmTransferAgent
+  - ObserveChainMirror
+  - BookPosition
+  - Reconcile
+  - Activate
+  - RequestRedemption
+  - ReserveShares
+  - SubmitRedemption
+  - ConfirmRedemption
+  - CreditCash
+  - SettleRedemption
+  - OpenException
+  - CloseException
+  - Cancel
+transitions:
+  - from: Created
+    command: CheckEligibility
+    to: EligibilityChecked
+    guards: [eligible_account]
+    emits: [sweep.eligibility.checked.v1]
+  - from: EligibilityChecked
+    command: CheckDisclosures
+    to: DisclosureChecked
+    guards: [disclosures_current]
+    emits: [sweep.disclosures.checked.v1]
+  - from: DisclosureChecked
+    command: Approve
+    to: Approved
+    guards: [authorized_approver]
+    emits: [sweep.order.approved.v1]
+  - from: Approved
+    command: LockCash
+    to: CashLocked
+    guards: [cash_available]
+    emits: [sweep.cash.locked.v1]
+  - from: CashLocked
+    command: SubmitSubscription
+    to: SubscriptionSubmitted
+    guards: [cash_locked]
+    emits: [sweep.subscription.submitted.v1]
+  - from: SubscriptionSubmitted
+    command: ConfirmTransferAgent
+    to: TransferAgentConfirmed
+    guards: [transfer_agent_confirmation_present]
+    emits: [sweep.transfer_agent.confirmed.v1]
+  - from: TransferAgentConfirmed
+    command: ObserveChainMirror
+    to: ChainMirrorObserved
+    guards: [chain_mirror_required]
+    emits: [sweep.chain_mirror.observed.v1]
+  - from: TransferAgentConfirmed
+    command: BookPosition
+    to: PositionBooked
+    guards: [transfer_agent_confirmation_present, chain_mirror_not_required]
+    emits: [sweep.position.booked.v1]
+  - from: ChainMirrorObserved
+    command: BookPosition
+    to: PositionBooked
+    guards: [transfer_agent_confirmation_present, chain_mirror_observed]
+    emits: [sweep.position.booked.v1]
+  - from: PositionBooked
+    command: Reconcile
+    to: Reconciled
+    guards: [reconciliation_matched]
+    emits: [sweep.reconciled.v1]
+  - from: Reconciled
+    command: Activate
+    to: Active
+    guards: [reconciled]
+    emits: [sweep.active.v1]
+  - from: Active
+    command: RequestRedemption
+    to: RedemptionRequested
+    guards: [redeemable_position]
+    emits: [redemption.requested.v1]
+  - from: RedemptionRequested
+    command: ReserveShares
+    to: SharesReserved
+    guards: [shares_available]
+    emits: []
+  - from: SharesReserved
+    command: SubmitRedemption
+    to: RedemptionSubmitted
+    guards: [shares_reserved]
+    emits: [redemption.submitted.v1]
+  - from: RedemptionSubmitted
+    command: ConfirmRedemption
+    to: RedemptionConfirmed
+    guards: [redemption_confirmation_present]
+    emits: [redemption.confirmed.v1]
+  - from: RedemptionConfirmed
+    command: CreditCash
+    to: CashCredited
+    guards: [redemption_confirmation_present]
+    emits: [redemption.cash_credited.v1]
+  - from: CashCredited
+    command: SettleRedemption
+    to: Settled
+    guards: [cash_credited]
+    emits: []
+  - from:
+      - Created
+      - EligibilityChecked
+      - DisclosureChecked
+      - Approved
+    command: Cancel
+    to: Cancelled
+    guards: [cancellable]
+    emits: []
+  - from:
+      - Created
+      - EligibilityChecked
+      - DisclosureChecked
+      - Approved
+      - CashLocked
+      - SubscriptionSubmitted
+      - TransferAgentConfirmed
+      - ChainMirrorObserved
+      - PositionBooked
+      - Reconciled
+      - Active
+      - RedemptionRequested
+      - SharesReserved
+      - RedemptionSubmitted
+      - RedemptionConfirmed
+      - CashCredited
+    command: OpenException
+    to: ExceptionOpen
+    guards: [exception_reason_present]
+    emits: [reconciliation.break.opened.v1]
+  - from: ExceptionOpen
+    command: CloseException
+    to: ExceptionClosed
+    guards: [exception_resolved]
+    emits: [reconciliation.break.resolved.v1]
+invariants:
+  - Active is reachable only after Reconciled.
+  - PositionBooked requires transfer-agent confirmation.
+  - CashCredited requires redemption confirmation.
+  - FIDD cash-rail balances are not yield-bearing sources.

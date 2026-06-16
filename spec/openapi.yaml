@@ -1,0 +1,507 @@
+openapi: 3.1.0
+info:
+  title: Institutional Yield Control Plane API
+  version: 1.0.0
+  description: Local simulation API for an institutional DeFi yield control plane. It is not legal, investment, accounting, tax, or regulatory advice.
+servers:
+  - url: http://localhost:8080
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      responses:
+        "200":
+          description: Health response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+  /ready:
+    get:
+      operationId: getReady
+      responses:
+        "200":
+          description: Ready response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+  /sweep-policies:
+    post:
+      operationId: createSweepPolicy
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CorrelationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSweepPolicyRequest"
+      responses:
+        "200":
+          description: Sweep policy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SweepPolicy"
+        "422":
+          $ref: "#/components/responses/Error"
+  /sweep-policies/{account_id}:
+    get:
+      operationId: getSweepPolicy
+      parameters:
+        - $ref: "#/components/parameters/AccountId"
+      responses:
+        "200":
+          description: Sweep policy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SweepPolicy"
+        "404":
+          $ref: "#/components/responses/Error"
+  /sweep-orders:
+    post:
+      operationId: createSweepOrder
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CorrelationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSweepOrderRequest"
+      responses:
+        "200":
+          description: Sweep order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SweepOrder"
+        "409":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/Error"
+  /sweep-orders/{order_id}:
+    get:
+      operationId: getSweepOrder
+      parameters:
+        - $ref: "#/components/parameters/OrderId"
+      responses:
+        "200":
+          description: Sweep order with timeline
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SweepOrder"
+        "404":
+          $ref: "#/components/responses/Error"
+  /sweep-orders/{order_id}/approve:
+    post:
+      operationId: approveSweepOrder
+      parameters:
+        - $ref: "#/components/parameters/OrderId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CorrelationId"
+      responses:
+        "200":
+          description: Sweep order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SweepOrder"
+        "409":
+          $ref: "#/components/responses/Error"
+  /sweep-orders/{order_id}/cancel:
+    post:
+      operationId: cancelSweepOrder
+      parameters:
+        - $ref: "#/components/parameters/OrderId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CorrelationId"
+      responses:
+        "200":
+          description: Sweep order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SweepOrder"
+        "409":
+          $ref: "#/components/responses/Error"
+  /redemptions:
+    post:
+      operationId: requestRedemption
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CorrelationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRedemptionRequest"
+      responses:
+        "200":
+          description: Redemption order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SweepOrder"
+  /accounts/{account_id}/positions:
+    get:
+      operationId: getPositions
+      parameters:
+        - $ref: "#/components/parameters/AccountId"
+      responses:
+        "200":
+          description: Positions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Position"
+  /accounts/{account_id}/income:
+    get:
+      operationId: getIncome
+      parameters:
+        - $ref: "#/components/parameters/AccountId"
+      responses:
+        "200":
+          description: Income entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/IncomeEntry"
+  /reconciliation-breaks:
+    get:
+      operationId: getReconciliationBreaks
+      responses:
+        "200":
+          description: Reconciliation breaks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ReconciliationBreak"
+  /reconciliation-breaks/{break_id}/resolve:
+    post:
+      operationId: resolveReconciliationBreak
+      parameters:
+        - $ref: "#/components/parameters/BreakId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CorrelationId"
+      responses:
+        "200":
+          description: Resolved reconciliation break
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReconciliationBreak"
+  /audit-events:
+    get:
+      operationId: getAuditEvents
+      parameters:
+        - name: aggregate_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Audit events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditEvent"
+  /dev/attempt-fidd-yield:
+    post:
+      operationId: attemptFiddYield
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CorrelationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [account_id, amount]
+              properties:
+                account_id:
+                  type: string
+                  format: uuid
+                amount:
+                  type: string
+      responses:
+        "422":
+          $ref: "#/components/responses/Error"
+  /dev/failure-injections/reconciliation-mismatch:
+    post:
+      operationId: setReconciliationMismatch
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CorrelationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [enabled]
+              properties:
+                enabled:
+                  type: boolean
+      responses:
+        "200":
+          description: Failure injection state
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reconciliation_mismatch:
+                    type: boolean
+components:
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 200
+    CorrelationId:
+      name: Correlation-Id
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 200
+    AccountId:
+      name: account_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    OrderId:
+      name: order_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    BreakId:
+      name: break_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    Error:
+      description: Typed error response
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, service]
+      properties:
+        status:
+          type: string
+        service:
+          type: string
+    SweepStatus:
+      type: string
+      enum:
+        - Created
+        - EligibilityChecked
+        - DisclosureChecked
+        - Approved
+        - CashLocked
+        - SubscriptionSubmitted
+        - TransferAgentConfirmed
+        - ChainMirrorObserved
+        - PositionBooked
+        - Reconciled
+        - Active
+        - RedemptionRequested
+        - SharesReserved
+        - RedemptionSubmitted
+        - RedemptionConfirmed
+        - CashCredited
+        - Settled
+        - ExceptionOpen
+        - ExceptionClosed
+        - Cancelled
+    CreateSweepPolicyRequest:
+      type: object
+      required: [account_id, minimum_cash_balance, target_product]
+      properties:
+        account_id:
+          type: string
+          format: uuid
+        minimum_cash_balance:
+          type: string
+        target_product:
+          type: string
+          example: FYOXX
+    SweepPolicy:
+      type: object
+      required: [account_id, minimum_cash_balance, target_product, enabled]
+      properties:
+        account_id:
+          type: string
+          format: uuid
+        minimum_cash_balance:
+          type: string
+        target_product:
+          type: string
+        enabled:
+          type: boolean
+    CreateSweepOrderRequest:
+      type: object
+      required: [account_id, amount, cash_asset, product_asset]
+      properties:
+        account_id:
+          type: string
+          format: uuid
+        amount:
+          type: string
+          example: "250.00"
+        cash_asset:
+          type: string
+          enum: [USD, FIDD]
+        product_asset:
+          type: string
+          example: FYOXX
+    SweepOrder:
+      type: object
+      required: [order_id, account_id, status, amount, cash_asset, product_asset, timeline]
+      properties:
+        order_id:
+          type: string
+          format: uuid
+        account_id:
+          type: string
+          format: uuid
+        status:
+          $ref: "#/components/schemas/SweepStatus"
+        amount:
+          type: string
+        cash_asset:
+          type: string
+        product_asset:
+          type: string
+        transfer_agent_confirmation_ref:
+          type: [string, "null"]
+        timeline:
+          type: array
+          items:
+            $ref: "#/components/schemas/TimelineEntry"
+    TimelineEntry:
+      type: object
+      required: [from_status, to_status, command, occurred_at]
+      properties:
+        from_status:
+          type: [string, "null"]
+        to_status:
+          type: string
+        command:
+          type: string
+        occurred_at:
+          type: string
+          format: date-time
+    CreateRedemptionRequest:
+      type: object
+      required: [order_id]
+      properties:
+        order_id:
+          type: string
+          format: uuid
+    Position:
+      type: object
+      required: [position_id, account_id, order_id, product_asset, quantity, transfer_agent_confirmation_ref]
+      properties:
+        position_id:
+          type: string
+          format: uuid
+        account_id:
+          type: string
+          format: uuid
+        order_id:
+          type: string
+          format: uuid
+        product_asset:
+          type: string
+        quantity:
+          type: string
+        transfer_agent_confirmation_ref:
+          type: string
+    IncomeEntry:
+      type: object
+      required: [asset, amount, source]
+      properties:
+        asset:
+          type: string
+        amount:
+          type: string
+        source:
+          type: string
+    ReconciliationBreak:
+      type: object
+      required: [break_id, order_id, reason, status, created_at]
+      properties:
+        break_id:
+          type: string
+          format: uuid
+        order_id:
+          type: string
+          format: uuid
+        reason:
+          type: string
+        status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    AuditEvent:
+      type: object
+      required: [event_id, aggregate_id, event_type, created_at]
+      properties:
+        event_id:
+          type: string
+          format: uuid
+        aggregate_id:
+          type: string
+          format: uuid
+        event_type:
+          type: string
+        correlation_id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    ErrorResponse:
+      type: object
+      required: [code, message, correlation_id]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        correlation_id:
+          type: string

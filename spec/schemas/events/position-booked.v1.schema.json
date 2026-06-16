@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.yield-control-plane/schemas/events/position-booked.v1.schema.json",
+  "title": "PositionBookedV1",
+  "allOf": [
+    { "$ref": "event-envelope.schema.json" },
+    {
+      "type": "object",
+      "properties": {
+        "event_type": { "const": "sweep.position.booked.v1" },
+        "payload": {
+          "type": "object",
+          "required": ["order_id", "position_id", "product_asset", "quantity", "confirmation_ref"],
+          "properties": {
+            "order_id": { "type": "string", "format": "uuid" },
+            "position_id": { "type": "string", "format": "uuid" },
+            "product_asset": { "type": "string" },
+            "quantity": { "type": "string" },
+            "confirmation_ref": { "type": "string" }
+          }
+        }
+      }
+    }
+  ]
+}

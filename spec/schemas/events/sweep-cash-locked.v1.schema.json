@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.yield-control-plane/schemas/events/sweep-cash-locked.v1.schema.json",
+  "title": "SweepCashLockedV1",
+  "allOf": [
+    { "$ref": "event-envelope.schema.json" },
+    {
+      "type": "object",
+      "properties": {
+        "event_type": { "const": "sweep.cash.locked.v1" },
+        "payload": {
+          "type": "object",
+          "required": ["order_id", "account_id", "amount", "cash_asset"],
+          "properties": {
+            "order_id": { "type": "string", "format": "uuid" },
+            "account_id": { "type": "string", "format": "uuid" },
+            "amount": { "type": "string" },
+            "cash_asset": { "type": "string" }
+          }
+        }
+      }
+    }
+  ]
+}

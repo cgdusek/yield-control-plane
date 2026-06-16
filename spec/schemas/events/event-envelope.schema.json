@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.yield-control-plane/schemas/events/event-envelope.schema.json",
+  "title": "EventEnvelope",
+  "type": "object",
+  "required": [
+    "event_id",
+    "event_type",
+    "schema_version",
+    "aggregate_id",
+    "correlation_id",
+    "occurred_at",
+    "payload"
+  ],
+  "properties": {
+    "event_id": { "type": "string", "format": "uuid" },
+    "event_type": { "type": "string" },
+    "schema_version": { "type": "integer", "minimum": 1 },
+    "aggregate_id": { "type": "string", "format": "uuid" },
+    "correlation_id": { "type": "string", "minLength": 1 },
+    "causation_id": { "type": ["string", "null"], "format": "uuid" },
+    "idempotency_key_hash": { "type": ["string", "null"] },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "payload": { "type": "object" }
+  }
+}

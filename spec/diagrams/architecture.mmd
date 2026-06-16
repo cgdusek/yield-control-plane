@@ -1,0 +1,19 @@
+flowchart LR
+  UI["React Operator Console"] --> API["Axum API"]
+  API --> PG["Postgres financial state"]
+  API --> OUTBOX["Transactional outbox"]
+  OUTBOX --> PUBLISHER["Outbox publisher"]
+  PUBLISHER --> SNS["LocalStack SNS domain-events"]
+  SNS --> TAQ["Transfer-agent SQS queue"]
+  SNS --> RECONQ["Reconciliation SQS queue"]
+  SNS --> NOTIFYQ["Notification SQS queue"]
+  SNS --> CHAINQ["Chain-watcher SQS queue"]
+  TAQ --> TAW["Transfer-agent worker"]
+  TAW --> MOCKTA["Mock transfer agent"]
+  TAW --> PG
+  CHAINQ --> CHAINW["Chain watcher"]
+  CHAINW --> PG
+  RECONQ --> RECONW["Reconciliation worker"]
+  RECONW --> PG
+  NOTIFYQ --> NOTIFYW["Notification worker"]
+  NOTIFYW --> PG

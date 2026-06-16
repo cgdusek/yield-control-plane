@@ -1,0 +1,64 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: localstack-init
+  labels:
+    app.kubernetes.io/component: localstack-init
+spec:
+  backoffLimit: 6
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: localstack-init
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: localstack-init
+          image: amazon/aws-cli:2.34.32
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -eu
+              endpoint="${LOCALSTACK_ENDPOINT:-http://localstack:4566}"
+              region="${AWS_REGION:-us-east-1}"
+              topic_name="${SNS_TOPIC_NAME:-domain-events}"
+              aws_local() {
+                aws --endpoint-url "$endpoint" --region "$region" "$@"
+              }
+              for _ in $(seq 1 90); do
+                if topic_arn="$(aws_local sns create-topic --name "$topic_name" --query TopicArn --output text 2>/tmp/localstack-init.err)"; then
+                  break
+                fi
+                cat /tmp/localstack-init.err >&2 || true
+                sleep 2
+              done
+              test -n "${topic_arn:-}"
+              queues="${SQS_TRANSFER_AGENT_QUEUE:-transfer-agent-worker-queue} ${SQS_RECONCILIATION_QUEUE:-reconciliation-worker-queue} ${SQS_NOTIFICATION_QUEUE:-notification-worker-queue} ${SQS_CHAIN_WATCHER_QUEUE:-chain-watcher-queue}"
+              for queue in $queues; do
+                dlq="${queue}-dlq"
+                dlq_url="$(aws_local sqs create-queue --queue-name "$dlq" --query QueueUrl --output text)"
+                dlq_arn="$(aws_local sqs get-queue-attributes --queue-url "$dlq_url" --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)"
+                printf '%s\n' "{\"VisibilityTimeout\":\"30\",\"ReceiveMessageWaitTimeSeconds\":\"10\",\"RedrivePolicy\":\"{\\\"deadLetterTargetArn\\\":\\\"$dlq_arn\\\",\\\"maxReceiveCount\\\":\\\"5\\\"}\"}" > /tmp/queue-attrs.json
+                queue_url="$(aws_local sqs create-queue --queue-name "$queue" --attributes file:///tmp/queue-attrs.json --query QueueUrl --output text)"
+                queue_arn="$(aws_local sqs get-queue-attributes --queue-url "$queue_url" --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)"
+                aws_local sns subscribe --topic-arn "$topic_arn" --protocol sqs --notification-endpoint "$queue_arn" --attributes RawMessageDelivery=true >/dev/null
+                policy="{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":\"sqs:SendMessage\",\"Resource\":\"$queue_arn\",\"Condition\":{\"ArnEquals\":{\"aws:SourceArn\":\"$topic_arn\"}}}]}"
+                policy_escaped="$(printf '%s' "$policy" | sed 's/\\/\\\\/g; s/"/\\"/g')"
+                printf '{"Policy":"%s"}\n' "$policy_escaped" > /tmp/policy-attrs.json
+                aws_local sqs set-queue-attributes --queue-url "$queue_url" --attributes file:///tmp/policy-attrs.json >/dev/null
+                echo "initialized $queue"
+              done
+          envFrom:
+            - configMapRef:
+                name: app-config
+            - secretRef:
+                name: local-dev-secrets
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

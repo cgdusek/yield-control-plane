@@ -1,0 +1,25 @@
+stateDiagram-v2
+  [*] --> Created
+  Created --> EligibilityChecked: CheckEligibility
+  EligibilityChecked --> DisclosureChecked: CheckDisclosures
+  DisclosureChecked --> Approved: Approve
+  Approved --> CashLocked: LockCash
+  CashLocked --> SubscriptionSubmitted: SubmitSubscription
+  SubscriptionSubmitted --> TransferAgentConfirmed: ConfirmTransferAgent
+  TransferAgentConfirmed --> ChainMirrorObserved: ObserveChainMirror
+  TransferAgentConfirmed --> PositionBooked: BookPosition
+  ChainMirrorObserved --> PositionBooked: BookPosition
+  PositionBooked --> Reconciled: Reconcile
+  Reconciled --> Active: Activate
+  Active --> RedemptionRequested: RequestRedemption
+  RedemptionRequested --> SharesReserved: ReserveShares
+  SharesReserved --> RedemptionSubmitted: SubmitRedemption
+  RedemptionSubmitted --> RedemptionConfirmed: ConfirmRedemption
+  RedemptionConfirmed --> CashCredited: CreditCash
+  CashCredited --> Settled: SettleRedemption
+  Created --> Cancelled: Cancel
+  EligibilityChecked --> Cancelled: Cancel
+  DisclosureChecked --> Cancelled: Cancel
+  Approved --> Cancelled: Cancel
+  PositionBooked --> ExceptionOpen: OpenException
+  ExceptionOpen --> ExceptionClosed: CloseException
