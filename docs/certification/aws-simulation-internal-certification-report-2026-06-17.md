@@ -2,7 +2,9 @@
 
 Report type: internal engineering evidence certificate and execution report.
 Issued at: 2026-06-17T20:56:02Z.
+Last updated: 2026-06-17T21:20:24Z.
 Repository commit under test: `268e56b2107dc5793f5216ed7c2981c390be5fec`.
+Post-campaign CI closure commit: `3c5280b0b6a2419eacf755c1df22d2c915b4f643`.
 Region: `us-west-2`.
 Scope: dedicated non-production AWS sandbox simulation for the yield control plane.
 
@@ -56,6 +58,8 @@ All timestamps are UTC unless a source artifact records an AWS-local offset.
 | 2026-06-17T20:34:52Z | `AWS_PROFILE=root ... make aws-cert-teardown-iam` | Passed | Root-boundary bootstrap teardown completed after workload destroy. |
 | 2026-06-17T20:44:49Z | `make generate-repo-surface-coverage-map`; `make validate`; `git diff --check` | Passed | Final local validation and whitespace checks passed after AWS run, collection, destroy, root teardown, and report creation. |
 | 2026-06-17T20:56:02Z | `git push`; `gh run watch 27718744119 --exit-status` | Passed | Commit `110a4be` was pushed; GitHub Actions run `27718744119` passed both static and integration jobs. |
+| 2026-06-17T21:05:45Z | `gh run watch 27719275199 --exit-status`; static job log review | Failed / Diagnosed | Post-report closure commit `7ecb23c` passed integration/smoke, but static CI failed before repo proof obligations because TLAPS 1.5.0's bundled PolyML/Isabelle build aborted on the Ubuntu 24.04 runner. |
+| 2026-06-17T21:20:24Z | `git push`; `gh run watch 27720066191 --exit-status` | Passed | Commit `3c5280b` pinned the TLAPS-heavy static CI lane to Ubuntu 22.04 while preserving `make validate`; GitHub Actions run `27720066191` passed static and integration jobs. |
 
 ## Final Workload Results
 
@@ -128,6 +132,12 @@ The following findings were causal to failed live attempts and were remedied bef
 | FIS target resolution returned an empty set | ECS services were tagged, but live ECS tasks had empty tag sets; FIS targets tasks by tags. | ECS services now propagate service tags to tasks, enable ECS managed tags, force fresh deployments after apply, and check FIS target resolvability before load and before FIS. | Pre-run and pre-FIS target checks found 5 tagged worker tasks; FIS completed. |
 
 Budget was not a failure finding. The budget cap was increased to `$750` only to admit another bounded run after the account-month budget actual already exceeded the default `$50` guardrail.
+
+## Post-Campaign CI Closure
+
+The AWS campaign passed before the later CI-only closure issue. The closure failure was not a workload, AWS, budget, proof-obligation, Rust, or smoke-test failure. It occurred while the GitHub-hosted Ubuntu 24.04 static runner compiled TLAPS 1.5.0's bundled Isabelle/PolyML stack, before repository TLA+ proof obligations were checked.
+
+The remedy pins only the TLAPS-heavy `Static, Rust, and Frontend Gates` job to Ubuntu 22.04. The job still runs the same fail-closed `make validate` command, including TLAPS, TLC, Kani, coverage drift validators, specs, Kubernetes manifest validation, AWS certification static validation, docs, Rust, and frontend gates. The integration job remains on `ubuntu-latest` and passed unchanged.
 
 ## Standards Mapping
 
