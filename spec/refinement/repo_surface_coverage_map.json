@@ -30,7 +30,7 @@
     "conflicting_file_count": 0,
     "all_mappable_file_count": 197,
     "file_mapping_ratio": 1.0,
-    "line_count": 27801,
+    "line_count": 27807,
     "formalized_surface_count": 6,
     "formalized_surface_ratio": 0.4,
     "formalized_file_count": 67,
@@ -225,7 +225,7 @@
       "coverage_score": 1.0,
       "formal_scope": "none",
       "file_count": 13,
-      "line_count": 6932,
+      "line_count": 6938,
       "rust_file_count": 0,
       "test_function_count_static": 0,
       "required_axes": [
