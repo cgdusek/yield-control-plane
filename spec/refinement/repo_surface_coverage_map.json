@@ -30,7 +30,7 @@
     "conflicting_file_count": 0,
     "all_mappable_file_count": 231,
     "file_mapping_ratio": 1.0,
-    "line_count": 32954,
+    "line_count": 32957,
     "formalized_surface_count": 7,
     "formalized_surface_ratio": 0.4375,
     "formalized_file_count": 94,
@@ -280,7 +280,7 @@
       "coverage_score": 1.0,
       "formal_scope": "none",
       "file_count": 13,
-      "line_count": 7134,
+      "line_count": 7135,
       "rust_file_count": 0,
       "test_function_count_static": 0,
       "required_axes": [
@@ -3041,7 +3041,7 @@
       "coverage_score": 1.0,
       "formal_scope": "none",
       "file_count": 56,
-      "line_count": 2735,
+      "line_count": 2737,
       "rust_file_count": 0,
       "test_function_count_static": 0,
       "required_axes": [

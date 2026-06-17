@@ -1,7 +1,7 @@
 # AWS Simulation Internal Certification Report - 2026-06-17
 
 Report type: internal engineering evidence certificate and execution report.
-Issued at: 2026-06-17T20:44:49Z.
+Issued at: 2026-06-17T20:56:02Z.
 Repository commit under test: `268e56b2107dc5793f5216ed7c2981c390be5fec`.
 Region: `us-west-2`.
 Scope: dedicated non-production AWS sandbox simulation for the yield control plane.
@@ -55,6 +55,7 @@ All timestamps are UTC unless a source artifact records an AWS-local offset.
 | 2026-06-17T20:33:47Z | `make aws-cert-destroy` | Passed | Scoped-role OpenTofu destroy removed 81 resources. |
 | 2026-06-17T20:34:52Z | `AWS_PROFILE=root ... make aws-cert-teardown-iam` | Passed | Root-boundary bootstrap teardown completed after workload destroy. |
 | 2026-06-17T20:44:49Z | `make generate-repo-surface-coverage-map`; `make validate`; `git diff --check` | Passed | Final local validation and whitespace checks passed after AWS run, collection, destroy, root teardown, and report creation. |
+| 2026-06-17T20:56:02Z | `git push`; `gh run watch 27718744119 --exit-status` | Passed | Commit `110a4be` was pushed; GitHub Actions run `27718744119` passed both static and integration jobs. |
 
 ## Final Workload Results
 
