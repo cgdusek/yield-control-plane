@@ -8,10 +8,10 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 - Preserved project copy: `spec/source/fidelity_defi_yield_platform_spec.md` (pending Gate 1)
 
 ## Current Gate
-- Gate: Node.js 20 Actions deprecation hardening
-- Status: Passed
-- Start Time: 2026-06-17T04:57:23Z
-- End Time: 2026-06-17T05:11:47Z
+- Gate: AWS certification simulation workstream
+- Status: In Progress
+- Start Time: 2026-06-17T14:27:50Z
+- End Time: TBD
 
 ## Gate Status Table
 | Gate | Objective | Status | Evidence | Last Updated |
@@ -39,6 +39,7 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 | Targeted Rust source proof ladder | Add bounded source-level proof for the domain transition kernel and track it in JSON | Passed | `make validate-source-proofs`, `make validate`, repo surface JSON source-proof axis | 2026-06-17T04:31:28Z |
 | Sane formal ladder continuation | Add the next bounded source-proof rungs and stop only at recorded non-sane boundaries | Passed | `make validate`; 14/14 named Kani source-proof obligations closed; remaining Rust source-proof boundaries recorded in JSON | 2026-06-17T04:44:38Z |
 | Node.js 20 Actions deprecation hardening | Remove GitHub Actions Node.js 20 runtime deprecation annotations | Passed | GitHub Actions run `27667000425` passed with Node 24-native actions and no Node 20 deprecation annotation | 2026-06-17T05:11:47Z |
+| AWS certification simulation workstream | Add cost-bounded AWS ECS/Fargate Spot certification simulation artifacts, fail-closed preflight, runtime config hardening, evidence collection, and standards mapping | In Progress | Implementation started; no real AWS calls will be made outside explicit opt-in certification commands | 2026-06-17T14:27:50Z |
 
 ## Requirements Traceability Summary
 - Domain model and state machine: `spec/domain/sweep_order.machine.yaml`, `crates/domain`, domain tests.
@@ -54,6 +55,7 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 ## Commands Run
 | Timestamp | Command | Working Directory | Result | Notes |
 | --- | --- | --- | --- | --- |
+| 2026-06-17T14:27:50Z | `git status --short --branch`; tracker/docs/config/script/IaC inspection | `/Users/charlesdusek/Code/yield-control-plane` | Passed | AWS certification simulation workstream opened from clean `main`; current repo is local-only with no Terraform/OpenTofu footprint and LocalStack-guarded AWS endpoints. |
 | 2026-06-16T14:28:52Z | `pwd` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Repo path confirmed. |
 | 2026-06-16T14:28:52Z | `ls -la` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Empty repo except `.git`. |
 | 2026-06-16T14:28:52Z | `git status --short --branch` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | No commits yet on `main`; `origin/main` gone. |
