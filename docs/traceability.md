@@ -39,6 +39,9 @@ Target disposition values:
 | Direct status mutation forbidden | Implemented now | Domain transition API, repository command handlers, docs, tests |
 | Financial writes idempotent | Implemented now | `idempotency_records`, unique indexes, command handlers |
 | Workers safe under at-least-once delivery | Implemented now | Inbox deduplication, unique constraints, idempotent mock transfer agent |
+| Formal safety invariant spine | Implemented now | `spec/tla/YieldProofs.tla`, `scripts/validate-tla.sh`, `docs/formal-verification.md` |
+| Rust-to-TLA refinement evidence | Implemented now | `spec/refinement/rust_tla_mapping.yaml`, `crates/domain/src/abstract_refinement.rs`, `scripts/validate-refinement.sh`, `crates/domain/tests/refinement_trace_tests.rs` |
+| Invariant coverage convergence matrix | Implemented now | `spec/refinement/invariant_coverage.yaml`, `scripts/validate-formal-coverage.sh`, `make validate-formal-coverage` |
 | No real AWS calls in local mode | Implemented now | Config defaults, LocalStack endpoint checks, ADR-0010, docs/security.md |
 | No secrets or private keys committed | Implemented now | `.env.example`, `.gitignore`, docs/security.md |
 | Production AWS/EKS/IAM differences documented | Documented production pattern | `docs/production-readiness.md`, `infra/k8s/overlays/aws-shaped`, ADR-0011 |
@@ -85,6 +88,9 @@ Target disposition values:
 
 ### Tests
 - Tests cover domain transitions, property invariants, ledger balance rules, persistence idempotency, messaging contract shape, API behavior, frontend behavior, docs/spec validation, and smoke workflows.
+- The formal gate parses TLA+ modules, checks TLAPS obligations, and runs TLC against the bounded control-plane model.
+- The refinement gate checks Rust command-to-TLA action mapping and runs Rust trace tests over the abstract refinement model.
+- The formal coverage gate requires every invariant to name TLA, TLAPS, TLC, Rust, runtime enforcement, and drift-check evidence.
 
 ### Docs, Security, Observability, Runbooks
 - Documentation explains architecture, local development, testing, operations, security posture, production-readiness limits, and recovery runbooks.

@@ -26,11 +26,15 @@ Local URLs:
 - OpenAPI: [spec/openapi.yaml](spec/openapi.yaml)
 - AsyncAPI: [spec/asyncapi.yaml](spec/asyncapi.yaml)
 - State machine: [spec/domain/sweep_order.machine.yaml](spec/domain/sweep_order.machine.yaml)
+- Formal verification: [docs/formal-verification.md](docs/formal-verification.md)
 - Source request: [spec/source/fidelity_defi_yield_platform_spec.md](spec/source/fidelity_defi_yield_platform_spec.md)
 
 ## Validation
 
 ```bash
+make validate-tla
+make validate-refinement
+make validate-formal-coverage
 make validate-specs
 make validate-k8s
 make validate-docs

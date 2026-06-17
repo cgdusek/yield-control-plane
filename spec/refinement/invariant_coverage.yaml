@@ -1,0 +1,242 @@
+version: 1
+objective: Every safety invariant is specified, proved or bounded-checked, projected into Rust evidence, enforced at runtime, and guarded against drift in CI.
+required_axes:
+  - tla_definition
+  - tlaps_checked
+  - tlc_bounded
+  - rust_projection
+  - rust_tested
+  - runtime_enforced
+  - drift_checked
+shared:
+  tla_module: spec/tla/YieldLifecycle.tla
+  invariant_catalog: spec/tla/YieldInvariants.tla
+  proof_module: spec/tla/YieldProofs.tla
+  tlc_config: spec/tla/YieldControlPlane.cfg
+  rust_projection:
+    - path: crates/domain/src/abstract_refinement.rs
+      contains: [AbstractSweepState, TlaAction, assert_invariants]
+  validators:
+    - scripts/validate-tla.sh
+    - scripts/validate-refinement.sh
+    - scripts/validate-formal-coverage.sh
+  ci_commands:
+    - make validate-tla
+    - make validate-refinement
+    - make validate-formal-coverage
+    - make validate
+invariants:
+  - id: NoDuplicateIdempotency
+    status: covered
+    axes: [tla_definition, tlaps_checked, tlc_bounded, rust_projection, rust_tested, runtime_enforced, drift_checked]
+    tla_definition: NoDuplicateIdempotency
+    tlaps_theorems: [CreateOrderPreservesInv, NextPreservesInv, InvImpliesSafety]
+    tlc: {invariants: [Inv, Safety]}
+    rust_tests:
+      - path: crates/persistence/tests/repository_tests.rs
+        contains: [duplicate_idempotency_key_reuses_order, duplicate_idempotency_key_with_different_body_conflicts]
+    runtime_enforcement:
+      - path: crates/persistence/migrations/20260616150400_initial.sql
+        contains: [unique (account_id, idempotency_key_hash)]
+      - path: crates/persistence/src/repositories.rs
+        contains: [record_idempotency, idempotency_key_hash]
+  - id: NoDuplicateConfirmation
+    status: covered
+    axes: [tla_definition, tlaps_checked, tlc_bounded, rust_projection, rust_tested, runtime_enforced, drift_checked]
+    tla_definition: NoDuplicateConfirmation
+    tlaps_theorems: [ConfirmTransferAgentPreservesInv, NextPreservesInv, InvImpliesSafety]
+    tlc: {invariants: [Inv, Safety]}
+    rust_tests:
+      - path: crates/persistence/tests/repository_tests.rs
+        contains: [duplicate_confirmation_ref_cannot_double_book]
+    runtime_enforcement:
+      - path: crates/persistence/migrations/20260616150400_initial.sql
+        contains: [unique (transfer_agent_confirmation_ref)]
+      - path: crates/persistence/src/repositories.rs
+        contains: [transfer_agent_confirmation_ref, confirmation_ref]
+  - id: OnePositionPerOrder
+    status: covered
+    axes: [tla_definition, tlaps_checked, tlc_bounded, rust_projection, rust_tested, runtime_enforced, drift_checked]
+    tla_definition: OnePositionPerOrder
+    tlaps_theorems: [BookPositionPreservesInv, NextPreservesInv, InvImpliesSafety]
+    tlc: {invariants: [Inv, Safety]}
+    rust_tests:
+      - path: crates/persistence/tests/repository_tests.rs
+        contains: [duplicate_confirmation_ref_cannot_double_book, list_positions]
+    runtime_enforcement:
+      - path: crates/persistence/migrations/20260616150400_initial.sql
+        contains: [positions, order_id uuid not null references sweep_orders(order_id)]
+      - path: crates/persistence/src/repositories.rs
+        contains: [insert into positions, position_id]
+  - id: PositionBookedRequiresTransferAgentConfirmation
+    status: covered
+    axes: [tla_definition, tlaps_checked, tlc_bounded, rust_projection, rust_tested, runtime_enforced, drift_checked]
+    tla_definition: PositionBookedRequiresTransferAgentConfirmation
+    tlaps_theorems: [BookPositionPreservesInv, NextPreservesInv, InvImpliesSafety]
+    tlc: {invariants: [Inv, Safety]}
+    rust_tests:
+      - path: crates/domain/tests/ledger_invariant_tests.rs
+        contains: [position_booking_requires_transfer_agent_confirmation]
+      - path: crates/domain/tests/sweep_state_machine_tests.rs
+        contains: [failed_guard_is_rejected, position_booking_emits_position_booked_event]
+      - path: crates/domain/tests/refinement_trace_tests.rs
+        contains: [chain_mirror_branch_refines_position_booking_invariant]
+    runtime_enforcement:
+      - path: crates/domain/src/ledger.rs
+        contains: [validate_position_booking_confirmation]
+      - path: crates/persistence/src/repositories.rs
+        contains: [validate_position_booking_confirmation, insert into positions]
+      - path: crates/persistence/migrations/20260616150400_initial.sql
+        contains: [transfer_agent_confirmation_ref text not null unique]
+  - id: ActiveRequiresReconciledHistory
+    status: covered
+    axes: [tla_definition, tlaps_checked, tlc_bounded, rust_projection, rust_tested, runtime_enforced, drift_checked]
+    tla_definition: ActiveRequiresReconciledHistory
+    tlaps_theorems: [ActivatePreservesInv, NextPreservesInv, InvImpliesSafety]
+    tlc: {invariants: [Inv, Safety]}
+    rust_tests:
+      - path: crates/domain/tests/sweep_property_tests.rs
+        contains: [active_only_results_from_activate_after_reconciled]
+      - path: crates/domain/tests/sweep_state_machine_tests.rs
+        contains: [happy_path_reaches_active_only_after_reconciled, active_cannot_be_reached_before_reconciled]
+      - path: crates/domain/tests/refinement_trace_tests.rs
+        contains: [happy_path_trace_refines_tla_history_invariants]
+    runtime_enforcement:
+      - path: crates/domain/src/sweep.rs
+        contains: ["(Status::Reconciled, Command::Activate)", "to: Status::Active"]
+      - path: crates/persistence/src/repositories.rs
+        contains: ["transition(", "input.command", "input.guard_context"]
+  - id: CashCreditedRequiresRedemptionConfirmationHistory
+    status: covered
+    axes: [tla_definition, tlaps_checked, tlc_bounded, rust_projection, rust_tested, runtime_enforced, drift_checked]
+    tla_definition: CashCreditedRequiresRedemptionConfirmationHistory
+    tlaps_theorems: [CreditCashPreservesInv, NextPreservesInv, InvImpliesSafety]
+    tlc: {invariants: [Inv, Safety]}
+    rust_tests:
+      - path: crates/domain/tests/sweep_property_tests.rs
+        contains: [cash_credited_only_results_from_confirmed_redemption]
+      - path: crates/domain/tests/refinement_trace_tests.rs
+        contains: [redemption_trace_refines_cash_credit_history_invariant]
+    runtime_enforcement:
+      - path: crates/domain/src/sweep.rs
+        contains: ["(Status::RedemptionConfirmed, Command::CreditCash)", redemption_confirmation_present, "to: Status::CashCredited"]
+      - path: crates/domain/src/abstract_refinement.rs
+        contains: [MissingRedemptionConfirmation, CashCreditedWithoutRedemptionHistory]
+  - id: CurrentStatusInHistory
+    status: covered
+    axes: [tla_definition, tlaps_checked, tlc_bounded, rust_projection, rust_tested, runtime_enforced, drift_checked]
+    tla_definition: CurrentStatusInHistory
+    tlaps_theorems: [CreateOrderPreservesInv, MovePreservesInv, NextPreservesInv, StutterPreservesInv]
+    tlc: {invariants: [Inv]}
+    rust_tests:
+      - path: crates/domain/tests/refinement_trace_tests.rs
+        contains: [accepted_random_command_prefixes_refine_tla_actions, assert_invariants]
+    runtime_enforcement:
+      - path: crates/domain/src/abstract_refinement.rs
+        contains: [seen_statuses, CurrentStatusMissingFromHistory]
+      - path: crates/domain/src/sweep.rs
+        contains: [TransitionOutcome, from_status, to_status]
+  - id: NoFiddYieldSource
+    status: covered
+    axes: [tla_definition, tlaps_checked, tlc_bounded, rust_projection, rust_tested, runtime_enforced, drift_checked]
+    tla_definition: NoFiddYieldSource
+    tlaps_theorems: [CreateOrderPreservesInv, NextPreservesInv, InvImpliesSafety]
+    tlc: {invariants: [Inv, Safety]}
+    rust_tests:
+      - path: crates/domain/tests/ledger_invariant_tests.rs
+        contains: [fidd_cannot_be_yield_bearing_source]
+      - path: crates/persistence/tests/repository_tests.rs
+        contains: [attempted_fidd_yield_source_is_rejected]
+      - path: crates/domain/tests/refinement_trace_tests.rs
+        contains: [fidd_cannot_seed_the_abstract_yield_source]
+    runtime_enforcement:
+      - path: crates/domain/src/invariants.rs
+        contains: [ensure_yield_source_allowed]
+      - path: crates/domain/src/asset.rs
+        contains: [is_yield_bearing_allowed, Asset::FIDD]
+      - path: crates/persistence/src/repositories.rs
+        contains: [ensure_yield_source_allowed]
+  - id: LedgerBalancedPerAsset
+    status: covered
+    axes: [tla_definition, tlaps_checked, tlc_bounded, rust_projection, rust_tested, runtime_enforced, drift_checked]
+    tla_definition: LedgerBalancedPerAsset
+    tlaps_theorems: [LockCashPreservesInv, BookPositionPreservesInv, CreditCashPreservesInv, NextPreservesInv]
+    tlc: {invariants: [Inv, Safety]}
+    rust_tests:
+      - path: crates/domain/tests/ledger_invariant_tests.rs
+        contains: [ledger_balances_per_asset, ledger_rejects_out_of_balance_entries]
+      - path: crates/domain/tests/refinement_trace_tests.rs
+        contains: [ledger_debit, ledger_credit]
+    runtime_enforcement:
+      - path: crates/domain/src/ledger.rs
+        contains: [validate_ledger_balances]
+      - path: crates/persistence/src/repositories.rs
+        contains: [insert_balanced_ledger_entries, validate_ledger_balances]
+  - id: LedgerAppendOnly
+    status: covered
+    axes: [tla_definition, tlaps_checked, tlc_bounded, rust_projection, rust_tested, runtime_enforced, drift_checked]
+    tla_definition: LedgerAppendOnly
+    tlaps_theorems: [LedgerAppendOnlyPreserved, CreateOrderAppendOnly, LockCashAppendOnly, BookPositionAppendOnly, CreditCashAppendOnly]
+    tlc: {properties: [LedgerAppendOnlyTemporal]}
+    rust_tests:
+      - path: crates/persistence/tests/repository_tests.rs
+        contains: [ledger_entries_are_append_only]
+      - path: crates/domain/tests/refinement_trace_tests.rs
+        contains: [prior_assets.is_subset]
+    runtime_enforcement:
+      - path: crates/persistence/migrations/20260616150400_initial.sql
+        contains: [prevent_ledger_entry_mutation, ledger_entries_no_update]
+  - id: InboxDeduplicatesWorkerEffects
+    status: covered
+    axes: [tla_definition, tlaps_checked, tlc_bounded, rust_projection, rust_tested, runtime_enforced, drift_checked]
+    tla_definition: InboxDeduplicatesWorkerEffects
+    tlaps_theorems: [ReceiveMessagePreservesInv, ProcessMessagePreservesInv, NextPreservesInv]
+    tlc: {invariants: [Inv, Safety]}
+    rust_tests:
+      - path: crates/persistence/tests/repository_tests.rs
+        contains: [inbox_messages]
+      - path: scripts/smoke-failure-paths.sh
+        contains: [duplicate-demo-key]
+    runtime_enforcement:
+      - path: crates/persistence/migrations/20260616150400_initial.sql
+        contains: [inbox_messages, primary key (consumer, message_id)]
+      - path: crates/persistence/src/inbox.rs
+        contains: [record_inbox_message, on conflict]
+      - path: services/worker/src/workers/mod.rs
+        contains: [record_inbox_message, should_process]
+  - id: OutboxRetryDoesNotDuplicateBusinessEffects
+    status: covered
+    axes: [tla_definition, tlaps_checked, tlc_bounded, rust_projection, rust_tested, runtime_enforced, drift_checked]
+    tla_definition: OutboxRetryDoesNotDuplicateBusinessEffects
+    tlaps_theorems: [LeaseOutboxPreservesInv, PublishOutboxPreservesInv, NextPreservesInv]
+    tlc: {invariants: [Inv, Safety]}
+    rust_tests:
+      - path: scripts/smoke-create-sweep.sh
+        contains: [Active, positions]
+      - path: scripts/smoke-failure-paths.sh
+        contains: [duplicate-demo-key]
+    runtime_enforcement:
+      - path: crates/persistence/migrations/20260616150400_initial.sql
+        contains: [outbox_events, event_id uuid primary key]
+      - path: crates/persistence/src/outbox.rs
+        contains: [lease_pending_outbox, mark_published, mark_failed]
+      - path: services/worker/src/workers/mod.rs
+        contains: [run_outbox_publisher, mark_published, mark_failed]
+  - id: WriteCommandCarriesCorrelationAndIdempotency
+    status: covered
+    axes: [tla_definition, tlaps_checked, tlc_bounded, rust_projection, rust_tested, runtime_enforced, drift_checked]
+    tla_definition: WriteCommandCarriesCorrelationAndIdempotency
+    tlaps_theorems: [CreateOrderPreservesInv, NextPreservesInv, InvImpliesSafety]
+    tlc: {invariants: [Inv, Safety]}
+    rust_tests:
+      - path: services/api/tests/api_tests.rs
+        contains: [write_routes_require_idempotency_key]
+      - path: crates/persistence/tests/repository_tests.rs
+        contains: [idempotency_key]
+    runtime_enforcement:
+      - path: services/api/src/middleware/mod.rs
+        contains: [Idempotency-Key, Correlation-Id]
+      - path: spec/openapi.yaml
+        contains: [IdempotencyKey, CorrelationId]
+      - path: scripts/validate-specs.sh
+        contains: [missing Idempotency-Key, missing Correlation-Id]

@@ -1,0 +1,127 @@
+version: 1
+boundary: Rust domain transition outcomes refine TLA lifecycle actions after order creation.
+rust:
+  command_enum: crates/domain/src/sweep.rs::SweepCommand
+  abstract_model: crates/domain/src/abstract_refinement.rs::AbstractSweepState
+tla:
+  module: spec/tla/YieldLifecycle.tla
+  proof_module: spec/tla/YieldProofs.tla
+  next_operator: Next
+creation_boundary:
+  tla_action: CreateOrder
+  rust_runtime:
+    - services/api/src/routes/sweep_orders.rs
+    - crates/persistence/src/repository.rs
+  note: API order creation establishes the initial Created domain state used by the Rust refinement tests.
+commands:
+  CheckEligibility:
+    tla_action: CheckEligibility
+    from: [Created]
+    to: EligibilityChecked
+    proof: CheckEligibilityPreservesInv
+  CheckDisclosures:
+    tla_action: CheckDisclosures
+    from: [EligibilityChecked]
+    to: DisclosureChecked
+    proof: CheckDisclosuresPreservesInv
+  Approve:
+    tla_action: Approve
+    from: [DisclosureChecked]
+    to: Approved
+    proof: ApprovePreservesInv
+  LockCash:
+    tla_action: LockCash
+    from: [Approved]
+    to: CashLocked
+    proof: LockCashPreservesInv
+  SubmitSubscription:
+    tla_action: SubmitSubscription
+    from: [CashLocked]
+    to: SubscriptionSubmitted
+    proof: SubmitSubscriptionPreservesInv
+  ConfirmTransferAgent:
+    tla_action: ConfirmTransferAgent
+    from: [SubscriptionSubmitted]
+    to: TransferAgentConfirmed
+    proof: ConfirmTransferAgentPreservesInv
+  ObserveChainMirror:
+    tla_action: ObserveChainMirror
+    from: [TransferAgentConfirmed]
+    to: ChainMirrorObserved
+    proof: ObserveChainMirrorPreservesInv
+  BookPosition:
+    tla_action: BookPosition
+    from: [TransferAgentConfirmed, ChainMirrorObserved]
+    to: PositionBooked
+    proof: BookPositionPreservesInv
+  Reconcile:
+    tla_action: Reconcile
+    from: [PositionBooked]
+    to: Reconciled
+    proof: ReconcilePreservesInv
+  Activate:
+    tla_action: Activate
+    from: [Reconciled]
+    to: Active
+    proof: ActivatePreservesInv
+  RequestRedemption:
+    tla_action: RequestRedemption
+    from: [Active]
+    to: RedemptionRequested
+    proof: RequestRedemptionPreservesInv
+  ReserveShares:
+    tla_action: ReserveShares
+    from: [RedemptionRequested]
+    to: SharesReserved
+    proof: ReserveSharesPreservesInv
+  SubmitRedemption:
+    tla_action: SubmitRedemption
+    from: [SharesReserved]
+    to: RedemptionSubmitted
+    proof: SubmitRedemptionPreservesInv
+  ConfirmRedemption:
+    tla_action: ConfirmRedemption
+    from: [RedemptionSubmitted]
+    to: RedemptionConfirmed
+    proof: ConfirmRedemptionPreservesInv
+  CreditCash:
+    tla_action: CreditCash
+    from: [RedemptionConfirmed]
+    to: CashCredited
+    proof: CreditCashPreservesInv
+  SettleRedemption:
+    tla_action: SettleRedemption
+    from: [CashCredited]
+    to: Settled
+    proof: SettleRedemptionPreservesInv
+  OpenException:
+    tla_action: OpenException
+    from:
+      - Created
+      - EligibilityChecked
+      - DisclosureChecked
+      - Approved
+      - CashLocked
+      - SubscriptionSubmitted
+      - TransferAgentConfirmed
+      - ChainMirrorObserved
+      - PositionBooked
+      - Reconciled
+      - Active
+      - RedemptionRequested
+      - SharesReserved
+      - RedemptionSubmitted
+      - RedemptionConfirmed
+      - CashCredited
+    to: ExceptionOpen
+    proof: OpenExceptionPreservesInv
+  CloseException:
+    tla_action: CloseException
+    from: [ExceptionOpen]
+    to: ExceptionClosed
+    proof: CloseExceptionPreservesInv
+  Cancel:
+    tla_action: Cancel
+    from: [Created, EligibilityChecked, DisclosureChecked, Approved]
+    to: Cancelled
+    proof: CancelPreservesInv

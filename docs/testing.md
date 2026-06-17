@@ -5,6 +5,9 @@ The validation strategy is layered. Fast checks run without external services; i
 ## Fast Gate
 
 ```bash
+make validate-tla
+make validate-refinement
+make validate-formal-coverage
 make validate-specs
 make validate-k8s
 cargo fmt --all --check
@@ -40,7 +43,7 @@ These gates prove the event path, LocalStack fanout, worker transitions, mock tr
 make validate
 ```
 
-`make validate` is intended for CI and local pre-commit verification. It runs specs, Kubernetes manifest validation, docs validation, Rust formatting, clippy, Rust tests, frontend install, frontend typecheck, frontend lint, and frontend tests.
+`make validate` is intended for CI and local pre-commit verification. It runs TLA parsing/proofs/model checking, Rust-to-TLA mapping validation, invariant coverage validation, specs, Kubernetes manifest validation, docs validation, Rust formatting, clippy, Rust tests, frontend install, frontend typecheck, frontend lint, and frontend tests.
 
 ## CI
 

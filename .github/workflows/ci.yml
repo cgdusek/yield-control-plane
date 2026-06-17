@@ -25,7 +25,7 @@ jobs:
       - name: Install OS tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y jq curl
+          sudo apt-get install -y jq curl openjdk-17-jre-headless
           python3 -m pip install --user pyyaml
 
       - name: Install kubectl
@@ -101,4 +101,3 @@ jobs:
       - name: Stop Compose runtime
         if: always()
         run: docker compose down -v
-

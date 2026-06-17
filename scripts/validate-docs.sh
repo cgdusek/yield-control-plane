@@ -18,6 +18,7 @@ required = [
     "docs/testing.md",
     "docs/operations.md",
     "docs/security.md",
+    "docs/formal-verification.md",
     "docs/production-readiness.md",
     "docs/traceability.md",
     "docs/runbooks/index.md",
@@ -88,4 +89,3 @@ for command in ("make dev-up", "make smoke", "make smoke-failure-paths", "make v
 
 print("documentation links, required docs, runbooks, and enforcement markers validated")
 PY
-

@@ -8,9 +8,9 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 - Preserved project copy: `spec/source/fidelity_defi_yield_platform_spec.md` (pending Gate 1)
 
 ## Current Gate
-- Gate: Complete
+- Gate: Gate 13 formal refinement hardening extension
 - Status: Passed
-- Start Time: 2026-06-16T16:10:33Z
+- Start Time: 2026-06-17T02:32:05Z
 
 ## Gate Status Table
 | Gate | Objective | Status | Evidence | Last Updated |
@@ -29,6 +29,8 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 | Gate 11 | Kubernetes local bootstrapping | Passed | `make validate-k8s`, `./scripts/install-kind-tooling.sh`, `make k8s-up`, `make k8s-smoke` | 2026-06-16T16:01:27Z |
 | Gate 12 | Observability, security, and operations | Passed | Docs/runbooks, `make validate-docs`, `/metrics`, `/audit-events`, `/reconciliation-breaks` | 2026-06-16T16:06:29Z |
 | Gate 13 | CI/CD and final verification | Passed | `.github/workflows/ci.yml`, `make validate`, CI YAML parse, DB-backed persistence tests, marker scan | 2026-06-16T16:10:33Z |
+| Formal extension | TLAPS/TLC verification spine and invariant traceability | Passed | `make validate-tla`, `make validate-specs`, `make validate-docs`, `make check-tools`, `make validate`; formal docs and tracking artifacts added | 2026-06-17T00:38:18Z |
+| Formal refinement hardening | Raw-action TLAPS proofs and Rust-to-TLA refinement-lite evidence | Passed | `make validate` passed with raw-action TLAPS, TLC temporal append-only check, Rust-to-TLA mapping validation, exhaustive Rust transition projection tests, and invariant coverage convergence validator | 2026-06-17T02:36:46Z |
 
 ## Requirements Traceability Summary
 - Domain model and state machine: `spec/domain/sweep_order.machine.yaml`, `crates/domain`, domain tests.
@@ -158,10 +160,31 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 | 2026-06-16T16:09:00Z | `RUN_DATABASE_TESTS=1 DATABASE_URL=postgres://yield:yield@127.0.0.1:15432/yield_control cargo test -p institutional-yield-persistence --all-features` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | 5 Postgres-backed persistence tests passed against running Compose Postgres. |
 | 2026-06-16T16:10:00Z | `git status --short --branch` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Repository is new with all generated files untracked; no pre-existing user files were overwritten. |
 | 2026-06-16T16:10:00Z | `rg -n "TODO|FIXME|TBD|placeholder|coming soon|lorem ipsum" ...` | `/Users/charlesdusek/Code/yield-control-plane` | Passed with intentional matches | Matches are rule text, historical tracker evidence, validator pattern, preserved source request, and a functional UI input hint. |
+| 2026-06-17T00:19:02Z | `rg --files ...`, `sed -n ...`, `command -v tlapm`, `java -version`, `brew search tla` | `/Users/charlesdusek/Code/yield-control-plane` | Passed with tool gap | Formal verification workstream started. Current repo has only `spec/tla/no_double_sweep.tla`; Java 17 and Homebrew are present; `tlapm` and `tla2tools.jar` are not yet available. |
+| 2026-06-17T00:34:16Z | `make validate-tla` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | SANY parsed the TLA modules; TLAPS proved 32 obligations in `YieldProofs.tla` and 1 in `no_double_sweep.tla`; TLC explored 3,627 distinct states with no error. |
+| 2026-06-17T00:36:19Z | `make validate-tla`; `make validate-specs`; `make validate-docs` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Formal, spec, and documentation gates passed after adding docs and validator wiring. |
+| 2026-06-17T00:37:02Z | `make check-tools` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Java is now required; repo-local TLAPS 1.5.0 is detected as optional tooling. |
+| 2026-06-17T00:38:09Z | `make validate` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Full static validation passed with formal gate first, then specs, Kubernetes validation, docs, Rust fmt/clippy/tests, pnpm install, frontend typecheck/lint/tests. |
+| 2026-06-17T00:38:18Z | `test ! -d .tlacache && test ! -d states`; `rg -n "TODO|FIXME|TBD|placeholder|coming soon|lorem ipsum" ...`; `git status --short` | `/Users/charlesdusek/Code/yield-control-plane` | Passed with intentional marker matches | Generated TLAPS/TLC state is clean; marker matches are the standing rule text, validator pattern, and historical tracker evidence. |
+| 2026-06-17T01:47:51Z | `git status --short`; `sed -n ... AGENT_TRACKER.md spec/tla/YieldLifecycle.tla spec/tla/YieldProofs.tla crates/domain/src/sweep.rs crates/domain/tests/sweep_property_tests.rs` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Formal refinement hardening started from the existing uncommitted formal-verification extension; no generated TLAPS/TLC state present at start. |
+| 2026-06-17T01:54:40Z | `make validate-tla` | `/Users/charlesdusek/Code/yield-control-plane` | Failed | After removing safety-guarded `ActionSafe`, TLAPS rejected raw preservation obligations, led by the generic `MovePreservesInv` lemma allowing a `NoStatus` move that Rust never permits. |
+| 2026-06-17T02:12:43Z | `make validate-tla`; `quick_validate.py ~/.codex/skills/coverage-convergence-loop`; `coverage_round.py ... summary --require-complete` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Formal gate recovered after replacing tabs in `YieldInvariants.tla`; created and validated personal skill `~/.codex/skills/coverage-convergence-loop` for round-by-round TLA+/TLAPS/Rust/enforcement coverage closure. |
+| 2026-06-17T02:16:27Z | `sed -n ...`; `rg -n ...` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Formal convergence round started; inspected invariant catalog, TLC config, TLAPS theorems, Rust refinement tests, validators, and full gate wiring. |
+| 2026-06-17T02:23:22Z | `make validate-formal-coverage`; `make validate-tla`; `make validate-refinement`; `make validate-specs`; `make validate-docs`; `make validate`; `test ! -d .tlacache && test ! -d states` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Added `spec/refinement/invariant_coverage.yaml`, `scripts/validate-formal-coverage.sh`, explicit TLC `LedgerAppendOnlyTemporal`, docs/gate wiring, and verified full static validation with no generated TLA state left behind. |
+| 2026-06-17T02:32:05Z | `git status --short`; `sed -n ...`; `rg ...` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Started an additional formal refinement hardening round focused on exhaustive Rust transition projection and static proof coverage for every TLA `Next` action. |
+| 2026-06-17T02:34:00Z | `cargo test -p institutional-yield-domain --test refinement_trace_tests`; `make validate-refinement` | `/Users/charlesdusek/Code/yield-control-plane` | Failed / Passed | Rust refinement test exposed a brittle hard-coded declared-path count; static refinement validator passed with TLA `Next` preservation coverage. |
+| 2026-06-17T02:36:00Z | `cargo test -p institutional-yield-domain --test refinement_trace_tests`; `make validate-refinement` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Rust refinement tests now load `rust_tla_mapping.yaml`, exercise declared transition paths against `transition(...)`, and reject accepted Rust transitions missing mapping evidence. |
+| 2026-06-17T02:35:00Z | `cargo fmt --all --check`; `make validate-tla`; `make validate-formal-coverage`; `make validate-docs` | `/Users/charlesdusek/Code/yield-control-plane` | Failed / Passed / Passed / Passed | Rustfmt caught one wrapping diff in the new test; TLAPS proved 131 obligations, TLC completed with 5,643 distinct states and no errors, formal coverage and docs passed. |
+| 2026-06-17T02:36:46Z | `cargo fmt --all`; `cargo fmt --all --check`; `cargo test -p institutional-yield-domain --test refinement_trace_tests`; `make validate-refinement`; `make validate`; `test ! -d .tlacache && test ! -d states`; `git status --short`; marker scan | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Full static validation passed after F6 hardening; generated TLA state is clean; marker scan has only intentional historical/rule/source/UI matches. |
+| 2026-06-17T02:36:46Z | `make validate-docs`; `test ! -d .tlacache && test ! -d states` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Final tracker/doc updates validated; generated TLA state remains clean. |
 
 ## Decisions Made
 - 2026-06-16T14:48:00Z: User added a hard constraint that no artifact may be ornamental, decorative, inert, or merely skeletal. Every artifact must be executable, validated, enforced by tests/scripts/policies, or explicitly tracked as a bounded deferral. Added to `AGENTS.md` and `docs/agentic/working-agreement.md`.
 - ADR-0001 through ADR-0012 accepted for workspace, LocalStack, Postgres/SQLx, domain state machine, outbox/inbox, frontend, Compose, kind, mocks, no real AWS, production deltas, and safety invariants.
+- 2026-06-17T00:19:02Z: Formal verification extension will be bound to `make validate` through `scripts/validate-tla.sh`; TLAPS proofs and TLC bounded checks must be reported separately because TLAPS is an unbounded safety proof layer while TLC is bounded model checking.
+- 2026-06-17T00:38:18Z: Formal proof boundary is explicit: TLAPS checks the abstract safety-guarded protocol, TLC checks bounded interleavings, and Rust/SQL/runtime gates provide implementation conformance evidence rather than a full Rust-to-TLA refinement proof.
+- 2026-06-17T01:47:51Z: Formal refinement hardening will replace safety-guarded action proofs with raw-action preservation where TLAPS can check them, and will add executable Rust-to-TLA mapping evidence without claiming a full source-level refinement proof.
+- 2026-06-17T02:32:05Z: Additional refinement hardening will fail the gate if a TLA `Next` action lacks a `PreservesInv` theorem, or if any declared Rust transition path no longer projects to the matching TLA action.
 
 ## Defects / Failures
 | Timestamp | Failure | Root-Cause Hypothesis | Mitigation | Follow-Up Gate |
@@ -194,6 +217,8 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 | 2026-06-16T15:31:00Z | `make dev-up` failed in React console Docker build. | Running `pnpm build` from `/app/web/react-console` triggered pnpm's deps-status install check, which tried to purge modules without a TTY. | Run build and dev commands from the root workspace with `pnpm --filter institutional-yield-react-console ...`; add `.dockerignore` to keep Docker contexts bounded. | Gate 10 |
 | 2026-06-16T15:51:00Z | `kubectl apply --dry-run=client --validate=false` could not validate without an API server. | The installed kubectl still performs discovery even with client dry-run and validation disabled. | Added `scripts/validate-k8s.sh` to render overlays and enforce Kubernetes invariants offline with PyYAML. | Gate 11 |
 | 2026-06-16T16:04:00Z | `make validate-docs` failed on `docs/agentic/working-agreement.md`. | The new validator correctly rejected unfinished-work marker language in an existing guide. | Reworded the guide while preserving the enforceable-artifact rule, then reran docs validation. | Gate 12 |
+| 2026-06-17T01:54:40Z | Raw `make validate-tla` failed in `YieldProofs.tla`. | The shared `Move` action was too broad for Rust refinement because it admitted moving an uncreated order without setting non-FIDD product metadata; several wrapper lemmas inherited that invalid abstraction. | Constrain lifecycle moves to existing orders, decompose wrappers into direct action proofs where TLAPS needs concrete status facts, then rerun `make validate-tla`. | Formal refinement hardening |
+| 2026-06-17T02:34:00Z | `cargo test -p institutional-yield-domain --test refinement_trace_tests` failed after F6 test addition. | The new test hard-coded 35 declared transition paths, but `rust_tla_mapping.yaml` declares 38 paths including all exception-opening statuses. | Replace the magic count with a YAML-derived expected path count and rerun the refinement test. | Formal refinement hardening |
 
 ## Environment
 - OS: Darwin Tao.local 25.5.0 arm64
@@ -216,6 +241,7 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 
 ## Final Verification
 - `make validate` passed.
+- `make validate-tla` passed.
 - `make dev-up` passed and the Compose runtime is running.
 - `make smoke` passed.
 - `make smoke-failure-paths` passed.

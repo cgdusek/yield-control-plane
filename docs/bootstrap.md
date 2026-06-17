@@ -68,6 +68,9 @@ make dev-down
 ## Validation
 
 ```bash
+make validate-tla
+make validate-refinement
+make validate-formal-coverage
 make validate-specs
 make validate-k8s
 make validate-docs
@@ -75,7 +78,7 @@ make test
 make validate
 ```
 
-`make validate` runs specs, docs, Rust formatting, clippy, Rust tests, frontend install, frontend typecheck, lint, and tests.
+`make validate` runs TLA proofs/model checking, Rust-to-TLA mapping validation, specs, docs, Rust formatting, clippy, Rust tests, frontend install, frontend typecheck, lint, and tests.
 
 ## Kubernetes Demo
 

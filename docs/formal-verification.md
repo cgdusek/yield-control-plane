@@ -1,0 +1,60 @@
+# Formal Verification
+
+The formal layer models the control plane as an abstract TLA+ safety protocol. TLAPS checks that the raw abstract actions preserve the invariant, TLC explores bounded interleavings, and the implementation is tied back through Rust refinement tests, a static Rust-to-TLA mapping validator, Postgres constraints, smoke tests, and CI.
+
+Run the formal gate with:
+
+```bash
+make validate-tla
+make validate-refinement
+make validate-formal-coverage
+```
+
+`scripts/validate-tla.sh` downloads `tla2tools.jar` and installs TLAPS under ignored `tools/` paths when the local machine does not already provide them. It then runs SANY parsing, TLAPS proof checking, and TLC model checking.
+
+## Proof Boundary
+
+The TLA+ protocol uses raw lifecycle, ledger, and messaging actions in [YieldLifecycle.tla](../spec/tla/YieldLifecycle.tla). `Inv` includes `CurrentStatusInHistory` as an induction-strengthening invariant so historical safety claims such as active-after-reconciled and cash-credited-after-redemption-confirmed are proved from status history rather than inferred from the current status alone.
+
+The repository now provides refinement-lite evidence: [rust_tla_mapping.yaml](../spec/refinement/rust_tla_mapping.yaml) maps each Rust `SweepCommand` to a TLA action and TLAPS theorem, [abstract_refinement.rs](../crates/domain/src/abstract_refinement.rs) projects accepted Rust transitions into abstract state, and `scripts/validate-refinement.sh` rejects drift across Rust enums, TLA `Next`, Rust `TlaAction`, and TLAPS theorem names. The refinement tests also load the YAML mapping, exercise declared paths against the Rust `transition(...)` function, and fail if any accepted Rust transition lacks mapping evidence. This is executable conformance evidence, not a full source-level Rust proof.
+
+[invariant_coverage.yaml](../spec/refinement/invariant_coverage.yaml) is the invariant-level convergence matrix. `scripts/validate-formal-coverage.sh` parses the matrix, TLA catalog, TLAPS theorems, TLC config, Rust tests, runtime enforcement files, and full validation script so an invariant cannot be marked covered without executable evidence.
+
+## Formal Spine
+
+- Types and finite model vocabulary: [YieldTypes.tla](../spec/tla/YieldTypes.tla)
+- Lifecycle, ledger, messaging, and metadata safety predicates: [YieldLifecycle.tla](../spec/tla/YieldLifecycle.tla)
+- Ledger catalog: [YieldLedger.tla](../spec/tla/YieldLedger.tla)
+- Messaging catalog: [YieldMessaging.tla](../spec/tla/YieldMessaging.tla)
+- Invariant catalog: [YieldInvariants.tla](../spec/tla/YieldInvariants.tla)
+- TLAPS proof obligations: [YieldProofs.tla](../spec/tla/YieldProofs.tla)
+- TLC bounded model: [YieldControlPlane.cfg](../spec/tla/YieldControlPlane.cfg)
+
+## Invariant Traceability
+
+| Invariant | TLA+ definition | TLAPS theorem | TLC model | Rust or SQL enforcement | CI gate |
+| --- | --- | --- | --- | --- | --- |
+| NoDuplicateIdempotency | `NoDuplicateIdempotency` | `CreateOrderPreservesInv`, `NextPreservesInv` | `INVARIANT Inv` | `unique (account_id, idempotency_key_hash)`, `duplicate_idempotency_key_reuses_order` | `make validate-tla`, DB tests |
+| NoDuplicateConfirmation | `NoDuplicateConfirmation` | `ConfirmTransferAgentPreservesInv`, `NextPreservesInv` | `INVARIANT Inv` | `unique (transfer_agent_confirmation_ref)`, `duplicate_confirmation_ref_cannot_double_book` | `make validate-tla`, DB tests |
+| OnePositionPerOrder | `OnePositionPerOrder` | `BookPositionPreservesInv` | `INVARIANT Inv` | `positions unique (order_id)` | `make validate-tla`, DB tests |
+| PositionBookedRequiresTransferAgentConfirmation | `PositionBookedRequiresTransferAgentConfirmation` | `BookPositionPreservesInv` | `INVARIANT Safety` | `validate_position_booking_confirmation`, command side effects | `make validate-tla`, Rust tests |
+| ActiveRequiresReconciledHistory | `ActiveRequiresReconciledHistory` | `ActivatePreservesInv` | `INVARIANT Safety` | `transition` from `Reconciled` to `Active`, property tests | `make validate-tla`, Rust tests |
+| CashCreditedRequiresRedemptionConfirmationHistory | `CashCreditedRequiresRedemptionConfirmationHistory` | `CreditCashPreservesInv` | `INVARIANT Safety` | domain transition sequence and redemption confirmation guard | `make validate-tla`, Rust tests |
+| CurrentStatusInHistory | `CurrentStatusInHistory` | `NextPreservesInv` | `INVARIANT Inv` | `AbstractSweepState`, refinement trace tests | `make validate-tla`, `make validate-refinement`, Rust tests |
+| NoFiddYieldSource | `NoFiddYieldSource` | `CreateOrderPreservesInv` | `INVARIANT Safety` | `ensure_yield_source_allowed`, API rejection path | `make validate-tla`, Rust/API tests |
+| LedgerBalancedPerAsset | `LedgerBalancedPerAsset` | `LockCashPreservesInv`, `BookPositionPreservesInv`, `CreditCashPreservesInv` | `INVARIANT Inv` | `insert_balanced_ledger_entries`, `validate_ledger_balances` | `make validate-tla`, Rust tests |
+| LedgerAppendOnly | `LedgerAppendOnly` | `LedgerAppendOnlyPreserved` | `Spec` step safety | `ledger_entries_no_update` trigger | `make validate-tla`, DB tests |
+| InboxDeduplicatesWorkerEffects | `InboxDeduplicatesWorkerEffects` | `ReceiveMessagePreservesInv`, `ProcessMessagePreservesInv` | `INVARIANT Inv` | `inbox_messages primary key`, `record_inbox_message` | `make validate-tla`, smoke tests |
+| OutboxRetryDoesNotDuplicateBusinessEffects | `OutboxRetryDoesNotDuplicateBusinessEffects` | `LeaseOutboxPreservesInv`, `PublishOutboxPreservesInv` | `INVARIANT Inv` | outbox leasing and event-id primary key | `make validate-tla`, smoke tests |
+| WriteCommandCarriesCorrelationAndIdempotency | `WriteCommandCarriesCorrelationAndIdempotency` | `CreateOrderPreservesInv` | `INVARIANT Safety` | OpenAPI parameters and API write-header middleware | `make validate-tla`, spec/API tests |
+
+## Commands
+
+```bash
+make validate-tla
+make validate-refinement
+make validate-formal-coverage
+make validate
+```
+
+The full validation gate runs `scripts/validate-tla.sh`, `scripts/validate-refinement.sh`, and `scripts/validate-formal-coverage.sh` before specs, Kubernetes manifests, docs, Rust, and frontend checks.
