@@ -6,6 +6,7 @@ The validation strategy is layered. Fast checks run without external services; i
 
 ```bash
 make validate-tla
+make validate-source-proofs
 make validate-refinement
 make validate-formal-coverage
 make validate-formal-coverage-map
@@ -46,8 +47,8 @@ These gates prove the event path, LocalStack fanout, worker transitions, mock tr
 make validate
 ```
 
-`make validate` is intended for CI and local pre-commit verification. It runs TLA parsing/proofs/model checking, Rust-to-TLA mapping validation, invariant coverage validation, generated coverage-map drift checks, liveness coverage validation, specs, Kubernetes manifest validation, docs validation, Rust formatting, clippy, Rust tests, frontend install, frontend typecheck, frontend lint, and frontend tests.
+`make validate` is intended for CI and local pre-commit verification. It runs TLA parsing/proofs/model checking, targeted Kani source proofs for the Rust domain transition kernel, Rust-to-TLA mapping validation, invariant coverage validation, generated coverage-map drift checks, liveness coverage validation, specs, Kubernetes manifest validation, docs validation, Rust formatting, clippy, Rust tests, frontend install, frontend typecheck, frontend lint, and frontend tests.
 
 ## CI
 
-The GitHub Actions workflow at [../.github/workflows/ci.yml](../.github/workflows/ci.yml) runs the static gate and a Docker-backed integration gate using Postgres, LocalStack, DB-backed persistence tests, and smoke scripts.
+The GitHub Actions workflow at [../.github/workflows/ci.yml](../.github/workflows/ci.yml) runs the static gate and a Docker-backed integration gate using Postgres, LocalStack, DB-backed persistence tests, and smoke scripts. The static gate installs Kani before `make validate` so source-proof drift fails CI.

@@ -36,6 +36,11 @@ jobs:
         with:
           components: clippy,rustfmt
 
+      - name: Install Kani
+        run: |
+          cargo install --locked kani-verifier
+          cargo kani setup
+
       - name: Install Node
         uses: actions/setup-node@v4
         with:

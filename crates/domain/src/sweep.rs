@@ -254,14 +254,7 @@ pub fn transition(
             command: command.to_string(),
         }
     })?;
-    let guard_results = definition
-        .guards
-        .iter()
-        .map(|guard| GuardResult {
-            name: (*guard).to_string(),
-            passed: guard_passed(guard, ctx),
-        })
-        .collect::<Vec<_>>();
+    let guard_results = definition.guards.results(ctx);
 
     if let Some(failed) = guard_results.iter().find(|result| !result.passed) {
         return Err(DomainError::GuardFailed {
@@ -273,15 +266,110 @@ pub fn transition(
         from_status: current,
         to_status: definition.to,
         command,
-        emitted_events: definition.events,
+        emitted_events: definition.events.to_vec(),
         guard_results,
     })
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Guard {
+    EligibleAccount,
+    DisclosuresCurrent,
+    AuthorizedApprover,
+    CashAvailable,
+    CashLocked,
+    TransferAgentConfirmationPresent,
+    ChainMirrorRequired,
+    ChainMirrorNotRequired,
+    ChainMirrorObserved,
+    ReconciliationMatched,
+    Reconciled,
+    RedeemablePosition,
+    SharesAvailable,
+    SharesReserved,
+    RedemptionConfirmationPresent,
+    CashCredited,
+    ExceptionReasonPresent,
+    ExceptionResolved,
+    Cancellable,
+}
+
+impl Guard {
+    fn name(self) -> &'static str {
+        match self {
+            Guard::EligibleAccount => "eligible_account",
+            Guard::DisclosuresCurrent => "disclosures_current",
+            Guard::AuthorizedApprover => "authorized_approver",
+            Guard::CashAvailable => "cash_available",
+            Guard::CashLocked => "cash_locked",
+            Guard::TransferAgentConfirmationPresent => "transfer_agent_confirmation_present",
+            Guard::ChainMirrorRequired => "chain_mirror_required",
+            Guard::ChainMirrorNotRequired => "chain_mirror_not_required",
+            Guard::ChainMirrorObserved => "chain_mirror_observed",
+            Guard::ReconciliationMatched => "reconciliation_matched",
+            Guard::Reconciled => "reconciled",
+            Guard::RedeemablePosition => "redeemable_position",
+            Guard::SharesAvailable => "shares_available",
+            Guard::SharesReserved => "shares_reserved",
+            Guard::RedemptionConfirmationPresent => "redemption_confirmation_present",
+            Guard::CashCredited => "cash_credited",
+            Guard::ExceptionReasonPresent => "exception_reason_present",
+            Guard::ExceptionResolved => "exception_resolved",
+            Guard::Cancellable => "cancellable",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum GuardSet {
+    One(Guard),
+    Two(Guard, Guard),
+}
+
+impl GuardSet {
+    fn results(self, ctx: &GuardContext) -> Vec<GuardResult> {
+        match self {
+            GuardSet::One(first) => vec![guard_result(first, ctx)],
+            GuardSet::Two(first, second) => {
+                vec![guard_result(first, ctx), guard_result(second, ctx)]
+            }
+        }
+    }
+
+    #[cfg(kani)]
+    fn satisfied(self, ctx: &GuardContext) -> bool {
+        match self {
+            GuardSet::One(first) => guard_passed(first, ctx),
+            GuardSet::Two(first, second) => guard_passed(first, ctx) && guard_passed(second, ctx),
+        }
+    }
+}
+
+fn guard_result(guard: Guard, ctx: &GuardContext) -> GuardResult {
+    GuardResult {
+        name: guard.name().to_string(),
+        passed: guard_passed(guard, ctx),
+    }
+}
+
 struct TransitionDefinition {
     to: SweepStatus,
-    guards: &'static [&'static str],
-    events: Vec<DomainEvent>,
+    guards: GuardSet,
+    events: &'static [DomainEvent],
+}
+
+#[cfg(kani)]
+fn accepted_transition(
+    current: SweepStatus,
+    command: SweepCommand,
+    ctx: &GuardContext,
+) -> Option<SweepStatus> {
+    let definition = transition_definition(current, command, ctx)?;
+    if definition.guards.satisfied(ctx) {
+        Some(definition.to)
+    } else {
+        None
+    }
 }
 
 fn transition_definition(
@@ -290,106 +378,105 @@ fn transition_definition(
     ctx: &GuardContext,
 ) -> Option<TransitionDefinition> {
     use DomainEvent as Event;
+    use Guard as G;
+    use GuardSet as GS;
     use SweepCommand as Command;
     use SweepStatus as Status;
 
     let definition = match (current, command) {
         (Status::Created, Command::CheckEligibility) => TransitionDefinition {
             to: Status::EligibilityChecked,
-            guards: &["eligible_account"],
-            events: vec![Event::SweepEligibilityChecked],
+            guards: GS::One(G::EligibleAccount),
+            events: &[Event::SweepEligibilityChecked],
         },
         (Status::EligibilityChecked, Command::CheckDisclosures) => TransitionDefinition {
             to: Status::DisclosureChecked,
-            guards: &["disclosures_current"],
-            events: vec![Event::SweepDisclosuresChecked],
+            guards: GS::One(G::DisclosuresCurrent),
+            events: &[Event::SweepDisclosuresChecked],
         },
         (Status::DisclosureChecked, Command::Approve) => TransitionDefinition {
             to: Status::Approved,
-            guards: &["authorized_approver"],
-            events: vec![Event::SweepOrderApproved],
+            guards: GS::One(G::AuthorizedApprover),
+            events: &[Event::SweepOrderApproved],
         },
         (Status::Approved, Command::LockCash) => TransitionDefinition {
             to: Status::CashLocked,
-            guards: &["cash_available"],
-            events: vec![Event::SweepCashLocked],
+            guards: GS::One(G::CashAvailable),
+            events: &[Event::SweepCashLocked],
         },
         (Status::CashLocked, Command::SubmitSubscription) => TransitionDefinition {
             to: Status::SubscriptionSubmitted,
-            guards: &["cash_locked"],
-            events: vec![Event::SweepSubscriptionSubmitted],
+            guards: GS::One(G::CashLocked),
+            events: &[Event::SweepSubscriptionSubmitted],
         },
         (Status::SubscriptionSubmitted, Command::ConfirmTransferAgent) => TransitionDefinition {
             to: Status::TransferAgentConfirmed,
-            guards: &["transfer_agent_confirmation_present"],
-            events: vec![Event::SweepTransferAgentConfirmed],
+            guards: GS::One(G::TransferAgentConfirmationPresent),
+            events: &[Event::SweepTransferAgentConfirmed],
         },
         (Status::TransferAgentConfirmed, Command::ObserveChainMirror)
             if ctx.chain_mirror_required =>
         {
             TransitionDefinition {
                 to: Status::ChainMirrorObserved,
-                guards: &["chain_mirror_required", "chain_mirror_observed"],
-                events: vec![Event::SweepChainMirrorObserved],
+                guards: GS::Two(G::ChainMirrorRequired, G::ChainMirrorObserved),
+                events: &[Event::SweepChainMirrorObserved],
             }
         }
         (Status::TransferAgentConfirmed, Command::BookPosition) if !ctx.chain_mirror_required => {
             TransitionDefinition {
                 to: Status::PositionBooked,
-                guards: &[
-                    "transfer_agent_confirmation_present",
-                    "chain_mirror_not_required",
-                ],
-                events: vec![Event::SweepPositionBooked],
+                guards: GS::Two(
+                    G::TransferAgentConfirmationPresent,
+                    G::ChainMirrorNotRequired,
+                ),
+                events: &[Event::SweepPositionBooked],
             }
         }
         (Status::ChainMirrorObserved, Command::BookPosition) => TransitionDefinition {
             to: Status::PositionBooked,
-            guards: &[
-                "transfer_agent_confirmation_present",
-                "chain_mirror_observed",
-            ],
-            events: vec![Event::SweepPositionBooked],
+            guards: GS::Two(G::TransferAgentConfirmationPresent, G::ChainMirrorObserved),
+            events: &[Event::SweepPositionBooked],
         },
         (Status::PositionBooked, Command::Reconcile) => TransitionDefinition {
             to: Status::Reconciled,
-            guards: &["reconciliation_matched"],
-            events: vec![Event::SweepReconciled],
+            guards: GS::One(G::ReconciliationMatched),
+            events: &[Event::SweepReconciled],
         },
         (Status::Reconciled, Command::Activate) => TransitionDefinition {
             to: Status::Active,
-            guards: &["reconciled"],
-            events: vec![Event::SweepActive],
+            guards: GS::One(G::Reconciled),
+            events: &[Event::SweepActive],
         },
         (Status::Active, Command::RequestRedemption) => TransitionDefinition {
             to: Status::RedemptionRequested,
-            guards: &["redeemable_position"],
-            events: vec![Event::RedemptionRequested],
+            guards: GS::One(G::RedeemablePosition),
+            events: &[Event::RedemptionRequested],
         },
         (Status::RedemptionRequested, Command::ReserveShares) => TransitionDefinition {
             to: Status::SharesReserved,
-            guards: &["shares_available"],
-            events: vec![],
+            guards: GS::One(G::SharesAvailable),
+            events: &[],
         },
         (Status::SharesReserved, Command::SubmitRedemption) => TransitionDefinition {
             to: Status::RedemptionSubmitted,
-            guards: &["shares_reserved"],
-            events: vec![Event::RedemptionSubmitted],
+            guards: GS::One(G::SharesReserved),
+            events: &[Event::RedemptionSubmitted],
         },
         (Status::RedemptionSubmitted, Command::ConfirmRedemption) => TransitionDefinition {
             to: Status::RedemptionConfirmed,
-            guards: &["redemption_confirmation_present"],
-            events: vec![Event::RedemptionConfirmed],
+            guards: GS::One(G::RedemptionConfirmationPresent),
+            events: &[Event::RedemptionConfirmed],
         },
         (Status::RedemptionConfirmed, Command::CreditCash) => TransitionDefinition {
             to: Status::CashCredited,
-            guards: &["redemption_confirmation_present"],
-            events: vec![Event::RedemptionCashCredited],
+            guards: GS::One(G::RedemptionConfirmationPresent),
+            events: &[Event::RedemptionCashCredited],
         },
         (Status::CashCredited, Command::SettleRedemption) => TransitionDefinition {
             to: Status::Settled,
-            guards: &["cash_credited"],
-            events: vec![],
+            guards: GS::One(G::CashCredited),
+            events: &[],
         },
         (
             Status::Created
@@ -399,8 +486,8 @@ fn transition_definition(
             Command::Cancel,
         ) => TransitionDefinition {
             to: Status::Cancelled,
-            guards: &["cancellable"],
-            events: vec![],
+            guards: GS::One(G::Cancellable),
+            events: &[],
         },
         (
             Status::Created
@@ -422,41 +509,40 @@ fn transition_definition(
             Command::OpenException,
         ) => TransitionDefinition {
             to: Status::ExceptionOpen,
-            guards: &["exception_reason_present"],
-            events: vec![Event::ReconciliationBreakOpened],
+            guards: GS::One(G::ExceptionReasonPresent),
+            events: &[Event::ReconciliationBreakOpened],
         },
         (Status::ExceptionOpen, Command::CloseException) => TransitionDefinition {
             to: Status::ExceptionClosed,
-            guards: &["exception_resolved"],
-            events: vec![Event::ReconciliationBreakResolved],
+            guards: GS::One(G::ExceptionResolved),
+            events: &[Event::ReconciliationBreakResolved],
         },
         _ => return None,
     };
     Some(definition)
 }
 
-fn guard_passed(guard: &str, ctx: &GuardContext) -> bool {
+fn guard_passed(guard: Guard, ctx: &GuardContext) -> bool {
     match guard {
-        "eligible_account" => ctx.eligible_account,
-        "disclosures_current" => ctx.disclosures_current,
-        "authorized_approver" => ctx.authorized_approver,
-        "cash_available" => ctx.cash_available,
-        "cash_locked" => ctx.cash_locked,
-        "transfer_agent_confirmation_present" => ctx.transfer_agent_confirmation_present,
-        "chain_mirror_required" => ctx.chain_mirror_required,
-        "chain_mirror_not_required" => !ctx.chain_mirror_required,
-        "chain_mirror_observed" => ctx.chain_mirror_observed,
-        "reconciliation_matched" => ctx.reconciliation_matched,
-        "reconciled" => true,
-        "redeemable_position" => ctx.redeemable_position,
-        "shares_available" => ctx.shares_available,
-        "shares_reserved" => ctx.shares_reserved,
-        "redemption_confirmation_present" => ctx.redemption_confirmation_present,
-        "cash_credited" => ctx.cash_credited,
-        "exception_reason_present" => ctx.exception_reason_present,
-        "exception_resolved" => ctx.exception_resolved,
-        "cancellable" => ctx.cancellable,
-        _ => false,
+        Guard::EligibleAccount => ctx.eligible_account,
+        Guard::DisclosuresCurrent => ctx.disclosures_current,
+        Guard::AuthorizedApprover => ctx.authorized_approver,
+        Guard::CashAvailable => ctx.cash_available,
+        Guard::CashLocked => ctx.cash_locked,
+        Guard::TransferAgentConfirmationPresent => ctx.transfer_agent_confirmation_present,
+        Guard::ChainMirrorRequired => ctx.chain_mirror_required,
+        Guard::ChainMirrorNotRequired => !ctx.chain_mirror_required,
+        Guard::ChainMirrorObserved => ctx.chain_mirror_observed,
+        Guard::ReconciliationMatched => ctx.reconciliation_matched,
+        Guard::Reconciled => true,
+        Guard::RedeemablePosition => ctx.redeemable_position,
+        Guard::SharesAvailable => ctx.shares_available,
+        Guard::SharesReserved => ctx.shares_reserved,
+        Guard::RedemptionConfirmationPresent => ctx.redemption_confirmation_present,
+        Guard::CashCredited => ctx.cash_credited,
+        Guard::ExceptionReasonPresent => ctx.exception_reason_present,
+        Guard::ExceptionResolved => ctx.exception_resolved,
+        Guard::Cancellable => ctx.cancellable,
     }
 }
 
@@ -466,4 +552,197 @@ pub fn is_valid_transition(
     ctx: &GuardContext,
 ) -> bool {
     transition(current, command, ctx).is_ok()
+}
+
+#[cfg(kani)]
+mod source_proofs {
+    use super::*;
+
+    fn any_status() -> SweepStatus {
+        match kani::any::<u8>() % SweepStatus::ALL.len() as u8 {
+            0 => SweepStatus::Created,
+            1 => SweepStatus::EligibilityChecked,
+            2 => SweepStatus::DisclosureChecked,
+            3 => SweepStatus::Approved,
+            4 => SweepStatus::CashLocked,
+            5 => SweepStatus::SubscriptionSubmitted,
+            6 => SweepStatus::TransferAgentConfirmed,
+            7 => SweepStatus::ChainMirrorObserved,
+            8 => SweepStatus::PositionBooked,
+            9 => SweepStatus::Reconciled,
+            10 => SweepStatus::Active,
+            11 => SweepStatus::RedemptionRequested,
+            12 => SweepStatus::SharesReserved,
+            13 => SweepStatus::RedemptionSubmitted,
+            14 => SweepStatus::RedemptionConfirmed,
+            15 => SweepStatus::CashCredited,
+            16 => SweepStatus::Settled,
+            17 => SweepStatus::ExceptionOpen,
+            18 => SweepStatus::ExceptionClosed,
+            _ => SweepStatus::Cancelled,
+        }
+    }
+
+    fn any_command() -> SweepCommand {
+        match kani::any::<u8>() % SweepCommand::ALL.len() as u8 {
+            0 => SweepCommand::CheckEligibility,
+            1 => SweepCommand::CheckDisclosures,
+            2 => SweepCommand::Approve,
+            3 => SweepCommand::LockCash,
+            4 => SweepCommand::SubmitSubscription,
+            5 => SweepCommand::ConfirmTransferAgent,
+            6 => SweepCommand::ObserveChainMirror,
+            7 => SweepCommand::BookPosition,
+            8 => SweepCommand::Reconcile,
+            9 => SweepCommand::Activate,
+            10 => SweepCommand::RequestRedemption,
+            11 => SweepCommand::ReserveShares,
+            12 => SweepCommand::SubmitRedemption,
+            13 => SweepCommand::ConfirmRedemption,
+            14 => SweepCommand::CreditCash,
+            15 => SweepCommand::SettleRedemption,
+            16 => SweepCommand::OpenException,
+            17 => SweepCommand::CloseException,
+            _ => SweepCommand::Cancel,
+        }
+    }
+
+    fn any_guard_context() -> GuardContext {
+        GuardContext {
+            eligible_account: kani::any(),
+            disclosures_current: kani::any(),
+            authorized_approver: kani::any(),
+            cash_available: kani::any(),
+            cash_locked: kani::any(),
+            transfer_agent_confirmation_present: kani::any(),
+            chain_mirror_required: kani::any(),
+            chain_mirror_observed: kani::any(),
+            reconciliation_matched: kani::any(),
+            redeemable_position: kani::any(),
+            shares_available: kani::any(),
+            shares_reserved: kani::any(),
+            redemption_confirmation_present: kani::any(),
+            cash_credited: kani::any(),
+            exception_reason_present: kani::any(),
+            exception_resolved: kani::any(),
+            cancellable: kani::any(),
+        }
+    }
+
+    fn pre_submission_status(status: SweepStatus) -> bool {
+        matches!(
+            status,
+            SweepStatus::Created
+                | SweepStatus::EligibilityChecked
+                | SweepStatus::DisclosureChecked
+                | SweepStatus::Approved
+        )
+    }
+
+    fn exception_openable_status(status: SweepStatus) -> bool {
+        matches!(
+            status,
+            SweepStatus::Created
+                | SweepStatus::EligibilityChecked
+                | SweepStatus::DisclosureChecked
+                | SweepStatus::Approved
+                | SweepStatus::CashLocked
+                | SweepStatus::SubscriptionSubmitted
+                | SweepStatus::TransferAgentConfirmed
+                | SweepStatus::ChainMirrorObserved
+                | SweepStatus::PositionBooked
+                | SweepStatus::Reconciled
+                | SweepStatus::Active
+                | SweepStatus::RedemptionRequested
+                | SweepStatus::SharesReserved
+                | SweepStatus::RedemptionSubmitted
+                | SweepStatus::RedemptionConfirmed
+                | SweepStatus::CashCredited
+        )
+    }
+
+    #[kani::proof]
+    fn accepted_transitions_never_stutter_and_preserve_source_command() {
+        let status = any_status();
+        let command = any_command();
+        let ctx = any_guard_context();
+
+        if let Some(to) = accepted_transition(status, command, &ctx) {
+            assert!(to != status);
+            assert!(transition_definition(status, command, &ctx).is_some());
+        }
+    }
+
+    #[kani::proof]
+    fn active_can_only_be_reached_by_activate_from_reconciled() {
+        let status = any_status();
+        let command = any_command();
+        let ctx = any_guard_context();
+
+        if let Some(SweepStatus::Active) = accepted_transition(status, command, &ctx) {
+            assert!(status == SweepStatus::Reconciled);
+            assert!(command == SweepCommand::Activate);
+        }
+    }
+
+    #[kani::proof]
+    fn cash_credited_can_only_be_reached_after_redemption_confirmation() {
+        let status = any_status();
+        let command = any_command();
+        let ctx = any_guard_context();
+
+        if let Some(SweepStatus::CashCredited) = accepted_transition(status, command, &ctx) {
+            assert!(status == SweepStatus::RedemptionConfirmed);
+            assert!(command == SweepCommand::CreditCash);
+            assert!(ctx.redemption_confirmation_present);
+        }
+    }
+
+    #[kani::proof]
+    fn position_booked_requires_transfer_agent_confirmation() {
+        let status = any_status();
+        let command = any_command();
+        let ctx = any_guard_context();
+
+        if let Some(SweepStatus::PositionBooked) = accepted_transition(status, command, &ctx) {
+            assert!(
+                status == SweepStatus::TransferAgentConfirmed
+                    || status == SweepStatus::ChainMirrorObserved
+            );
+            assert!(command == SweepCommand::BookPosition);
+            assert!(ctx.transfer_agent_confirmation_present);
+            if status == SweepStatus::TransferAgentConfirmed {
+                assert!(!ctx.chain_mirror_required);
+            }
+            if status == SweepStatus::ChainMirrorObserved {
+                assert!(ctx.chain_mirror_observed);
+            }
+        }
+    }
+
+    #[kani::proof]
+    fn cancellation_is_limited_to_pre_submission_states() {
+        let status = any_status();
+        let command = any_command();
+        let ctx = any_guard_context();
+
+        if let Some(SweepStatus::Cancelled) = accepted_transition(status, command, &ctx) {
+            assert!(command == SweepCommand::Cancel);
+            assert!(pre_submission_status(status));
+            assert!(ctx.cancellable);
+        }
+    }
+
+    #[kani::proof]
+    fn exception_open_excludes_terminal_statuses() {
+        let status = any_status();
+        let command = any_command();
+        let ctx = any_guard_context();
+
+        if let Some(SweepStatus::ExceptionOpen) = accepted_transition(status, command, &ctx) {
+            assert!(command == SweepCommand::OpenException);
+            assert!(exception_openable_status(status));
+            assert!(ctx.exception_reason_present);
+        }
+    }
 }

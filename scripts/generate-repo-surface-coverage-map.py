@@ -26,6 +26,7 @@ AXIS_ACTIONS = {
     "runtime_enforcement": "Bind the rule to a domain guard, SQL constraint, middleware, worker policy, or runtime script.",
     "formal_model": "Add or extend the TLA+/TLAPS/TLC model for the safety or liveness semantics on this surface.",
     "formal_projection": "Map implementation traces or commands from this surface into the abstract formal protocol.",
+    "source_level_proof": "Add a bounded source-level proof harness for the narrow implementation kernel where theorem-prover effort is justified.",
     "drift_validator": "Add a script that fails when this surface drifts from its source of truth.",
     "ci_gate": "Invoke the surface validator from make validate or GitHub Actions.",
     "documentation": "Document the surface and its validation commands.",
@@ -162,18 +163,31 @@ SURFACES: tuple[Surface, ...] = (
     Surface(
         id="rust_domain_core",
         title="Rust Domain Core",
-        patterns=("crates/domain/**",),
-        required_axes=("source_inventory", "specification_or_contract", "unit_or_property_tests", "formal_projection", "drift_validator", "ci_gate", "documentation"),
+        patterns=("crates/domain/**", "scripts/validate-source-proofs.sh"),
+        required_axes=(
+            "source_inventory",
+            "specification_or_contract",
+            "unit_or_property_tests",
+            "formal_projection",
+            "source_level_proof",
+            "drift_validator",
+            "ci_gate",
+            "documentation",
+        ),
         evidence={
             "specification_or_contract": {"paths": ["spec/domain/sweep_order.machine.yaml", "spec/tla/YieldLifecycle.tla"]},
             "unit_or_property_tests": {"commands": ["cargo test --workspace --all-features"], "paths": ["crates/domain/tests"]},
             "formal_projection": {"commands": ["make validate-refinement"], "paths": ["crates/domain/src/abstract_refinement.rs", "spec/refinement/rust_tla_mapping.yaml"]},
+            "source_level_proof": {
+                "commands": ["make validate-source-proofs"],
+                "paths": ["scripts/validate-source-proofs.sh", "crates/domain/src/sweep.rs"],
+            },
             "drift_validator": {"paths": ["scripts/validate-refinement.sh", "scripts/validate-formal-coverage.sh"]},
-            "ci_gate": {"commands": ["make validate"], "paths": ["scripts/validate-all.sh"]},
+            "ci_gate": {"commands": ["make validate", "make validate-source-proofs"], "paths": ["scripts/validate-all.sh"]},
             "documentation": {"paths": ["docs/formal-verification.md", "docs/traceability.md"]},
         },
-        formal_scope="rust_transitions_project_to_abstract_tla_actions",
-        hardening_frontier=("A full line-level Rust proof is not present; add Kani/Prusti/Creusot-style proofs only for narrow arithmetic or transition kernels if needed.",),
+        formal_scope="rust_transitions_project_to_abstract_tla_actions_with_targeted_source_proof",
+        hardening_frontier=("Targeted Kani proof covers the finite transition kernel; full line-level proof for services, async workers, SQL, frontend, and infrastructure remains intentionally out of scope.",),
     ),
     Surface(
         id="rust_persistence_and_sql",
@@ -429,7 +443,10 @@ def proof_ladder(surface: Surface, surface_files: list[str], present_axes: list[
     if surface.formal_scope == "none":
         limits.append("This surface is specified and enforced by contracts, validators, tests, runtime gates, or documentation, not by a dedicated theorem-prover model.")
     if surface.id.startswith("rust_") or surface.id == "shared_rust_infra":
-        limits.append("No line-level formal proof of all Rust source is claimed; Rust coverage is by tests, runtime enforcement, and refinement evidence where applicable.")
+        if "source_level_proof" in present_axes:
+            limits.append("A targeted source-level proof is present for the narrow Rust kernel listed in evidence; no line-level formal proof of all Rust source is claimed.")
+        else:
+            limits.append("No line-level formal proof of all Rust source is claimed; Rust coverage is by tests, runtime enforcement, and refinement evidence where applicable.")
     if "runtime_or_smoke" in surface.required_axes:
         limits.append("Runtime evidence is local/CI LocalStack, Docker Compose, or kind-shaped evidence, not a production deployment proof.")
 
@@ -515,9 +532,31 @@ def build(root: Path) -> dict[str, Any]:
     formalized_lines = sum(item["line_count"] for item in formalized)
     rust_files = [path for path in files if path.endswith(".rs")]
     rust_lines = sum(text_line_count(root / path) for path in rust_files)
+    rust_surfaces = [
+        item for item in surfaces if item["id"].startswith("rust_") or item["id"] == "shared_rust_infra"
+    ]
+    source_proved_rust_surfaces = [
+        item for item in rust_surfaces if "source_level_proof" in item["present_axes"]
+    ]
     source_level_claims = {
         "line_level_rust_formal_proof_ratio": 0.0,
-        "reason": "The repo proves an abstract protocol and checks Rust trace/refinement evidence; it does not prove every Rust source line.",
+        "targeted_source_proof_rust_surface_count": len(source_proved_rust_surfaces),
+        "targeted_source_proof_rust_surface_ratio": round(len(source_proved_rust_surfaces) / len(rust_surfaces), 4) if rust_surfaces else 1.0,
+        "targeted_source_proofs": [
+            {
+                "tool": "Kani",
+                "surface_id": "rust_domain_core",
+                "crate": "institutional-yield-domain",
+                "path": "crates/domain/src/sweep.rs",
+                "harness_count": 6,
+                "command": "make validate-source-proofs",
+                "claim": "Bounded source-level proof over the finite sweep transition kernel and guard combinations.",
+                "status": "closed"
+                if any(item["id"] == "rust_domain_core" for item in source_proved_rust_surfaces)
+                else "needs_work",
+            }
+        ],
+        "reason": "The repo proves an abstract protocol, checks Rust trace/refinement evidence, and now has one targeted Kani source proof; it still does not prove every Rust source line.",
         "abstract_rust_to_tla_refinement": formal_summary.get("rust_to_tla_refinement", {}),
     }
 

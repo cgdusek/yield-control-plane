@@ -8,10 +8,10 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 - Preserved project copy: `spec/source/fidelity_defi_yield_platform_spec.md` (pending Gate 1)
 
 ## Current Gate
-- Gate: Repository surface coverage JSON mapping
+- Gate: Targeted Rust source proof ladder
 - Status: Passed
-- Start Time: 2026-06-17T04:02:25Z
-- End Time: 2026-06-17T04:10:49Z
+- Start Time: 2026-06-17T04:17:02Z
+- End Time: 2026-06-17T04:31:28Z
 
 ## Gate Status Table
 | Gate | Objective | Status | Evidence | Last Updated |
@@ -36,6 +36,7 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 | CI monitoring and GitHub Actions hardening | Monitor pushed `main` CI and remedy until green | Passed | GitHub Actions run `27663822949` passed both static and integration jobs after CI AWS CLI install fix | 2026-06-17T03:37:58Z |
 | Formal coverage JSON mapping | Deterministic JSON map for safety/liveness/refinement coverage closure planning | Passed | `spec/refinement/formal_coverage_map.json`, `make validate-formal-coverage-map`, `make validate` | 2026-06-17T04:01:51Z |
 | Repository surface coverage JSON mapping | Quantify validation coverage across all repo surfaces and closure frontiers | Passed | `spec/refinement/repo_surface_coverage_map.json`, `make validate-repo-surface-coverage-map`, `make validate` | 2026-06-17T04:10:49Z |
+| Targeted Rust source proof ladder | Add bounded source-level proof for the domain transition kernel and track it in JSON | Passed | `make validate-source-proofs`, `make validate`, repo surface JSON source-proof axis | 2026-06-17T04:31:28Z |
 
 ## Requirements Traceability Summary
 - Domain model and state machine: `spec/domain/sweep_order.machine.yaml`, `crates/domain`, domain tests.
@@ -208,6 +209,14 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 | 2026-06-17T04:06:00Z | `make generate-repo-surface-coverage-map`; `make validate-repo-surface-coverage-map`; `make validate-formal-coverage-map` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Generated whole-repository surface coverage JSON with 15/15 closed surfaces, 190/190 mapped files, zero unmapped files, and zero conflicts. |
 | 2026-06-17T04:09:07Z | `make validate` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Full validation gate passed with both generated coverage-map drift checks included in `scripts/validate-all.sh`. |
 | 2026-06-17T04:10:49Z | `make generate-repo-surface-coverage-map`; `make validate-repo-surface-coverage-map`; `make validate` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Regenerated the repo surface map with S0-S6 proof ladders per surface and reran the full validation gate. |
+| 2026-06-17T04:17:02Z | `cargo kani --version`; `cargo install --locked kani-verifier`; `cargo kani setup` | `/Users/charlesdusek/Code/yield-control-plane` | Failed then Passed | Kani was not installed locally; installed `kani-verifier v0.67.0` and set up the Kani release bundle plus its pinned nightly toolchain. |
+| 2026-06-17T04:22:00Z | `cargo test -p institutional-yield-domain --all-features`; `cargo kani -p institutional-yield-domain --harness accepted_transitions_never_stutter_and_preserve_source_command` | `/Users/charlesdusek/Code/yield-control-plane` | Passed / Interrupted | Domain tests passed; first Kani attempts were interrupted after string-guard and fallback-iterator proof shapes caused excessive unwinding. |
+| 2026-06-17T04:25:00Z | `cargo fmt --all --check`; `cargo test -p institutional-yield-domain --all-features`; `cargo kani -p institutional-yield-domain`; `make validate-source-proofs` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Kani verified 6 domain source-proof harnesses with 0 failures after moving internal guards to typed `Guard` and bounded `GuardSet`. |
+| 2026-06-17T04:28:02Z | `make generate-repo-surface-coverage-map`; `make validate-repo-surface-coverage-map`; `make validate-formal-coverage-map`; JSON summary query | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Repo coverage map now records `rust_domain_core` as closed with `source_level_proof`, 6 Kani harnesses, and no full line-level proof claim. |
+| 2026-06-17T04:30:05Z | `make validate` | `/Users/charlesdusek/Code/yield-control-plane` | Failed | Formal, Kani, coverage, specs, k8s, and docs passed; workspace clippy failed because `DomainEvent` became `Copy` and persistence still called `.clone()`. |
+| 2026-06-17T04:30:40Z | `cargo fmt --all --check`; `cargo clippy --workspace --all-targets --all-features -- -D warnings`; `cargo test -p institutional-yield-persistence --all-features` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Removed stale `DomainEvent` clone in persistence and verified formatting, clippy, and persistence tests. |
+| 2026-06-17T04:31:28Z | `make validate`; `test ! -d .tlacache && test ! -d states`; `git status --short`; repo surface JSON summary query | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Full gate passed with TLAPS/TLC, Kani 6/6, coverage validators, docs, Rust, frontend checks; generated TLA state is clean. |
+| 2026-06-17T04:32:42Z | `make generate-repo-surface-coverage-map`; `make validate-docs`; `make validate-repo-surface-coverage-map`; `make validate-formal-coverage-map`; `git diff --check`; `test ! -d .tlacache && test ! -d states` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Final tracker closure edits are reflected in the generated surface map; docs and whitespace validate; generated TLA state remains clean. |
 
 ## Decisions Made
 - 2026-06-16T14:48:00Z: User added a hard constraint that no artifact may be ornamental, decorative, inert, or merely skeletal. Every artifact must be executable, validated, enforced by tests/scripts/policies, or explicitly tracked as a bounded deferral. Added to `AGENTS.md` and `docs/agentic/working-agreement.md`.
@@ -223,6 +232,9 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 - 2026-06-17T03:58:44Z: Formal coverage closure planning will use a generated JSON map derived from the existing invariant, liveness, and Rust-to-TLA YAML matrices. The JSON artifact must be validated for drift rather than manually edited.
 - 2026-06-17T04:02:25Z: Whole-repository coverage will be tracked separately from formal invariant coverage because repo surfaces include frontend, Docker, Kubernetes, docs, CI, scripts, LocalStack, and operational runbooks. The surface map must quantify evidence breadth and identify closure actions without claiming line-level formal proof of the full codebase.
 - 2026-06-17T04:10:49Z: Each repository surface in the JSON map now carries an S0-S6 proof ladder so future hardening rounds can move from surface objective to contract, executable evidence, implementation mapping, proof obligations, machine checks, and assumptions.
+- 2026-06-17T04:17:02Z: The first source-level proof rung targets the pure Rust domain transition kernel with Kani bounded model checking. This increases implementation rigor without claiming full line-by-line proof for services, SQL, frontend, or infrastructure.
+- 2026-06-17T04:25:00Z: Internal transition guards are typed as `Guard` and bounded by `GuardSet` for proof and runtime decision logic, while public guard result names remain stable strings. This keeps the Kani proof finite and prevents string/iterator internals from dominating the source proof.
+- 2026-06-17T04:28:02Z: Repository surface coverage now has a `source_level_proof` axis. The only closed source-proof surface is `rust_domain_core`; the integrated map still records a 0.0 full line-level Rust proof ratio.
 
 ## Defects / Failures
 | Timestamp | Failure | Root-Cause Hypothesis | Mitigation | Follow-Up Gate |
@@ -261,6 +273,9 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 | 2026-06-17T03:03:49Z | Initial post-liveness `make smoke` and `make smoke-failure-paths` attempts returned HTTP 404. | The long-running Compose API container was serving a stale image from before the current `/ready` route and liveness changes. | Run `make dev-reset` and fresh `make dev-up` to rebuild current images before rerunning smoke gates. | Formal liveness coverage |
 | 2026-06-17T03:06:00Z | `make smoke` stalled at `Created` and failed after polling. | DB-backed tests had inserted outbox events while runtime workers were up; after test cleanup, a stale queued event made the transfer-agent worker return `record not found` and exit because the consumer propagated handler errors. | Make queue consumers log per-message failures and continue; leave handler/inbox failures for retry, delete malformed poison messages, add worker tests, rebuild runtime, and rerun smoke gates. | Formal liveness coverage |
 | 2026-06-17T03:28:01Z | GitHub Actions run `27663616349` failed. | The `Postgres, LocalStack, and Smoke Gates` job installed `awscli` with apt, but `awscli` has no installation candidate on the current Ubuntu 24.04 runner image. | Install AWS CLI with `python3 -m pip install --user awscli` and add `$HOME/.local/bin` to `GITHUB_PATH`, then rerun CI. | Gate 13 CI monitoring |
+| 2026-06-17T04:17:02Z | `cargo kani --version` failed. | Kani was not installed in the local Rust toolchain. | Installed `kani-verifier v0.67.0` with Cargo and ran `cargo kani setup`. | Targeted Rust source proof ladder |
+| 2026-06-17T04:22:00Z | Initial Kani source-proof attempts were interrupted. | The first proof shape exposed string guard comparison and then a fallback slice iterator branch, causing unnecessary low-level unwinding. | Replace internal string guards with typed `Guard`, then replace guard slices with bounded `GuardSet`; rerun Kani successfully. | Targeted Rust source proof ladder |
+| 2026-06-17T04:30:05Z | `make validate` failed at clippy. | `DomainEvent` now derives `Copy` for proof-friendly static event slices, and one persistence event envelope path still cloned it. | Remove the stale clone, then rerun workspace clippy, persistence tests, and full validation. | Targeted Rust source proof ladder |
 
 ## Environment
 - OS: Darwin Tao.local 25.5.0 arm64
@@ -283,6 +298,7 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 
 ## Final Verification
 - `make validate` passed.
+- `make validate-source-proofs` passed with 6 Kani harnesses and 0 failures.
 - `make validate-tla` passed.
 - `make validate-liveness` passed with TLAPS theorem evidence required where feasible.
 - `make dev-up` passed; `make dev-down` passed after smoke validation.

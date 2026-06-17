@@ -25,24 +25,38 @@
     "closed_surface_count": 15,
     "needs_work_surface_count": 0,
     "surface_closure_ratio": 1.0,
-    "mapped_file_count": 190,
+    "mapped_file_count": 194,
     "unmapped_file_count": 0,
     "conflicting_file_count": 0,
-    "all_mappable_file_count": 190,
+    "all_mappable_file_count": 194,
     "file_mapping_ratio": 1.0,
-    "line_count": 26762,
+    "line_count": 27298,
     "formalized_surface_count": 6,
     "formalized_surface_ratio": 0.4,
-    "formalized_file_count": 66,
-    "formalized_file_ratio": 0.3474,
-    "formalized_line_count": 10282,
-    "formalized_line_ratio": 0.3842,
+    "formalized_file_count": 67,
+    "formalized_file_ratio": 0.3454,
+    "formalized_line_count": 10621,
+    "formalized_line_ratio": 0.3891,
     "rust_file_count": 40,
-    "rust_line_count": 5024,
+    "rust_line_count": 5303,
     "rust_test_function_count_static": 43,
     "source_level_rust_verification": {
       "line_level_rust_formal_proof_ratio": 0.0,
-      "reason": "The repo proves an abstract protocol and checks Rust trace/refinement evidence; it does not prove every Rust source line.",
+      "targeted_source_proof_rust_surface_count": 1,
+      "targeted_source_proof_rust_surface_ratio": 0.1667,
+      "targeted_source_proofs": [
+        {
+          "tool": "Kani",
+          "surface_id": "rust_domain_core",
+          "crate": "institutional-yield-domain",
+          "path": "crates/domain/src/sweep.rs",
+          "harness_count": 6,
+          "command": "make validate-source-proofs",
+          "claim": "Bounded source-level proof over the finite sweep transition kernel and guard combinations.",
+          "status": "closed"
+        }
+      ],
+      "reason": "The repo proves an abstract protocol, checks Rust trace/refinement evidence, and now has one targeted Kani source proof; it still does not prove every Rust source line.",
       "abstract_rust_to_tla_refinement": {
         "command_count": 19,
         "transition_path_count": 38,
@@ -91,7 +105,7 @@
       "coverage_score": 1.0,
       "formal_scope": "none",
       "file_count": 13,
-      "line_count": 6901,
+      "line_count": 6926,
       "rust_file_count": 0,
       "test_function_count_static": 0,
       "required_axes": [
@@ -241,7 +255,7 @@
       "coverage_score": 1.0,
       "formal_scope": "none",
       "file_count": 4,
-      "line_count": 198,
+      "line_count": 204,
       "rust_file_count": 0,
       "test_function_count_static": 0,
       "required_axes": [
@@ -388,7 +402,7 @@
       "coverage_score": 1.0,
       "formal_scope": "abstract_protocol_safety_and_bounded_liveness",
       "file_count": 15,
-      "line_count": 2159,
+      "line_count": 2163,
       "rust_file_count": 0,
       "test_function_count_static": 0,
       "required_axes": [
@@ -571,7 +585,7 @@
       "coverage_score": 1.0,
       "formal_scope": "meta_coverage_for_formal_artifacts",
       "file_count": 11,
-      "line_count": 3655,
+      "line_count": 3694,
       "rust_file_count": 0,
       "test_function_count_static": 0,
       "required_axes": [
@@ -940,9 +954,9 @@
       "title": "Rust Domain Core",
       "closure_status": "closed",
       "coverage_score": 1.0,
-      "formal_scope": "rust_transitions_project_to_abstract_tla_actions",
-      "file_count": 15,
-      "line_count": 1855,
+      "formal_scope": "rust_transitions_project_to_abstract_tla_actions_with_targeted_source_proof",
+      "file_count": 16,
+      "line_count": 2151,
       "rust_file_count": 14,
       "test_function_count_static": 26,
       "required_axes": [
@@ -950,6 +964,7 @@
         "specification_or_contract",
         "unit_or_property_tests",
         "formal_projection",
+        "source_level_proof",
         "drift_validator",
         "ci_gate",
         "documentation"
@@ -959,6 +974,7 @@
         "specification_or_contract",
         "unit_or_property_tests",
         "formal_projection",
+        "source_level_proof",
         "drift_validator",
         "ci_gate",
         "documentation"
@@ -966,7 +982,7 @@
       "missing_axes": [],
       "closure_actions": [],
       "hardening_frontier": [
-        "A full line-level Rust proof is not present; add Kani/Prusti/Creusot-style proofs only for narrow arithmetic or transition kernels if needed."
+        "Targeted Kani proof covers the finite transition kernel; full line-level proof for services, async workers, SQL, frontend, and infrastructure remains intentionally out of scope."
       ],
       "evidence": {
         "specification_or_contract": {
@@ -992,6 +1008,15 @@
             "spec/refinement/rust_tla_mapping.yaml"
           ]
         },
+        "source_level_proof": {
+          "commands": [
+            "make validate-source-proofs"
+          ],
+          "paths": [
+            "scripts/validate-source-proofs.sh",
+            "crates/domain/src/sweep.rs"
+          ]
+        },
         "drift_validator": {
           "paths": [
             "scripts/validate-refinement.sh",
@@ -1000,7 +1025,8 @@
         },
         "ci_gate": {
           "commands": [
-            "make validate"
+            "make validate",
+            "make validate-source-proofs"
           ],
           "paths": [
             "scripts/validate-all.sh"
@@ -1027,12 +1053,13 @@
           "commands": [
             "cargo test --workspace --all-features",
             "make validate-refinement",
+            "make validate-source-proofs",
             "make validate"
           ]
         },
         "S3_implementation_mapping": {
           "status": "closed",
-          "file_count": 15,
+          "file_count": 16,
           "representative_files": [
             "crates/domain/Cargo.toml",
             "crates/domain/src/abstract_refinement.rs",
@@ -1047,13 +1074,15 @@
             "crates/domain/tests/ledger_invariant_tests.rs",
             "crates/domain/tests/liveness_trace_tests.rs"
           ],
-          "formal_scope": "rust_transitions_project_to_abstract_tla_actions",
+          "formal_scope": "rust_transitions_project_to_abstract_tla_actions_with_targeted_source_proof",
           "evidence_paths": [
             "spec/domain/sweep_order.machine.yaml",
             "spec/tla/YieldLifecycle.tla",
             "crates/domain/tests",
             "crates/domain/src/abstract_refinement.rs",
             "spec/refinement/rust_tla_mapping.yaml",
+            "scripts/validate-source-proofs.sh",
+            "crates/domain/src/sweep.rs",
             "scripts/validate-refinement.sh",
             "scripts/validate-formal-coverage.sh",
             "scripts/validate-all.sh",
@@ -1087,6 +1116,12 @@
             "closure_action": "Map implementation traces or commands from this surface into the abstract formal protocol."
           },
           {
+            "id": "rust_domain_core.source_level_proof",
+            "axis": "source_level_proof",
+            "status": "closed",
+            "closure_action": "Add a bounded source-level proof harness for the narrow implementation kernel where theorem-prover effort is justified."
+          },
+          {
             "id": "rust_domain_core.drift_validator",
             "axis": "drift_validator",
             "status": "closed",
@@ -1110,15 +1145,16 @@
           "commands": [
             "cargo test --workspace --all-features",
             "make validate-refinement",
+            "make validate-source-proofs",
             "make validate"
           ]
         },
         "S6_assumptions_and_limits": {
           "limits": [
-            "No line-level formal proof of all Rust source is claimed; Rust coverage is by tests, runtime enforcement, and refinement evidence where applicable."
+            "A targeted source-level proof is present for the narrow Rust kernel listed in evidence; no line-level formal proof of all Rust source is claimed."
           ],
           "hardening_frontier": [
-            "A full line-level Rust proof is not present; add Kani/Prusti/Creusot-style proofs only for narrow arithmetic or transition kernels if needed."
+            "Targeted Kani proof covers the finite transition kernel; full line-level proof for services, async workers, SQL, frontend, and infrastructure remains intentionally out of scope."
           ]
         }
       },
@@ -1137,7 +1173,8 @@
         "crates/domain/tests/liveness_trace_tests.rs",
         "crates/domain/tests/refinement_trace_tests.rs",
         "crates/domain/tests/sweep_property_tests.rs",
-        "crates/domain/tests/sweep_state_machine_tests.rs"
+        "crates/domain/tests/sweep_state_machine_tests.rs",
+        "scripts/validate-source-proofs.sh"
       ]
     },
     {
@@ -2555,8 +2592,8 @@
       "closure_status": "closed",
       "coverage_score": 1.0,
       "formal_scope": "none",
-      "file_count": 43,
-      "line_count": 1645,
+      "file_count": 46,
+      "line_count": 1811,
       "rust_file_count": 0,
       "test_function_count_static": 0,
       "required_axes": [
@@ -2617,7 +2654,7 @@
         },
         "S3_implementation_mapping": {
           "status": "closed",
-          "file_count": 43,
+          "file_count": 46,
           "representative_files": [
             "docs/adr/0001-use-rust-workspace-and-shared-domain-crates.md",
             "docs/adr/0002-use-localstack-for-local-sns-sqs.md",
@@ -2726,6 +2763,9 @@
         "docs/trackers/formal-verification-implementation.md",
         "docs/trackers/formal-verification-planning.md",
         "docs/trackers/formal-verification-tracking.md",
+        "docs/trackers/targeted-rust-source-proof-implementation.md",
+        "docs/trackers/targeted-rust-source-proof-planning.md",
+        "docs/trackers/targeted-rust-source-proof-tracking.md",
         "scripts/validate-docs.sh"
       ]
     }

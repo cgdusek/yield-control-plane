@@ -34,6 +34,7 @@ Local URLs:
 
 ```bash
 make validate-tla
+make validate-source-proofs
 make validate-refinement
 make validate-formal-coverage
 make validate-formal-coverage-map

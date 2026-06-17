@@ -304,7 +304,7 @@ pub async fn apply_command(
 
     for event in outcome.emitted_events {
         let envelope = EventEnvelope::new(
-            event.clone(),
+            event,
             input.order_id,
             input.correlation_id.clone(),
             None,

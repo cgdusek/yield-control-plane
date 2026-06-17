@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ./scripts/validate-tla.sh
+./scripts/validate-source-proofs.sh
 ./scripts/validate-refinement.sh
 ./scripts/validate-formal-coverage.sh
 ./scripts/validate-formal-coverage-map.sh

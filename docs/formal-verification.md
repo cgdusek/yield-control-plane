@@ -6,6 +6,7 @@ Run the formal gate with:
 
 ```bash
 make validate-tla
+make validate-source-proofs
 make validate-refinement
 make validate-formal-coverage
 make validate-formal-coverage-map
@@ -18,7 +19,9 @@ make validate-repo-surface-coverage-map
 
 The TLA+ protocol uses raw lifecycle, ledger, and messaging actions in [YieldLifecycle.tla](../spec/tla/YieldLifecycle.tla). `Inv` includes `CurrentStatusInHistory` as an induction-strengthening invariant so historical safety claims such as active-after-reconciled and cash-credited-after-redemption-confirmed are proved from status history rather than inferred from the current status alone.
 
-The repository now provides refinement-lite evidence: [rust_tla_mapping.yaml](../spec/refinement/rust_tla_mapping.yaml) maps each Rust `SweepCommand` to a TLA action and TLAPS theorem, [abstract_refinement.rs](../crates/domain/src/abstract_refinement.rs) projects accepted Rust transitions into abstract state, and `scripts/validate-refinement.sh` rejects drift across Rust enums, TLA `Next`, Rust `TlaAction`, and TLAPS theorem names. The refinement tests also load the YAML mapping, exercise declared paths against the Rust `transition(...)` function, and fail if any accepted Rust transition lacks mapping evidence. This is executable conformance evidence, not a full source-level Rust proof.
+The repository now provides refinement-lite evidence: [rust_tla_mapping.yaml](../spec/refinement/rust_tla_mapping.yaml) maps each Rust `SweepCommand` to a TLA action and TLAPS theorem, [abstract_refinement.rs](../crates/domain/src/abstract_refinement.rs) projects accepted Rust transitions into abstract state, and `scripts/validate-refinement.sh` rejects drift across Rust enums, TLA `Next`, Rust `TlaAction`, and TLAPS theorem names. The refinement tests also load the YAML mapping, exercise declared paths against the Rust `transition(...)` function, and fail if any accepted Rust transition lacks mapping evidence.
+
+[sweep.rs](../crates/domain/src/sweep.rs) also carries a targeted Kani source-proof harness under `cfg(kani)`. `make validate-source-proofs` runs `cargo kani -p institutional-yield-domain` and proves bounded source-level obligations over the finite sweep status, command, and guard transition kernel. This is source-level evidence for the narrow domain decision table; it is not a full line-by-line proof of all Rust services, async workers, SQL behavior, frontend code, shell scripts, or infrastructure.
 
 [invariant_coverage.yaml](../spec/refinement/invariant_coverage.yaml) is the invariant-level convergence matrix. `scripts/validate-formal-coverage.sh` parses the matrix, TLA catalog, TLAPS theorems, TLC config, Rust tests, runtime enforcement files, and full validation script so an invariant cannot be marked covered without executable evidence.
 
@@ -58,6 +61,7 @@ The repository now provides refinement-lite evidence: [rust_tla_mapping.yaml](..
 
 ```bash
 make validate-tla
+make validate-source-proofs
 make validate-refinement
 make validate-formal-coverage
 make validate-formal-coverage-map
@@ -65,4 +69,4 @@ make validate-repo-surface-coverage-map
 make validate
 ```
 
-The full validation gate runs `scripts/validate-tla.sh`, `scripts/validate-refinement.sh`, `scripts/validate-formal-coverage.sh`, `scripts/validate-formal-coverage-map.sh`, and `scripts/validate-repo-surface-coverage-map.sh` before specs, Kubernetes manifests, docs, Rust, and frontend checks.
+The full validation gate runs `scripts/validate-tla.sh`, `scripts/validate-source-proofs.sh`, `scripts/validate-refinement.sh`, `scripts/validate-formal-coverage.sh`, `scripts/validate-formal-coverage-map.sh`, and `scripts/validate-repo-surface-coverage-map.sh` before specs, Kubernetes manifests, docs, Rust, and frontend checks.
