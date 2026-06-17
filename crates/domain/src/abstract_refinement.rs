@@ -99,10 +99,32 @@ impl TlaAction {
     }
 
     pub fn for_outcome(outcome: &TransitionOutcome) -> RefinementResult<Self> {
+        let action = TlaAction::for_parts(outcome.from_status, outcome.command, outcome.to_status)
+            .ok_or(RefinementError::UnmappedTransition {
+                from: outcome.from_status,
+                command: outcome.command,
+                to: outcome.to_status,
+            })?;
+
+        if action != TlaAction::for_command(outcome.command) {
+            return Err(RefinementError::CommandActionMismatch {
+                command: outcome.command,
+                action,
+            });
+        }
+
+        Ok(action)
+    }
+
+    fn for_parts(
+        from_status: SweepStatus,
+        command: SweepCommand,
+        to_status: SweepStatus,
+    ) -> Option<Self> {
         use SweepCommand as Command;
         use SweepStatus as Status;
 
-        let action = match (outcome.from_status, outcome.command, outcome.to_status) {
+        Some(match (from_status, command, to_status) {
             (Status::Created, Command::CheckEligibility, Status::EligibilityChecked) => {
                 TlaAction::CheckEligibility
             }
@@ -184,23 +206,8 @@ impl TlaAction {
             (Status::ExceptionOpen, Command::CloseException, Status::ExceptionClosed) => {
                 TlaAction::CloseException
             }
-            _ => {
-                return Err(RefinementError::UnmappedTransition {
-                    from: outcome.from_status,
-                    command: outcome.command,
-                    to: outcome.to_status,
-                });
-            }
-        };
-
-        if action != TlaAction::for_command(outcome.command) {
-            return Err(RefinementError::CommandActionMismatch {
-                command: outcome.command,
-                action,
-            });
-        }
-
-        Ok(action)
+            _ => return None,
+        })
     }
 }
 
@@ -376,6 +383,171 @@ impl AbstractSweepState {
             .insert(self.product_asset.symbol().to_string());
         if self.status == SweepStatus::PositionBooked {
             self.position_booked = true;
+        }
+    }
+}
+
+#[cfg(kani)]
+mod source_proofs {
+    use super::*;
+
+    fn any_status() -> SweepStatus {
+        match kani::any::<u8>() % SweepStatus::ALL.len() as u8 {
+            0 => SweepStatus::Created,
+            1 => SweepStatus::EligibilityChecked,
+            2 => SweepStatus::DisclosureChecked,
+            3 => SweepStatus::Approved,
+            4 => SweepStatus::CashLocked,
+            5 => SweepStatus::SubscriptionSubmitted,
+            6 => SweepStatus::TransferAgentConfirmed,
+            7 => SweepStatus::ChainMirrorObserved,
+            8 => SweepStatus::PositionBooked,
+            9 => SweepStatus::Reconciled,
+            10 => SweepStatus::Active,
+            11 => SweepStatus::RedemptionRequested,
+            12 => SweepStatus::SharesReserved,
+            13 => SweepStatus::RedemptionSubmitted,
+            14 => SweepStatus::RedemptionConfirmed,
+            15 => SweepStatus::CashCredited,
+            16 => SweepStatus::Settled,
+            17 => SweepStatus::ExceptionOpen,
+            18 => SweepStatus::ExceptionClosed,
+            _ => SweepStatus::Cancelled,
+        }
+    }
+
+    fn any_command() -> SweepCommand {
+        match kani::any::<u8>() % SweepCommand::ALL.len() as u8 {
+            0 => SweepCommand::CheckEligibility,
+            1 => SweepCommand::CheckDisclosures,
+            2 => SweepCommand::Approve,
+            3 => SweepCommand::LockCash,
+            4 => SweepCommand::SubmitSubscription,
+            5 => SweepCommand::ConfirmTransferAgent,
+            6 => SweepCommand::ObserveChainMirror,
+            7 => SweepCommand::BookPosition,
+            8 => SweepCommand::Reconcile,
+            9 => SweepCommand::Activate,
+            10 => SweepCommand::RequestRedemption,
+            11 => SweepCommand::ReserveShares,
+            12 => SweepCommand::SubmitRedemption,
+            13 => SweepCommand::ConfirmRedemption,
+            14 => SweepCommand::CreditCash,
+            15 => SweepCommand::SettleRedemption,
+            16 => SweepCommand::OpenException,
+            17 => SweepCommand::CloseException,
+            _ => SweepCommand::Cancel,
+        }
+    }
+
+    fn pre_submission_status(status: SweepStatus) -> bool {
+        matches!(
+            status,
+            SweepStatus::Created
+                | SweepStatus::EligibilityChecked
+                | SweepStatus::DisclosureChecked
+                | SweepStatus::Approved
+        )
+    }
+
+    fn exception_openable_status(status: SweepStatus) -> bool {
+        matches!(
+            status,
+            SweepStatus::Created
+                | SweepStatus::EligibilityChecked
+                | SweepStatus::DisclosureChecked
+                | SweepStatus::Approved
+                | SweepStatus::CashLocked
+                | SweepStatus::SubscriptionSubmitted
+                | SweepStatus::TransferAgentConfirmed
+                | SweepStatus::ChainMirrorObserved
+                | SweepStatus::PositionBooked
+                | SweepStatus::Reconciled
+                | SweepStatus::Active
+                | SweepStatus::RedemptionRequested
+                | SweepStatus::SharesReserved
+                | SweepStatus::RedemptionSubmitted
+                | SweepStatus::RedemptionConfirmed
+                | SweepStatus::CashCredited
+        )
+    }
+
+    #[kani::proof]
+    fn mapped_parts_always_match_command_action() {
+        let from = any_status();
+        let command = any_command();
+        let to = any_status();
+
+        if let Some(action) = TlaAction::for_parts(from, command, to) {
+            assert!(action == TlaAction::for_command(command));
+        }
+    }
+
+    #[kani::proof]
+    fn mapped_activate_only_from_reconciled_to_active() {
+        let from = any_status();
+        let command = any_command();
+        let to = any_status();
+
+        if let Some(TlaAction::Activate) = TlaAction::for_parts(from, command, to) {
+            assert!(from == SweepStatus::Reconciled);
+            assert!(command == SweepCommand::Activate);
+            assert!(to == SweepStatus::Active);
+        }
+    }
+
+    #[kani::proof]
+    fn mapped_book_position_has_transfer_agent_source_status() {
+        let from = any_status();
+        let command = any_command();
+        let to = any_status();
+
+        if let Some(TlaAction::BookPosition) = TlaAction::for_parts(from, command, to) {
+            assert!(
+                from == SweepStatus::TransferAgentConfirmed
+                    || from == SweepStatus::ChainMirrorObserved
+            );
+            assert!(command == SweepCommand::BookPosition);
+            assert!(to == SweepStatus::PositionBooked);
+        }
+    }
+
+    #[kani::proof]
+    fn mapped_credit_cash_only_from_redemption_confirmed() {
+        let from = any_status();
+        let command = any_command();
+        let to = any_status();
+
+        if let Some(TlaAction::CreditCash) = TlaAction::for_parts(from, command, to) {
+            assert!(from == SweepStatus::RedemptionConfirmed);
+            assert!(command == SweepCommand::CreditCash);
+            assert!(to == SweepStatus::CashCredited);
+        }
+    }
+
+    #[kani::proof]
+    fn mapped_cancel_is_limited_to_pre_submission() {
+        let from = any_status();
+        let command = any_command();
+        let to = any_status();
+
+        if let Some(TlaAction::Cancel) = TlaAction::for_parts(from, command, to) {
+            assert!(pre_submission_status(from));
+            assert!(command == SweepCommand::Cancel);
+            assert!(to == SweepStatus::Cancelled);
+        }
+    }
+
+    #[kani::proof]
+    fn mapped_open_exception_excludes_terminal_statuses() {
+        let from = any_status();
+        let command = any_command();
+        let to = any_status();
+
+        if let Some(TlaAction::OpenException) = TlaAction::for_parts(from, command, to) {
+            assert!(exception_openable_status(from));
+            assert!(command == SweepCommand::OpenException);
+            assert!(to == SweepStatus::ExceptionOpen);
         }
     }
 }

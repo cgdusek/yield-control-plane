@@ -8,10 +8,10 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 - Preserved project copy: `spec/source/fidelity_defi_yield_platform_spec.md` (pending Gate 1)
 
 ## Current Gate
-- Gate: Targeted Rust source proof ladder
+- Gate: Sane formal ladder continuation
 - Status: Passed
-- Start Time: 2026-06-17T04:17:02Z
-- End Time: 2026-06-17T04:31:28Z
+- Start Time: 2026-06-17T04:37:00Z
+- End Time: 2026-06-17T04:44:38Z
 
 ## Gate Status Table
 | Gate | Objective | Status | Evidence | Last Updated |
@@ -37,6 +37,7 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 | Formal coverage JSON mapping | Deterministic JSON map for safety/liveness/refinement coverage closure planning | Passed | `spec/refinement/formal_coverage_map.json`, `make validate-formal-coverage-map`, `make validate` | 2026-06-17T04:01:51Z |
 | Repository surface coverage JSON mapping | Quantify validation coverage across all repo surfaces and closure frontiers | Passed | `spec/refinement/repo_surface_coverage_map.json`, `make validate-repo-surface-coverage-map`, `make validate` | 2026-06-17T04:10:49Z |
 | Targeted Rust source proof ladder | Add bounded source-level proof for the domain transition kernel and track it in JSON | Passed | `make validate-source-proofs`, `make validate`, repo surface JSON source-proof axis | 2026-06-17T04:31:28Z |
+| Sane formal ladder continuation | Add the next bounded source-proof rungs and stop only at recorded non-sane boundaries | Passed | `make validate`; 14/14 named Kani source-proof obligations closed; remaining Rust source-proof boundaries recorded in JSON | 2026-06-17T04:44:38Z |
 
 ## Requirements Traceability Summary
 - Domain model and state machine: `spec/domain/sweep_order.machine.yaml`, `crates/domain`, domain tests.
@@ -217,6 +218,8 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 | 2026-06-17T04:30:40Z | `cargo fmt --all --check`; `cargo clippy --workspace --all-targets --all-features -- -D warnings`; `cargo test -p institutional-yield-persistence --all-features` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Removed stale `DomainEvent` clone in persistence and verified formatting, clippy, and persistence tests. |
 | 2026-06-17T04:31:28Z | `make validate`; `test ! -d .tlacache && test ! -d states`; `git status --short`; repo surface JSON summary query | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Full gate passed with TLAPS/TLC, Kani 6/6, coverage validators, docs, Rust, frontend checks; generated TLA state is clean. |
 | 2026-06-17T04:32:42Z | `make generate-repo-surface-coverage-map`; `make validate-docs`; `make validate-repo-surface-coverage-map`; `make validate-formal-coverage-map`; `git diff --check`; `test ! -d .tlacache && test ! -d states` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Final tracker closure edits are reflected in the generated surface map; docs and whitespace validate; generated TLA state remains clean. |
+| 2026-06-17T04:41:32Z | `cargo test -p institutional-yield-domain --all-features`; `make validate-source-proofs`; `make generate-repo-surface-coverage-map`; `make validate-repo-surface-coverage-map`; `make validate-docs` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Added Rust-to-TLA mapping and built-in asset classifier Kani rungs; Kani reports 14 harnesses and JSON records 14/14 source-proof obligations closed. |
+| 2026-06-17T04:44:38Z | `make validate` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Full validation gate passed with TLAPS 131+1 obligations, TLC safety/liveness checks, 14 Kani source-proof harnesses, refinement/formal/liveness/repo coverage drift validators, specs, k8s manifests, docs, Rust fmt/clippy/tests, and frontend checks. |
 
 ## Decisions Made
 - 2026-06-16T14:48:00Z: User added a hard constraint that no artifact may be ornamental, decorative, inert, or merely skeletal. Every artifact must be executable, validated, enforced by tests/scripts/policies, or explicitly tracked as a bounded deferral. Added to `AGENTS.md` and `docs/agentic/working-agreement.md`.
@@ -235,6 +238,9 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 - 2026-06-17T04:17:02Z: The first source-level proof rung targets the pure Rust domain transition kernel with Kani bounded model checking. This increases implementation rigor without claiming full line-by-line proof for services, SQL, frontend, or infrastructure.
 - 2026-06-17T04:25:00Z: Internal transition guards are typed as `Guard` and bounded by `GuardSet` for proof and runtime decision logic, while public guard result names remain stable strings. This keeps the Kani proof finite and prevents string/iterator internals from dominating the source proof.
 - 2026-06-17T04:28:02Z: Repository surface coverage now has a `source_level_proof` axis. The only closed source-proof surface is `rust_domain_core`; the integrated map still records a 0.0 full line-level Rust proof ratio.
+- 2026-06-17T04:37:00Z: The next sane rung targets Rust-to-TLA action mapping as a pure bounded source-proof kernel. Ledger/SQL, workers, API, and frontend remain better served by TLAPS/TLC, runtime constraints, property tests, smoke tests, and drift validators unless a narrow pure helper emerges.
+- 2026-06-17T04:41:32Z: Source-proof coverage accounting must require named Kani obligations, not just count harnesses. The generated JSON now records 14 required source-proof obligations and classifies remaining Rust surfaces as covered by other gates.
+- 2026-06-17T04:44:38Z: The sane source-proof ladder is complete for the current repo state. Closed rungs are built-in asset classification, the sweep transition kernel, and Rust-to-TLA action mapping; remaining Rust surfaces stay on suited validation layers instead of being forced into brittle line-level proof claims.
 
 ## Defects / Failures
 | Timestamp | Failure | Root-Cause Hypothesis | Mitigation | Follow-Up Gate |

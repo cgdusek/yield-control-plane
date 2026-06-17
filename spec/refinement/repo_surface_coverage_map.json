@@ -25,20 +25,20 @@
     "closed_surface_count": 15,
     "needs_work_surface_count": 0,
     "surface_closure_ratio": 1.0,
-    "mapped_file_count": 194,
+    "mapped_file_count": 197,
     "unmapped_file_count": 0,
     "conflicting_file_count": 0,
-    "all_mappable_file_count": 194,
+    "all_mappable_file_count": 197,
     "file_mapping_ratio": 1.0,
-    "line_count": 27298,
+    "line_count": 27801,
     "formalized_surface_count": 6,
     "formalized_surface_ratio": 0.4,
     "formalized_file_count": 67,
-    "formalized_file_ratio": 0.3454,
-    "formalized_line_count": 10621,
-    "formalized_line_ratio": 0.3891,
+    "formalized_file_ratio": 0.3401,
+    "formalized_line_count": 10963,
+    "formalized_line_ratio": 0.3943,
     "rust_file_count": 40,
-    "rust_line_count": 5303,
+    "rust_line_count": 5509,
     "rust_test_function_count_static": 43,
     "source_level_rust_verification": {
       "line_level_rust_formal_proof_ratio": 0.0,
@@ -49,14 +49,134 @@
           "tool": "Kani",
           "surface_id": "rust_domain_core",
           "crate": "institutional-yield-domain",
-          "path": "crates/domain/src/sweep.rs",
-          "harness_count": 6,
+          "paths": [
+            "crates/domain/src/asset.rs",
+            "crates/domain/src/sweep.rs",
+            "crates/domain/src/abstract_refinement.rs"
+          ],
+          "harness_count": 14,
+          "obligation_count": 14,
+          "closed_obligation_count": 14,
+          "obligations": [
+            {
+              "id": "asset.fidd_only_builtin_forbidden_yield_source",
+              "path": "crates/domain/src/asset.rs",
+              "harness": "fidd_is_the_only_builtin_asset_forbidden_as_yield_source",
+              "status": "closed"
+            },
+            {
+              "id": "asset.builtin_cash_rails_exact",
+              "path": "crates/domain/src/asset.rs",
+              "harness": "builtin_cash_rails_are_exactly_usd_and_fidd",
+              "status": "closed"
+            },
+            {
+              "id": "transition.accepted_transitions_never_stutter",
+              "path": "crates/domain/src/sweep.rs",
+              "harness": "accepted_transitions_never_stutter_and_preserve_source_command",
+              "status": "closed"
+            },
+            {
+              "id": "transition.active_requires_reconciled_source",
+              "path": "crates/domain/src/sweep.rs",
+              "harness": "active_can_only_be_reached_by_activate_from_reconciled",
+              "status": "closed"
+            },
+            {
+              "id": "transition.cash_credit_requires_redemption_confirmation",
+              "path": "crates/domain/src/sweep.rs",
+              "harness": "cash_credited_can_only_be_reached_after_redemption_confirmation",
+              "status": "closed"
+            },
+            {
+              "id": "transition.position_booking_requires_transfer_agent_confirmation",
+              "path": "crates/domain/src/sweep.rs",
+              "harness": "position_booked_requires_transfer_agent_confirmation",
+              "status": "closed"
+            },
+            {
+              "id": "transition.cancel_pre_submission_only",
+              "path": "crates/domain/src/sweep.rs",
+              "harness": "cancellation_is_limited_to_pre_submission_states",
+              "status": "closed"
+            },
+            {
+              "id": "transition.exception_open_excludes_terminal_statuses",
+              "path": "crates/domain/src/sweep.rs",
+              "harness": "exception_open_excludes_terminal_statuses",
+              "status": "closed"
+            },
+            {
+              "id": "mapping.mapped_parts_match_command_action",
+              "path": "crates/domain/src/abstract_refinement.rs",
+              "harness": "mapped_parts_always_match_command_action",
+              "status": "closed"
+            },
+            {
+              "id": "mapping.activate_only_reconciled_to_active",
+              "path": "crates/domain/src/abstract_refinement.rs",
+              "harness": "mapped_activate_only_from_reconciled_to_active",
+              "status": "closed"
+            },
+            {
+              "id": "mapping.book_position_has_transfer_agent_source",
+              "path": "crates/domain/src/abstract_refinement.rs",
+              "harness": "mapped_book_position_has_transfer_agent_source_status",
+              "status": "closed"
+            },
+            {
+              "id": "mapping.credit_cash_only_redemption_confirmed",
+              "path": "crates/domain/src/abstract_refinement.rs",
+              "harness": "mapped_credit_cash_only_from_redemption_confirmed",
+              "status": "closed"
+            },
+            {
+              "id": "mapping.cancel_pre_submission_only",
+              "path": "crates/domain/src/abstract_refinement.rs",
+              "harness": "mapped_cancel_is_limited_to_pre_submission",
+              "status": "closed"
+            },
+            {
+              "id": "mapping.open_exception_excludes_terminal_statuses",
+              "path": "crates/domain/src/abstract_refinement.rs",
+              "harness": "mapped_open_exception_excludes_terminal_statuses",
+              "status": "closed"
+            }
+          ],
+          "missing_obligations": [],
           "command": "make validate-source-proofs",
-          "claim": "Bounded source-level proof over the finite sweep transition kernel and guard combinations.",
+          "claim": "Bounded source-level proof over the finite built-in asset classifier, sweep transition, and Rust-to-TLA action mapping kernels.",
           "status": "closed"
         }
       ],
-      "reason": "The repo proves an abstract protocol, checks Rust trace/refinement evidence, and now has one targeted Kani source proof; it still does not prove every Rust source line.",
+      "remaining_source_level_boundaries": [
+        {
+          "surface_id": "rust_persistence_and_sql",
+          "status": "covered_by_other_gates",
+          "reason": "Postgres constraints, triggers, migrations, and SQLx repository behavior are covered by DB-backed tests, runtime constraints, and formal invariant mapping; source-level Rust proof would not prove Postgres execution semantics."
+        },
+        {
+          "surface_id": "rust_messaging_localstack",
+          "status": "covered_by_other_gates",
+          "reason": "SNS/SQS behavior depends on AWS SDK and LocalStack/network semantics, so the sane proof layer is abstract TLA+/TLC plus worker tests and smoke gates."
+        },
+        {
+          "surface_id": "rust_api_service",
+          "status": "covered_by_other_gates",
+          "reason": "HTTP extraction, middleware, and OpenAPI conformance are covered by route tests, spec validation, and smoke gates; Kani over the async service stack would add little assurance without a large model rewrite."
+        },
+        {
+          "surface_id": "rust_workers_and_mocks",
+          "status": "covered_by_other_gates",
+          "reason": "Worker progress depends on async queues, persistence, and external simulator behavior, so it is covered by liveness models, unit tests, DB tests, and smoke/failure-path gates."
+        },
+        {
+          "surface_id": "shared_rust_infra",
+          "status": "covered_by_other_gates",
+          "reason": "Config and observability code is small and runtime-enforced by tests; no critical pure finite protocol kernel is present."
+        }
+      ],
+      "reason": "The repo proves an abstract protocol, checks Rust trace/refinement evidence, and now has targeted Kani source proofs for pure finite domain kernels; it still does not prove every Rust source line.",
       "abstract_rust_to_tla_refinement": {
         "command_count": 19,
         "transition_path_count": 38,
@@ -105,7 +225,7 @@
       "coverage_score": 1.0,
       "formal_scope": "none",
       "file_count": 13,
-      "line_count": 6926,
+      "line_count": 6932,
       "rust_file_count": 0,
       "test_function_count_static": 0,
       "required_axes": [
@@ -585,7 +705,7 @@
       "coverage_score": 1.0,
       "formal_scope": "meta_coverage_for_formal_artifacts",
       "file_count": 11,
-      "line_count": 3694,
+      "line_count": 3830,
       "rust_file_count": 0,
       "test_function_count_static": 0,
       "required_axes": [
@@ -956,7 +1076,7 @@
       "coverage_score": 1.0,
       "formal_scope": "rust_transitions_project_to_abstract_tla_actions_with_targeted_source_proof",
       "file_count": 16,
-      "line_count": 2151,
+      "line_count": 2357,
       "rust_file_count": 14,
       "test_function_count_static": 26,
       "required_axes": [
@@ -982,7 +1102,7 @@
       "missing_axes": [],
       "closure_actions": [],
       "hardening_frontier": [
-        "Targeted Kani proof covers the finite transition kernel; full line-level proof for services, async workers, SQL, frontend, and infrastructure remains intentionally out of scope."
+        "Targeted Kani proof covers the finite built-in asset classifier, transition, and Rust-to-TLA mapping kernels; full line-level proof for services, async workers, SQL, frontend, and infrastructure remains intentionally out of scope."
       ],
       "evidence": {
         "specification_or_contract": {
@@ -1014,7 +1134,9 @@
           ],
           "paths": [
             "scripts/validate-source-proofs.sh",
-            "crates/domain/src/sweep.rs"
+            "crates/domain/src/asset.rs",
+            "crates/domain/src/sweep.rs",
+            "crates/domain/src/abstract_refinement.rs"
           ]
         },
         "drift_validator": {
@@ -1082,6 +1204,7 @@
             "crates/domain/src/abstract_refinement.rs",
             "spec/refinement/rust_tla_mapping.yaml",
             "scripts/validate-source-proofs.sh",
+            "crates/domain/src/asset.rs",
             "crates/domain/src/sweep.rs",
             "scripts/validate-refinement.sh",
             "scripts/validate-formal-coverage.sh",
@@ -1154,7 +1277,7 @@
             "A targeted source-level proof is present for the narrow Rust kernel listed in evidence; no line-level formal proof of all Rust source is claimed."
           ],
           "hardening_frontier": [
-            "Targeted Kani proof covers the finite transition kernel; full line-level proof for services, async workers, SQL, frontend, and infrastructure remains intentionally out of scope."
+            "Targeted Kani proof covers the finite built-in asset classifier, transition, and Rust-to-TLA mapping kernels; full line-level proof for services, async workers, SQL, frontend, and infrastructure remains intentionally out of scope."
           ]
         }
       },
@@ -2592,8 +2715,8 @@
       "closure_status": "closed",
       "coverage_score": 1.0,
       "formal_scope": "none",
-      "file_count": 46,
-      "line_count": 1811,
+      "file_count": 49,
+      "line_count": 1966,
       "rust_file_count": 0,
       "test_function_count_static": 0,
       "required_axes": [
@@ -2654,7 +2777,7 @@
         },
         "S3_implementation_mapping": {
           "status": "closed",
-          "file_count": 46,
+          "file_count": 49,
           "representative_files": [
             "docs/adr/0001-use-rust-workspace-and-shared-domain-crates.md",
             "docs/adr/0002-use-localstack-for-local-sns-sqs.md",
@@ -2763,6 +2886,9 @@
         "docs/trackers/formal-verification-implementation.md",
         "docs/trackers/formal-verification-planning.md",
         "docs/trackers/formal-verification-tracking.md",
+        "docs/trackers/sane-formal-ladder-continuation-implementation.md",
+        "docs/trackers/sane-formal-ladder-continuation-planning.md",
+        "docs/trackers/sane-formal-ladder-continuation-tracking.md",
         "docs/trackers/targeted-rust-source-proof-implementation.md",
         "docs/trackers/targeted-rust-source-proof-planning.md",
         "docs/trackers/targeted-rust-source-proof-tracking.md",

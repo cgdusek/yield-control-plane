@@ -56,3 +56,37 @@ impl FromStr for Asset {
         })
     }
 }
+
+#[cfg(kani)]
+mod source_proofs {
+    use super::*;
+
+    fn any_builtin_asset() -> Asset {
+        match kani::any::<u8>() % 4 {
+            0 => Asset::USD,
+            1 => Asset::FIDD,
+            2 => Asset::ETH,
+            _ => Asset::BTC,
+        }
+    }
+
+    #[kani::proof]
+    fn fidd_is_the_only_builtin_asset_forbidden_as_yield_source() {
+        let asset = any_builtin_asset();
+
+        if !asset.is_yield_bearing_allowed() {
+            assert!(matches!(asset, Asset::FIDD));
+        }
+    }
+
+    #[kani::proof]
+    fn builtin_cash_rails_are_exactly_usd_and_fidd() {
+        let asset = any_builtin_asset();
+
+        if asset.is_cash_rail() {
+            assert!(matches!(asset, Asset::USD | Asset::FIDD));
+        } else {
+            assert!(matches!(asset, Asset::ETH | Asset::BTC));
+        }
+    }
+}

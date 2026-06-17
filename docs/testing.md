@@ -47,7 +47,7 @@ These gates prove the event path, LocalStack fanout, worker transitions, mock tr
 make validate
 ```
 
-`make validate` is intended for CI and local pre-commit verification. It runs TLA parsing/proofs/model checking, targeted Kani source proofs for the Rust domain transition kernel, Rust-to-TLA mapping validation, invariant coverage validation, generated coverage-map drift checks, liveness coverage validation, specs, Kubernetes manifest validation, docs validation, Rust formatting, clippy, Rust tests, frontend install, frontend typecheck, frontend lint, and frontend tests.
+`make validate` is intended for CI and local pre-commit verification. It runs TLA parsing/proofs/model checking, targeted Kani source proofs for the built-in asset classifier, Rust domain transition, and Rust-to-TLA mapping kernels, Rust-to-TLA mapping validation, invariant coverage validation, generated coverage-map drift checks, liveness coverage validation, specs, Kubernetes manifest validation, docs validation, Rust formatting, clippy, Rust tests, frontend install, frontend typecheck, frontend lint, and frontend tests.
 
 ## CI
 

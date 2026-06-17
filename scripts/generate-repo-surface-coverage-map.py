@@ -14,6 +14,90 @@ from typing import Any
 
 DEFAULT_OUTPUT = Path("spec/refinement/repo_surface_coverage_map.json")
 DERIVED_SELF_ARTIFACTS = {str(DEFAULT_OUTPUT)}
+SOURCE_PROOF_PATHS = [
+    "crates/domain/src/asset.rs",
+    "crates/domain/src/sweep.rs",
+    "crates/domain/src/abstract_refinement.rs",
+]
+SOURCE_PROOF_OBLIGATIONS = [
+    {
+        "id": "asset.fidd_only_builtin_forbidden_yield_source",
+        "path": "crates/domain/src/asset.rs",
+        "harness": "fidd_is_the_only_builtin_asset_forbidden_as_yield_source",
+    },
+    {
+        "id": "asset.builtin_cash_rails_exact",
+        "path": "crates/domain/src/asset.rs",
+        "harness": "builtin_cash_rails_are_exactly_usd_and_fidd",
+    },
+    {
+        "id": "transition.accepted_transitions_never_stutter",
+        "path": "crates/domain/src/sweep.rs",
+        "harness": "accepted_transitions_never_stutter_and_preserve_source_command",
+    },
+    {
+        "id": "transition.active_requires_reconciled_source",
+        "path": "crates/domain/src/sweep.rs",
+        "harness": "active_can_only_be_reached_by_activate_from_reconciled",
+    },
+    {
+        "id": "transition.cash_credit_requires_redemption_confirmation",
+        "path": "crates/domain/src/sweep.rs",
+        "harness": "cash_credited_can_only_be_reached_after_redemption_confirmation",
+    },
+    {
+        "id": "transition.position_booking_requires_transfer_agent_confirmation",
+        "path": "crates/domain/src/sweep.rs",
+        "harness": "position_booked_requires_transfer_agent_confirmation",
+    },
+    {
+        "id": "transition.cancel_pre_submission_only",
+        "path": "crates/domain/src/sweep.rs",
+        "harness": "cancellation_is_limited_to_pre_submission_states",
+    },
+    {
+        "id": "transition.exception_open_excludes_terminal_statuses",
+        "path": "crates/domain/src/sweep.rs",
+        "harness": "exception_open_excludes_terminal_statuses",
+    },
+    {
+        "id": "mapping.mapped_parts_match_command_action",
+        "path": "crates/domain/src/abstract_refinement.rs",
+        "harness": "mapped_parts_always_match_command_action",
+    },
+    {
+        "id": "mapping.activate_only_reconciled_to_active",
+        "path": "crates/domain/src/abstract_refinement.rs",
+        "harness": "mapped_activate_only_from_reconciled_to_active",
+    },
+    {
+        "id": "mapping.book_position_has_transfer_agent_source",
+        "path": "crates/domain/src/abstract_refinement.rs",
+        "harness": "mapped_book_position_has_transfer_agent_source_status",
+    },
+    {
+        "id": "mapping.credit_cash_only_redemption_confirmed",
+        "path": "crates/domain/src/abstract_refinement.rs",
+        "harness": "mapped_credit_cash_only_from_redemption_confirmed",
+    },
+    {
+        "id": "mapping.cancel_pre_submission_only",
+        "path": "crates/domain/src/abstract_refinement.rs",
+        "harness": "mapped_cancel_is_limited_to_pre_submission",
+    },
+    {
+        "id": "mapping.open_exception_excludes_terminal_statuses",
+        "path": "crates/domain/src/abstract_refinement.rs",
+        "harness": "mapped_open_exception_excludes_terminal_statuses",
+    },
+]
+SOURCE_PROOF_BOUNDARY_REASONS = {
+    "rust_persistence_and_sql": "Postgres constraints, triggers, migrations, and SQLx repository behavior are covered by DB-backed tests, runtime constraints, and formal invariant mapping; source-level Rust proof would not prove Postgres execution semantics.",
+    "rust_messaging_localstack": "SNS/SQS behavior depends on AWS SDK and LocalStack/network semantics, so the sane proof layer is abstract TLA+/TLC plus worker tests and smoke gates.",
+    "rust_api_service": "HTTP extraction, middleware, and OpenAPI conformance are covered by route tests, spec validation, and smoke gates; Kani over the async service stack would add little assurance without a large model rewrite.",
+    "rust_workers_and_mocks": "Worker progress depends on async queues, persistence, and external simulator behavior, so it is covered by liveness models, unit tests, DB tests, and smoke/failure-path gates.",
+    "shared_rust_infra": "Config and observability code is small and runtime-enforced by tests; no critical pure finite protocol kernel is present.",
+}
 
 
 AXIS_ACTIONS = {
@@ -180,14 +264,14 @@ SURFACES: tuple[Surface, ...] = (
             "formal_projection": {"commands": ["make validate-refinement"], "paths": ["crates/domain/src/abstract_refinement.rs", "spec/refinement/rust_tla_mapping.yaml"]},
             "source_level_proof": {
                 "commands": ["make validate-source-proofs"],
-                "paths": ["scripts/validate-source-proofs.sh", "crates/domain/src/sweep.rs"],
+                "paths": ["scripts/validate-source-proofs.sh", *SOURCE_PROOF_PATHS],
             },
             "drift_validator": {"paths": ["scripts/validate-refinement.sh", "scripts/validate-formal-coverage.sh"]},
             "ci_gate": {"commands": ["make validate", "make validate-source-proofs"], "paths": ["scripts/validate-all.sh"]},
             "documentation": {"paths": ["docs/formal-verification.md", "docs/traceability.md"]},
         },
         formal_scope="rust_transitions_project_to_abstract_tla_actions_with_targeted_source_proof",
-        hardening_frontier=("Targeted Kani proof covers the finite transition kernel; full line-level proof for services, async workers, SQL, frontend, and infrastructure remains intentionally out of scope.",),
+        hardening_frontier=("Targeted Kani proof covers the finite built-in asset classifier, transition, and Rust-to-TLA mapping kernels; full line-level proof for services, async workers, SQL, frontend, and infrastructure remains intentionally out of scope.",),
     ),
     Surface(
         id="rust_persistence_and_sql",
@@ -367,6 +451,22 @@ def test_count(path: Path) -> int:
     return len(re.findall(r"\b(?:it|test)\s*\(", text))
 
 
+def kani_harnesses_by_path(root: Path, paths: list[str]) -> dict[str, list[str]]:
+    harnesses: dict[str, list[str]] = {}
+    for path_text in paths:
+        path = root / path_text
+        try:
+            text = path.read_text(errors="ignore")
+        except OSError:
+            harnesses[path_text] = []
+            continue
+        harnesses[path_text] = re.findall(
+            r"#\s*\[\s*kani::proof\s*\]\s*fn\s+([A-Za-z0-9_]+)\s*\(",
+            text,
+        )
+    return harnesses
+
+
 def command_known(command: str, make_targets: set[str], validate_all: str, ci_yaml: str) -> bool:
     if command.startswith("make "):
         target = command.split(maxsplit=1)[1]
@@ -538,6 +638,24 @@ def build(root: Path) -> dict[str, Any]:
     source_proved_rust_surfaces = [
         item for item in rust_surfaces if "source_level_proof" in item["present_axes"]
     ]
+    source_proof_harnesses = kani_harnesses_by_path(root, SOURCE_PROOF_PATHS)
+    source_proof_harness_count = sum(len(items) for items in source_proof_harnesses.values())
+    source_proof_obligations = []
+    for obligation in SOURCE_PROOF_OBLIGATIONS:
+        path = obligation["path"]
+        harness = obligation["harness"]
+        present = harness in source_proof_harnesses.get(path, [])
+        source_proof_obligations.append(
+            {
+                **obligation,
+                "status": "closed" if present else "needs_work",
+            }
+        )
+    missing_source_proof_obligations = [
+        obligation["id"]
+        for obligation in source_proof_obligations
+        if obligation["status"] != "closed"
+    ]
     source_level_claims = {
         "line_level_rust_formal_proof_ratio": 0.0,
         "targeted_source_proof_rust_surface_count": len(source_proved_rust_surfaces),
@@ -547,16 +665,34 @@ def build(root: Path) -> dict[str, Any]:
                 "tool": "Kani",
                 "surface_id": "rust_domain_core",
                 "crate": "institutional-yield-domain",
-                "path": "crates/domain/src/sweep.rs",
-                "harness_count": 6,
+                "paths": SOURCE_PROOF_PATHS,
+                "harness_count": source_proof_harness_count,
+                "obligation_count": len(source_proof_obligations),
+                "closed_obligation_count": len(source_proof_obligations)
+                - len(missing_source_proof_obligations),
+                "obligations": source_proof_obligations,
+                "missing_obligations": missing_source_proof_obligations,
                 "command": "make validate-source-proofs",
-                "claim": "Bounded source-level proof over the finite sweep transition kernel and guard combinations.",
+                "claim": "Bounded source-level proof over the finite built-in asset classifier, sweep transition, and Rust-to-TLA action mapping kernels.",
                 "status": "closed"
                 if any(item["id"] == "rust_domain_core" for item in source_proved_rust_surfaces)
+                and not missing_source_proof_obligations
                 else "needs_work",
             }
         ],
-        "reason": "The repo proves an abstract protocol, checks Rust trace/refinement evidence, and now has one targeted Kani source proof; it still does not prove every Rust source line.",
+        "remaining_source_level_boundaries": [
+            {
+                "surface_id": item["id"],
+                "status": "covered_by_other_gates",
+                "reason": SOURCE_PROOF_BOUNDARY_REASONS.get(
+                    item["id"],
+                    "No narrow pure finite Rust kernel has been identified for source-level proof on this surface.",
+                ),
+            }
+            for item in rust_surfaces
+            if item not in source_proved_rust_surfaces
+        ],
+        "reason": "The repo proves an abstract protocol, checks Rust trace/refinement evidence, and now has targeted Kani source proofs for pure finite domain kernels; it still does not prove every Rust source line.",
         "abstract_rust_to_tla_refinement": formal_summary.get("rust_to_tla_refinement", {}),
     }
 

@@ -5,7 +5,6 @@ Status: complete
 ## Work Breakdown
 | Phase | Scope | Primary Files | Status |
 | --- | --- | --- | --- |
-| P1 | Add Kani source-proof harness | `crates/domain/src/sweep.rs`, `scripts/validate-source-proofs.sh` | in-progress |
 | P1 | Add Kani source-proof harness | `crates/domain/src/sweep.rs`, `scripts/validate-source-proofs.sh` | complete |
 | P2 | Add proof coverage axis | `scripts/generate-*.py`, `spec/refinement/*.json` | complete |
 | P3 | Validate and close | `AGENT_TRACKER.md`, tracker docs | complete |
