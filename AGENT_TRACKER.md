@@ -9,8 +9,9 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 
 ## Current Gate
 - Gate: Gate 13 CI monitoring and GitHub Actions hardening
-- Status: In Progress
+- Status: Passed
 - Start Time: 2026-06-17T03:28:01Z
+- End Time: 2026-06-17T03:37:58Z
 
 ## Gate Status Table
 | Gate | Objective | Status | Evidence | Last Updated |
@@ -32,7 +33,7 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 | Formal extension | TLAPS/TLC verification spine and invariant traceability | Passed | `make validate-tla`, `make validate-specs`, `make validate-docs`, `make check-tools`, `make validate`; formal docs and tracking artifacts added | 2026-06-17T00:38:18Z |
 | Formal refinement hardening | Raw-action TLAPS proofs and Rust-to-TLA refinement-lite evidence | Passed | `make validate` passed with raw-action TLAPS, TLC temporal append-only check, Rust-to-TLA mapping validation, exhaustive Rust transition projection tests, and invariant coverage convergence validator | 2026-06-17T02:36:46Z |
 | Formal liveness coverage | Conditional liveness specs, bounded TLC checks, Rust progress tests, runtime evidence, and CI drift gate | Passed | `make validate`, `make smoke`, `make smoke-failure-paths`, DB-backed tests, TLAPS-feasibility validator, worker retry/delete policy tests | 2026-06-17T03:18:06Z |
-| CI monitoring and GitHub Actions hardening | Monitor pushed `main` CI and remedy until green | In Progress | Run `27663616349` failed in integration `Install OS tools`; patch pending | 2026-06-17T03:28:01Z |
+| CI monitoring and GitHub Actions hardening | Monitor pushed `main` CI and remedy until green | Passed | GitHub Actions run `27663822949` passed both static and integration jobs after CI AWS CLI install fix | 2026-06-17T03:37:58Z |
 
 ## Requirements Traceability Summary
 - Domain model and state machine: `spec/domain/sweep_order.machine.yaml`, `crates/domain`, domain tests.
@@ -198,6 +199,8 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 | 2026-06-17T03:18:06Z | `make validate-docs` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Tracker closure edits validated. |
 | 2026-06-17T03:28:01Z | `gh run view 27663616349`; `gh run watch 27663616349 --exit-status`; `gh run view 27663616349 --job 81812908849 --log` | `/Users/charlesdusek/Code/yield-control-plane` | Failed | Static job passed; integration job failed in `Install OS tools` because Ubuntu 24.04 has no `awscli` apt installation candidate. |
 | 2026-06-17T03:28:01Z | `python3 - <<'PY' ... yaml.safe_load('.github/workflows/ci.yml')`; `make validate-docs`; `git diff --check` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | CI workflow YAML, tracker docs, and whitespace checks passed after moving CI AWS CLI installation from apt to pip. |
+| 2026-06-17T03:29:43Z | `git commit -m "Fix CI AWS CLI installation"`; `git push origin main` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Pushed CI fix commit `7bbaf25` to `origin/main`. |
+| 2026-06-17T03:37:58Z | `gh run watch 27663822949 --exit-status`; `gh run view 27663822949 --json databaseId,status,conclusion,url,headSha,jobs` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | GitHub Actions `Local Gates` passed: static job completed in 4m21s; integration job completed in 7m50s with DB-backed tests, Compose runtime, smoke gates, and cleanup all green. |
 
 ## Decisions Made
 - 2026-06-16T14:48:00Z: User added a hard constraint that no artifact may be ornamental, decorative, inert, or merely skeletal. Every artifact must be executable, validated, enforced by tests/scripts/policies, or explicitly tracked as a bounded deferral. Added to `AGENTS.md` and `docs/agentic/working-agreement.md`.
