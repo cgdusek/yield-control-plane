@@ -8,6 +8,7 @@ The system is local-only by design. It uses dummy secrets, LocalStack, and mock 
 - `crates/messaging::validate_local_endpoint` rejects non-local AWS endpoints for LocalStack clients.
 - `.env.example`, Compose, Kubernetes, and LocalStack scripts use dummy AWS credentials only.
 - API write routes require `Idempotency-Key` and `Correlation-Id` headers.
+- `APP_ENV=cert` is the only runtime mode that may use AWS SDK default endpoints, and it requires `AWS_CERTIFICATION_ENABLED=1`, `AWS_REGION=us-west-2`, scoped IAM credentials, and the [AWS simulation runbook](runbooks/aws-simulation.md).
 
 ## Data Safety
 
@@ -34,4 +35,3 @@ cargo test -p institutional-yield-config
 cargo test -p institutional-yield-messaging
 make smoke-failure-paths
 ```
-

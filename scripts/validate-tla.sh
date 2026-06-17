@@ -55,6 +55,8 @@ java -cp "$TLA_TOOLS_JAR:spec/tla:$TLAPS_LIB" \
   tla2sany.SANY \
   spec/tla/YieldLifecycle.tla \
   spec/tla/YieldLiveness.tla \
+  spec/tla/YieldCertificationCapacity.tla \
+  spec/tla/YieldCertificationCapacityProofs.tla \
   spec/tla/YieldProofs.tla \
   spec/tla/no_double_sweep.tla
 
@@ -63,6 +65,9 @@ PATH="$(dirname "$TLAPM_BIN"):$TLAPS_LIB/bin:$PATH" \
 
 PATH="$(dirname "$TLAPM_BIN"):$TLAPS_LIB/bin:$PATH" \
   "$TLAPM_BIN" -I spec/tla spec/tla/no_double_sweep.tla
+
+PATH="$(dirname "$TLAPM_BIN"):$TLAPS_LIB/bin:$PATH" \
+  "$TLAPM_BIN" -I spec/tla spec/tla/YieldCertificationCapacityProofs.tla
 
 run_tlc() {
   local module="$1"
@@ -81,5 +86,6 @@ run_tlc spec/tla/YieldLifecycle.tla spec/tla/YieldControlPlane.cfg safety
 run_tlc spec/tla/YieldLiveness.tla spec/tla/YieldLiveness.cfg lifecycle-liveness
 run_tlc spec/tla/YieldLiveness.tla spec/tla/YieldExceptionLiveness.cfg exception-liveness
 run_tlc spec/tla/YieldLiveness.tla spec/tla/YieldMessagingLiveness.cfg messaging-liveness
+run_tlc spec/tla/YieldCertificationCapacity.tla spec/tla/YieldCertificationCapacity.cfg certification-capacity
 
 echo "TLA validation passed."

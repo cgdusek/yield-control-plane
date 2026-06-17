@@ -34,3 +34,6 @@ make k8s-smoke
 
 Then create a new ADR describing the production infrastructure boundary. Do not mutate the local-only ADRs to imply production readiness.
 
+## AWS Sandbox Certification Boundary
+
+The AWS simulation workstream in [AWS simulation and internal certification](aws-certification.md) is a non-production evidence workflow. Passing that workflow can support internal engineering confidence, but it does not remove the production changes listed above and does not create a regulatory, legal, financial, or deployment certification claim.

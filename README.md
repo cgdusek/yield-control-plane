@@ -28,6 +28,7 @@ Local URLs:
 - State machine: [spec/domain/sweep_order.machine.yaml](spec/domain/sweep_order.machine.yaml)
 - Formal verification: [docs/formal-verification.md](docs/formal-verification.md)
 - Liveness verification: [docs/liveness-verification.md](docs/liveness-verification.md)
+- AWS simulation and internal certification: [docs/aws-certification.md](docs/aws-certification.md)
 - Source request: [spec/source/fidelity_defi_yield_platform_spec.md](spec/source/fidelity_defi_yield_platform_spec.md)
 
 ## Validation
@@ -43,6 +44,7 @@ make validate-liveness
 make validate-specs
 make validate-k8s
 make validate-docs
+make validate-aws-certification
 make test
 make validate
 ```

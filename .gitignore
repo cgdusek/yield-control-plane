@@ -22,3 +22,7 @@ tools/tla2tools.jar
 tools/tlaps/
 web/react-console/playwright-report/
 web/react-console/test-results/
+artifacts/
+.terraform/
+*.tfstate
+*.tfstate.*

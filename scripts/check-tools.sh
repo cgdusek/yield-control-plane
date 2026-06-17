@@ -2,7 +2,7 @@
 set -euo pipefail
 
 required=(rustc cargo node npm pnpm docker make jq curl aws kubectl java)
-optional=(awslocal kind helm just tlapm)
+optional=(awslocal kind helm just tlapm tofu opentofu k6)
 
 missing=()
 for tool in "${required[@]}"; do
@@ -36,7 +36,7 @@ for tool in "${optional[@]}"; do
   elif command -v "$tool" >/dev/null 2>&1; then
     case "$tool" in
       helm) printf "  %-18s %s\n" "$tool" "$(helm version 2>&1 | head -n 1)" ;;
-      kind|just) printf "  %-18s %s\n" "$tool" "$($tool --version 2>&1 | head -n 1)" ;;
+      kind|just|tofu|opentofu|k6) printf "  %-18s %s\n" "$tool" "$($tool --version 2>&1 | head -n 1)" ;;
       *) printf "  %-18s installed\n" "$tool" ;;
     esac
   else

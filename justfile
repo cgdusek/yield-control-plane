@@ -12,6 +12,9 @@ validate-specs:
 validate-docs:
   ./scripts/validate-docs.sh
 
+validate-aws-certification:
+  ./scripts/validate-aws-certification.sh
+
 validate:
   ./scripts/validate-all.sh
 
@@ -52,3 +55,33 @@ k8s-smoke:
 
 k8s-down:
   ./scripts/smoke-k8s.sh down
+
+aws-cert-bootstrap-iam:
+  ./scripts/aws-cert-bootstrap-iam.sh
+
+aws-cert-preflight:
+  ./scripts/aws-cert-preflight.sh
+
+aws-cert-deploy:
+  ./scripts/aws-cert-deploy.sh
+
+aws-cert-run:
+  ./scripts/aws-cert-run.sh
+
+aws-cert-collect:
+  ./scripts/aws-cert-collect.sh
+
+aws-cert-admission-check:
+  ./scripts/aws-cert-admission-check.sh
+
+aws-cert-wait-queues-drained:
+  ./scripts/aws-cert-wait-queues-drained.sh
+
+aws-cert-destroy:
+  ./scripts/aws-cert-destroy.sh
+
+aws-cert-wait-ecs-services-stable:
+  ./scripts/aws-cert-wait-ecs-services-stable.sh
+
+aws-cert-teardown-iam:
+  ./scripts/aws-cert-teardown-iam.sh

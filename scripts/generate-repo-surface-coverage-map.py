@@ -18,6 +18,7 @@ SOURCE_PROOF_PATHS = [
     "crates/domain/src/asset.rs",
     "crates/domain/src/sweep.rs",
     "crates/domain/src/abstract_refinement.rs",
+    "crates/domain/src/certification.rs",
 ]
 SOURCE_PROOF_OBLIGATIONS = [
     {
@@ -89,6 +90,51 @@ SOURCE_PROOF_OBLIGATIONS = [
         "id": "mapping.open_exception_excludes_terminal_statuses",
         "path": "crates/domain/src/abstract_refinement.rs",
         "harness": "mapped_open_exception_excludes_terminal_statuses",
+    },
+    {
+        "id": "certification.over_budget_blocks_enforced_campaign",
+        "path": "crates/domain/src/certification.rs",
+        "harness": "over_budget_blocks_enforced_campaign",
+    },
+    {
+        "id": "certification.cleanup_mode_allows_evidence_collection",
+        "path": "crates/domain/src/certification.rs",
+        "harness": "cleanup_mode_allows_over_budget_evidence_collection",
+    },
+    {
+        "id": "certification.dirty_queue_blocks_campaign_start",
+        "path": "crates/domain/src/certification.rs",
+        "harness": "dirty_queue_blocks_campaign_start",
+    },
+    {
+        "id": "certification.dirty_queue_error_precedence_when_budget_allows",
+        "path": "crates/domain/src/certification.rs",
+        "harness": "dirty_queue_is_reported_when_budget_allows_start",
+    },
+    {
+        "id": "certification.zero_duration_blocks_campaign_start",
+        "path": "crates/domain/src/certification.rs",
+        "harness": "zero_duration_blocks_campaign_start",
+    },
+    {
+        "id": "certification.admitted_rate_within_capacity",
+        "path": "crates/domain/src/certification.rs",
+        "harness": "admitted_campaign_rate_is_within_queue_and_db_capacity",
+    },
+    {
+        "id": "certification.arrival_rate_is_positive_ceiling",
+        "path": "crates/domain/src/certification.rs",
+        "harness": "arrival_rate_is_positive_ceiling_for_bounded_inputs",
+    },
+    {
+        "id": "certification.drain_tick_never_increases_queue",
+        "path": "crates/domain/src/certification.rs",
+        "harness": "drain_tick_never_increases_queue",
+    },
+    {
+        "id": "certification.positive_capacity_drains_bounded_queue",
+        "path": "crates/domain/src/certification.rs",
+        "harness": "positive_capacity_eventually_drains_bounded_queue",
     },
 ]
 SOURCE_PROOF_BOUNDARY_REASONS = {
@@ -271,7 +317,7 @@ SURFACES: tuple[Surface, ...] = (
             "documentation": {"paths": ["docs/formal-verification.md", "docs/traceability.md"]},
         },
         formal_scope="rust_transitions_project_to_abstract_tla_actions_with_targeted_source_proof",
-        hardening_frontier=("Targeted Kani proof covers the finite built-in asset classifier, transition, and Rust-to-TLA mapping kernels; full line-level proof for services, async workers, SQL, frontend, and infrastructure remains intentionally out of scope.",),
+        hardening_frontier=("Targeted Kani proof covers the finite built-in asset classifier, transition, Rust-to-TLA mapping, and AWS certification admission kernels; full line-level proof for services, async workers, SQL, frontend, and infrastructure remains intentionally out of scope.",),
     ),
     Surface(
         id="rust_persistence_and_sql",
@@ -390,6 +436,42 @@ SURFACES: tuple[Surface, ...] = (
             "documentation": {"paths": ["docs/runbooks/kubernetes-kind.md"]},
         },
         hardening_frontier=("Run kind smoke in CI when runner capacity and nested container behavior are acceptable.",),
+    ),
+    Surface(
+        id="aws_certification_simulation",
+        title="AWS Certification Simulation",
+        patterns=(
+            "infra/aws-simulation/**",
+            "spec/certification/**",
+            "scripts/aws-cert-*.sh",
+            "scripts/validate-aws-certification.sh",
+            "services/certifier/**",
+        ),
+        required_axes=(
+            "source_inventory",
+            "specification_or_contract",
+            "static_validation",
+            "unit_or_property_tests",
+            "database_integration",
+            "runtime_or_smoke",
+            "runtime_enforcement",
+            "drift_validator",
+            "ci_gate",
+            "documentation",
+        ),
+        evidence={
+            "specification_or_contract": {"paths": ["spec/certification/aws_certification_coverage_map.json", "spec/certification/aws_certification_load.js"]},
+            "static_validation": {"commands": ["make validate-aws-certification"], "paths": ["scripts/validate-aws-certification.sh"]},
+            "unit_or_property_tests": {"commands": ["cargo test --workspace --all-features"], "paths": ["services/certifier/src/main.rs"]},
+            "database_integration": {"paths": ["services/certifier/src/main.rs", "crates/persistence/migrations/20260616150400_initial.sql"]},
+            "runtime_or_smoke": {"commands": ["make aws-cert-run"], "paths": ["scripts/aws-cert-run.sh", "spec/certification/aws_certification_load.js"]},
+            "runtime_enforcement": {"paths": ["scripts/aws-cert-preflight.sh", "crates/config/src/lib.rs", "crates/messaging/src/localstack.rs"]},
+            "drift_validator": {"commands": ["make validate-aws-certification"], "paths": ["scripts/validate-aws-certification.sh"]},
+            "ci_gate": {"commands": ["make validate"], "paths": ["scripts/validate-all.sh"]},
+            "documentation": {"paths": ["docs/aws-certification.md", "docs/runbooks/aws-simulation.md"]},
+        },
+        formal_scope="cloud_simulation_evidence_for_existing_formal_and_runtime_invariants",
+        hardening_frontier=("Run the opt-in AWS campaign in a sandbox account and attach collected evidence to the tracker before claiming certification success.",),
     ),
     Surface(
         id="docs_runbooks_adrs",
@@ -673,7 +755,7 @@ def build(root: Path) -> dict[str, Any]:
                 "obligations": source_proof_obligations,
                 "missing_obligations": missing_source_proof_obligations,
                 "command": "make validate-source-proofs",
-                "claim": "Bounded source-level proof over the finite built-in asset classifier, sweep transition, and Rust-to-TLA action mapping kernels.",
+                "claim": "Bounded source-level proof over the finite built-in asset classifier, sweep transition, Rust-to-TLA action mapping, and AWS certification admission kernels.",
                 "status": "closed"
                 if any(item["id"] == "rust_domain_core" for item in source_proved_rust_surfaces)
                 and not missing_source_proof_obligations

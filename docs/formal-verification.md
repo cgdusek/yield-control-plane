@@ -21,7 +21,7 @@ The TLA+ protocol uses raw lifecycle, ledger, and messaging actions in [YieldLif
 
 The repository now provides refinement-lite evidence: [rust_tla_mapping.yaml](../spec/refinement/rust_tla_mapping.yaml) maps each Rust `SweepCommand` to a TLA action and TLAPS theorem, [abstract_refinement.rs](../crates/domain/src/abstract_refinement.rs) projects accepted Rust transitions into abstract state, and `scripts/validate-refinement.sh` rejects drift across Rust enums, TLA `Next`, Rust `TlaAction`, and TLAPS theorem names. The refinement tests also load the YAML mapping, exercise declared paths against the Rust `transition(...)` function, and fail if any accepted Rust transition lacks mapping evidence.
 
-[asset.rs](../crates/domain/src/asset.rs), [sweep.rs](../crates/domain/src/sweep.rs), and [abstract_refinement.rs](../crates/domain/src/abstract_refinement.rs) also carry targeted Kani source-proof harnesses under `cfg(kani)`. `make validate-source-proofs` runs `cargo kani -p institutional-yield-domain` and proves bounded source-level obligations over the finite built-in asset classifier, sweep status/command/guard transition kernel, and Rust-to-TLA action mapping kernel. This is source-level evidence for narrow pure domain decision tables; it is not a full line-by-line proof of all Rust services, async workers, SQL behavior, frontend code, shell scripts, or infrastructure.
+[asset.rs](../crates/domain/src/asset.rs), [sweep.rs](../crates/domain/src/sweep.rs), [abstract_refinement.rs](../crates/domain/src/abstract_refinement.rs), and [certification.rs](../crates/domain/src/certification.rs) also carry targeted Kani source-proof harnesses under `cfg(kani)`. `make validate-source-proofs` runs `cargo kani -p institutional-yield-domain` and proves bounded source-level obligations over the finite built-in asset classifier, sweep status/command/guard transition kernel, Rust-to-TLA action mapping kernel, and AWS certification admission kernel. This is source-level evidence for narrow pure domain decision tables; it is not a full line-by-line proof of all Rust services, async workers, SQL behavior, frontend code, shell scripts, or infrastructure.
 
 [invariant_coverage.yaml](../spec/refinement/invariant_coverage.yaml) is the invariant-level convergence matrix. `scripts/validate-formal-coverage.sh` parses the matrix, TLA catalog, TLAPS theorems, TLC config, Rust tests, runtime enforcement files, and full validation script so an invariant cannot be marked covered without executable evidence.
 
@@ -38,6 +38,9 @@ The repository now provides refinement-lite evidence: [rust_tla_mapping.yaml](..
 - Invariant catalog: [YieldInvariants.tla](../spec/tla/YieldInvariants.tla)
 - TLAPS proof obligations: [YieldProofs.tla](../spec/tla/YieldProofs.tla)
 - TLC bounded model: [YieldControlPlane.cfg](../spec/tla/YieldControlPlane.cfg)
+- AWS certification admission and capacity model: [YieldCertificationCapacity.tla](../spec/tla/YieldCertificationCapacity.tla)
+- AWS certification admission TLAPS proofs: [YieldCertificationCapacityProofs.tla](../spec/tla/YieldCertificationCapacityProofs.tla)
+- AWS certification bounded liveness config: [YieldCertificationCapacity.cfg](../spec/tla/YieldCertificationCapacity.cfg)
 
 ## Invariant Traceability
 

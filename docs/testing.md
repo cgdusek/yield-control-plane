@@ -14,6 +14,7 @@ make validate-repo-surface-coverage-map
 make validate-liveness
 make validate-specs
 make validate-k8s
+make validate-aws-certification
 cargo fmt --all --check
 cargo clippy --workspace --all-targets --all-features -- -D warnings
 cargo test --workspace --all-features
@@ -47,7 +48,15 @@ These gates prove the event path, LocalStack fanout, worker transitions, mock tr
 make validate
 ```
 
-`make validate` is intended for CI and local pre-commit verification. It runs TLA parsing/proofs/model checking, targeted Kani source proofs for the built-in asset classifier, Rust domain transition, and Rust-to-TLA mapping kernels, Rust-to-TLA mapping validation, invariant coverage validation, generated coverage-map drift checks, liveness coverage validation, specs, Kubernetes manifest validation, docs validation, Rust formatting, clippy, Rust tests, frontend install, frontend typecheck, frontend lint, and frontend tests.
+`make validate` is intended for CI and local pre-commit verification. It runs TLA parsing/proofs/model checking, targeted Kani source proofs for the built-in asset classifier, Rust domain transition, and Rust-to-TLA mapping kernels, Rust-to-TLA mapping validation, invariant coverage validation, generated coverage-map drift checks, liveness coverage validation, specs, Kubernetes manifest validation, AWS certification static validation, docs validation, Rust formatting, clippy, Rust tests, frontend install, frontend typecheck, frontend lint, and frontend tests.
+
+## AWS Certification Static Gate
+
+```bash
+make validate-aws-certification
+```
+
+This gate validates the AWS simulation command surface, OpenTofu artifact presence, certification coverage map, k6 workload defaults, and fail-closed script guards without making real AWS calls. Real AWS deployment and simulation remain explicit opt-in commands documented in [AWS simulation and internal certification](aws-certification.md).
 
 ## CI
 

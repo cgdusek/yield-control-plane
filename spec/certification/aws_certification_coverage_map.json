@@ -1,0 +1,222 @@
+{
+  "schema_version": "1.0.0",
+  "workstream": "aws-certification-simulation",
+  "status": "implemented-gated",
+  "non_claims": [
+    "not_soc_iso_or_regulatory_certification",
+    "not_legal_investment_accounting_tax_or_production_deployment_advice",
+    "not_production_transfer_agent_or_customer_data"
+  ],
+  "defaults": {
+    "aws_region": "us-west-2",
+    "budget_limit_usd": 50,
+    "budget_limit_override_env": "AWS_CERT_BUDGET_LIMIT_USD",
+    "runtime": "ecs-fargate-and-fargate-spot",
+    "load_tool": "k6",
+    "root_user_policy": "root_bootstrap_or_break_glass_only"
+  },
+  "standards_basis": [
+    {
+      "id": "aws-well-architected",
+      "url": "https://aws.amazon.com/architecture/well-architected/",
+      "mapped_controls": [
+        "operational-excellence",
+        "security",
+        "reliability",
+        "performance-efficiency",
+        "cost-optimization",
+        "sustainability"
+      ]
+    },
+    {
+      "id": "aws-fsi-lens",
+      "url": "https://docs.aws.amazon.com/wellarchitected/latest/financial-services-industry-lens/financial-services-industry-lens.html",
+      "mapped_controls": [
+        "resiliency",
+        "security",
+        "operational-performance",
+        "risk-control-objectives"
+      ]
+    },
+    {
+      "id": "aws-iam-root-user-best-practices",
+      "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/root-user-best-practices.html",
+      "mapped_controls": [
+        "root-not-used-for-routine-work",
+        "break-glass-only",
+        "least-privilege-delegation"
+      ]
+    },
+    {
+      "id": "aws-iam-least-privilege",
+      "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html",
+      "mapped_controls": [
+        "task-roles",
+        "scoped-deployer-role",
+        "no-static-runtime-credentials"
+      ]
+    },
+    {
+      "id": "aws-ecs-fargate-spot",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/fargate-capacity-providers.html",
+      "mapped_controls": [
+        "capacity-provider-strategy",
+        "spot-fault-tolerance",
+        "on-demand-control-plane-floor"
+      ]
+    },
+    {
+      "id": "aws-fis-planning",
+      "url": "https://docs.aws.amazon.com/fis/latest/userguide/getting-started-planning.html",
+      "mapped_controls": [
+        "test-environment-first",
+        "small-controlled-experiments",
+        "stop-conditions"
+      ]
+    },
+    {
+      "id": "aws-fis-ecs-actions",
+      "url": "https://docs.aws.amazon.com/fis/latest/userguide/fis-actions-reference.html",
+      "mapped_controls": [
+        "ecs-stop-task-experiment",
+        "worker-replacement-evidence"
+      ]
+    },
+    {
+      "id": "aws-sqs-dlq",
+      "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html",
+      "mapped_controls": [
+        "dead-letter-queues",
+        "retention-longer-than-source",
+        "poison-message-observability"
+      ]
+    },
+    {
+      "id": "nist-csf-2",
+      "url": "https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.29.pdf",
+      "mapped_controls": [
+        "govern",
+        "identify",
+        "protect",
+        "detect",
+        "respond",
+        "recover"
+      ]
+    },
+    {
+      "id": "nist-sp-800-53-r5",
+      "url": "https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final",
+      "mapped_controls": [
+        "access-control",
+        "audit-accountability",
+        "configuration-management",
+        "contingency-planning",
+        "risk-assessment",
+        "system-communications-protection",
+        "system-information-integrity"
+      ]
+    }
+  ],
+  "surfaces": [
+    {
+      "id": "aws_identity_and_budget_guardrails",
+      "status": "gated",
+      "evidence": [
+        "scripts/aws-cert-preflight.sh",
+        "scripts/aws-cert-admission-check.sh",
+        "crates/domain/src/certification.rs",
+        "spec/tla/YieldCertificationCapacity.tla",
+        "spec/tla/YieldCertificationCapacityProofs.tla",
+        "spec/tla/YieldCertificationCapacity.cfg",
+        "infra/aws-simulation/main.tf",
+        "make validate-aws-certification"
+      ]
+    },
+    {
+      "id": "ecs_runtime",
+      "status": "gated",
+      "evidence": [
+        "infra/aws-simulation/main.tf",
+        "services/api/Dockerfile",
+        "services/worker/Dockerfile",
+        "services/mock-transfer-agent/Dockerfile",
+        "services/certifier/Dockerfile"
+      ]
+    },
+    {
+      "id": "real_sns_sqs_messaging",
+      "status": "gated",
+      "evidence": [
+        "crates/messaging/src/localstack.rs",
+        "services/worker/src/workers/mod.rs",
+        "infra/aws-simulation/main.tf"
+      ]
+    },
+    {
+      "id": "rds_postgres_financial_state",
+      "status": "gated",
+      "evidence": [
+        "crates/persistence/migrations/20260616150400_initial.sql",
+        "services/certifier/src/main.rs",
+        "scripts/aws-cert-collect.sh"
+      ]
+    },
+    {
+      "id": "load_and_fault_simulation",
+      "status": "gated",
+      "evidence": [
+        "spec/certification/aws_certification_load.js",
+        "infra/aws-simulation/main.tf",
+        "scripts/aws-cert-run.sh",
+        "scripts/aws-cert-admission-check.sh",
+        "scripts/aws-cert-wait-queues-drained.sh",
+        "scripts/aws-cert-wait-ecs-services-stable.sh"
+      ]
+    },
+    {
+      "id": "evidence_pack",
+      "status": "gated",
+      "evidence": [
+        "scripts/aws-cert-collect.sh",
+        "scripts/aws-cert-wait-queues-drained.sh",
+        "docs/aws-certification.md",
+        "docs/runbooks/aws-simulation.md"
+      ]
+    }
+  ],
+  "required_scenarios": [
+    "local_baseline_make_validate",
+    "db_backed_persistence_tests",
+    "compose_smoke_happy_path",
+    "compose_smoke_failure_paths",
+    "aws_smoke_created_to_active",
+    "k6_30m_25_vu_1000_attempts",
+    "duplicate_idempotency_replay",
+    "conflicting_idempotency_rejection",
+    "fidd_yield_rejection",
+    "redemption_request_handling",
+    "reconciliation_mismatch_injection",
+    "fis_ecs_stop_task",
+    "duplicate_and_malformed_message_injection",
+    "post_run_rust_sqlx_certifier"
+  ],
+  "required_evidence_outputs": [
+    "artifacts/aws-certification/preflight.json",
+    "artifacts/aws-certification/admission-check.json",
+    "artifacts/aws-certification/tofu-outputs.json",
+    "artifacts/aws-certification/k6-summary.json",
+    "artifacts/aws-certification/queue-drain-final.json",
+    "artifacts/aws-certification/db-invariant-report.json",
+    "artifacts/aws-certification/certifier-describe-task.json",
+    "artifacts/aws-certification/aws-inventory.json",
+    "artifacts/aws-certification/cost-summary.json",
+    "artifacts/aws-certification/command-manifest.json"
+  ],
+  "local_validation": [
+    "make validate-aws-certification",
+    "cargo test -p institutional-yield-certifier",
+    "cargo test -p institutional-yield-config",
+    "cargo test -p institutional-yield-messaging",
+    "cargo test -p institutional-yield-worker"
+  ]
+}

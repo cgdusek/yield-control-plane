@@ -18,10 +18,7 @@ pub async fn run_outbox_publisher(config: AppConfig, pool: PgPool) -> anyhow::Re
     let messaging_config = messaging_config(&config);
     let topic_name =
         std::env::var("SNS_TOPIC_NAME").unwrap_or_else(|_| "domain-events".to_string());
-    let topic_arn = format!(
-        "arn:aws:sns:{}:{}:{}",
-        config.aws_region, LOCALSTACK_ACCOUNT_ID, topic_name
-    );
+    let topic_arn = topic_arn(&config, &topic_name)?;
     let publisher = SnsPublisher::new(&messaging_config, topic_arn).await?;
     loop {
         tokio::select! {
@@ -65,6 +62,7 @@ pub async fn run_transfer_agent(config: AppConfig, pool: PgPool) -> anyhow::Resu
         "transfer-agent",
         std::env::var("SQS_TRANSFER_AGENT_QUEUE")
             .unwrap_or_else(|_| "transfer-agent-worker-queue".to_string()),
+        "SQS_TRANSFER_AGENT_QUEUE_URL",
         handle_transfer_agent_event,
     )
     .await
@@ -77,6 +75,7 @@ pub async fn run_reconciliation(config: AppConfig, pool: PgPool) -> anyhow::Resu
         "reconciliation",
         std::env::var("SQS_RECONCILIATION_QUEUE")
             .unwrap_or_else(|_| "reconciliation-worker-queue".to_string()),
+        "SQS_RECONCILIATION_QUEUE_URL",
         handle_reconciliation_event,
     )
     .await
@@ -89,6 +88,7 @@ pub async fn run_chain_watcher(config: AppConfig, pool: PgPool) -> anyhow::Resul
         "chain-watcher",
         std::env::var("SQS_CHAIN_WATCHER_QUEUE")
             .unwrap_or_else(|_| "chain-watcher-queue".to_string()),
+        "SQS_CHAIN_WATCHER_QUEUE_URL",
         handle_chain_watcher_event,
     )
     .await
@@ -101,6 +101,7 @@ pub async fn run_notification(config: AppConfig, pool: PgPool) -> anyhow::Result
         "notification",
         std::env::var("SQS_NOTIFICATION_QUEUE")
             .unwrap_or_else(|_| "notification-worker-queue".to_string()),
+        "SQS_NOTIFICATION_QUEUE_URL",
         handle_notification_event,
     )
     .await
@@ -111,6 +112,7 @@ async fn consume_queue<F, Fut>(
     pool: PgPool,
     consumer_name: &'static str,
     queue_name: String,
+    queue_url_env: &'static str,
     handler: F,
 ) -> anyhow::Result<()>
 where
@@ -118,7 +120,7 @@ where
     Fut: std::future::Future<Output = anyhow::Result<()>>,
 {
     let messaging_config = messaging_config(config);
-    let queue_url = queue_url(&config.localstack_endpoint, &queue_name);
+    let queue_url = queue_url(config, &queue_name, std::env::var(queue_url_env).ok())?;
     let consumer = SqsConsumer::new(&messaging_config, queue_url).await?;
     loop {
         tokio::select! {
@@ -451,12 +453,44 @@ async fn request_transfer_agent_confirmation(
 fn messaging_config(config: &AppConfig) -> MessagingConfig {
     MessagingConfig {
         app_env: config.app_env.clone(),
-        endpoint_url: config.localstack_endpoint.clone(),
+        endpoint_url: if config.app_env == "cert" {
+            None
+        } else {
+            Some(config.localstack_endpoint.clone())
+        },
         region: config.aws_region.clone(),
+        aws_certification_enabled: config.aws_certification_enabled,
     }
 }
 
-fn queue_url(endpoint: &str, queue_name: &str) -> String {
+fn topic_arn(config: &AppConfig, topic_name: &str) -> anyhow::Result<String> {
+    if let Ok(topic_arn) = std::env::var("SNS_TOPIC_ARN") {
+        return Ok(topic_arn);
+    }
+    if config.app_env == "cert" {
+        anyhow::bail!("APP_ENV=cert requires SNS_TOPIC_ARN");
+    }
+    Ok(format!(
+        "arn:aws:sns:{}:{}:{}",
+        config.aws_region, LOCALSTACK_ACCOUNT_ID, topic_name
+    ))
+}
+
+fn queue_url(
+    config: &AppConfig,
+    queue_name: &str,
+    explicit_queue_url: Option<String>,
+) -> anyhow::Result<String> {
+    if let Some(queue_url) = explicit_queue_url {
+        return Ok(queue_url);
+    }
+    if config.app_env == "cert" {
+        anyhow::bail!("APP_ENV=cert requires explicit SQS queue URL for {queue_name}");
+    }
+    Ok(local_queue_url(&config.localstack_endpoint, queue_name))
+}
+
+fn local_queue_url(endpoint: &str, queue_name: &str) -> String {
     format!(
         "{}/{}/{}",
         endpoint.trim_end_matches('/'),
@@ -472,8 +506,31 @@ mod tests {
     #[test]
     fn local_queue_url_uses_configured_endpoint() {
         assert_eq!(
-            queue_url("http://localstack:4566", "transfer-agent-worker-queue"),
+            local_queue_url("http://localstack:4566", "transfer-agent-worker-queue"),
             "http://localstack:4566/000000000000/transfer-agent-worker-queue"
+        );
+    }
+
+    #[test]
+    fn cert_queue_url_requires_explicit_aws_queue_url() {
+        let config = AppConfig {
+            app_env: "cert".to_string(),
+            database_url: "postgres://yield:yield@localhost:15432/yield_control".to_string(),
+            api_bind_addr: "127.0.0.1:8080".to_string(),
+            localstack_endpoint: String::new(),
+            aws_region: "us-west-2".to_string(),
+            aws_certification_enabled: true,
+            mock_transfer_agent_url: "http://localhost:8090".to_string(),
+        };
+        assert!(queue_url(&config, "queue", None).is_err());
+        assert_eq!(
+            queue_url(
+                &config,
+                "queue",
+                Some("https://sqs.us-west-2.amazonaws.com/123/queue".to_string())
+            )
+            .expect("explicit queue URL"),
+            "https://sqs.us-west-2.amazonaws.com/123/queue"
         );
     }
 

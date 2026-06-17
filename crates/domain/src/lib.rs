@@ -1,5 +1,6 @@
 pub mod abstract_refinement;
 pub mod asset;
+pub mod certification;
 pub mod errors;
 pub mod events;
 pub mod invariants;

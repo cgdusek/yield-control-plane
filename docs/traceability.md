@@ -45,6 +45,7 @@ Target disposition values:
 | No real AWS calls in local mode | Implemented now | Config defaults, LocalStack endpoint checks, ADR-0010, docs/security.md |
 | No secrets or private keys committed | Implemented now | `.env.example`, `.gitignore`, docs/security.md |
 | Production AWS/EKS/IAM differences documented | Documented production pattern | `docs/production-readiness.md`, `infra/k8s/overlays/aws-shaped`, ADR-0011 |
+| AWS sandbox simulation and internal certification evidence | Documented and gated sandbox pattern | `docs/aws-certification.md`, `docs/runbooks/aws-simulation.md`, `infra/aws-simulation`, `spec/certification/aws_certification_coverage_map.json`, `make validate-aws-certification` |
 | Legal/investment/accounting/tax/regulatory non-claims | Documented production pattern | `README.md`, `docs/security.md`, UI copy, `AGENTS.md` |
 
 ## Category Summary

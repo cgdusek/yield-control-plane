@@ -21,25 +21,25 @@
     "non_claim": "This map does not claim full source-level theorem-prover verification of every Rust, TypeScript, YAML, shell, or Markdown line."
   },
   "summary": {
-    "surface_count": 15,
-    "closed_surface_count": 15,
+    "surface_count": 16,
+    "closed_surface_count": 16,
     "needs_work_surface_count": 0,
     "surface_closure_ratio": 1.0,
-    "mapped_file_count": 197,
+    "mapped_file_count": 229,
     "unmapped_file_count": 0,
     "conflicting_file_count": 0,
-    "all_mappable_file_count": 197,
+    "all_mappable_file_count": 229,
     "file_mapping_ratio": 1.0,
-    "line_count": 27808,
-    "formalized_surface_count": 6,
-    "formalized_surface_ratio": 0.4,
-    "formalized_file_count": 67,
-    "formalized_file_ratio": 0.3401,
-    "formalized_line_count": 10963,
-    "formalized_line_ratio": 0.3942,
-    "rust_file_count": 40,
-    "rust_line_count": 5509,
-    "rust_test_function_count_static": 43,
+    "line_count": 32535,
+    "formalized_surface_count": 7,
+    "formalized_surface_ratio": 0.4375,
+    "formalized_file_count": 93,
+    "formalized_file_ratio": 0.4061,
+    "formalized_line_count": 14842,
+    "formalized_line_ratio": 0.4562,
+    "rust_file_count": 42,
+    "rust_line_count": 6225,
+    "rust_test_function_count_static": 51,
     "source_level_rust_verification": {
       "line_level_rust_formal_proof_ratio": 0.0,
       "targeted_source_proof_rust_surface_count": 1,
@@ -52,11 +52,12 @@
           "paths": [
             "crates/domain/src/asset.rs",
             "crates/domain/src/sweep.rs",
-            "crates/domain/src/abstract_refinement.rs"
+            "crates/domain/src/abstract_refinement.rs",
+            "crates/domain/src/certification.rs"
           ],
-          "harness_count": 14,
-          "obligation_count": 14,
-          "closed_obligation_count": 14,
+          "harness_count": 23,
+          "obligation_count": 23,
+          "closed_obligation_count": 23,
           "obligations": [
             {
               "id": "asset.fidd_only_builtin_forbidden_yield_source",
@@ -141,11 +142,65 @@
               "path": "crates/domain/src/abstract_refinement.rs",
               "harness": "mapped_open_exception_excludes_terminal_statuses",
               "status": "closed"
+            },
+            {
+              "id": "certification.over_budget_blocks_enforced_campaign",
+              "path": "crates/domain/src/certification.rs",
+              "harness": "over_budget_blocks_enforced_campaign",
+              "status": "closed"
+            },
+            {
+              "id": "certification.cleanup_mode_allows_evidence_collection",
+              "path": "crates/domain/src/certification.rs",
+              "harness": "cleanup_mode_allows_over_budget_evidence_collection",
+              "status": "closed"
+            },
+            {
+              "id": "certification.dirty_queue_blocks_campaign_start",
+              "path": "crates/domain/src/certification.rs",
+              "harness": "dirty_queue_blocks_campaign_start",
+              "status": "closed"
+            },
+            {
+              "id": "certification.dirty_queue_error_precedence_when_budget_allows",
+              "path": "crates/domain/src/certification.rs",
+              "harness": "dirty_queue_is_reported_when_budget_allows_start",
+              "status": "closed"
+            },
+            {
+              "id": "certification.zero_duration_blocks_campaign_start",
+              "path": "crates/domain/src/certification.rs",
+              "harness": "zero_duration_blocks_campaign_start",
+              "status": "closed"
+            },
+            {
+              "id": "certification.admitted_rate_within_capacity",
+              "path": "crates/domain/src/certification.rs",
+              "harness": "admitted_campaign_rate_is_within_queue_and_db_capacity",
+              "status": "closed"
+            },
+            {
+              "id": "certification.arrival_rate_is_positive_ceiling",
+              "path": "crates/domain/src/certification.rs",
+              "harness": "arrival_rate_is_positive_ceiling_for_bounded_inputs",
+              "status": "closed"
+            },
+            {
+              "id": "certification.drain_tick_never_increases_queue",
+              "path": "crates/domain/src/certification.rs",
+              "harness": "drain_tick_never_increases_queue",
+              "status": "closed"
+            },
+            {
+              "id": "certification.positive_capacity_drains_bounded_queue",
+              "path": "crates/domain/src/certification.rs",
+              "harness": "positive_capacity_eventually_drains_bounded_queue",
+              "status": "closed"
             }
           ],
           "missing_obligations": [],
           "command": "make validate-source-proofs",
-          "claim": "Bounded source-level proof over the finite built-in asset classifier, sweep transition, and Rust-to-TLA action mapping kernels.",
+          "claim": "Bounded source-level proof over the finite built-in asset classifier, sweep transition, Rust-to-TLA action mapping, and AWS certification admission kernels.",
           "status": "closed"
         }
       ],
@@ -225,7 +280,7 @@
       "coverage_score": 1.0,
       "formal_scope": "none",
       "file_count": 13,
-      "line_count": 6939,
+      "line_count": 7109,
       "rust_file_count": 0,
       "test_function_count_static": 0,
       "required_axes": [
@@ -375,7 +430,7 @@
       "coverage_score": 1.0,
       "formal_scope": "none",
       "file_count": 4,
-      "line_count": 204,
+      "line_count": 205,
       "rust_file_count": 0,
       "test_function_count_static": 0,
       "required_axes": [
@@ -521,8 +576,8 @@
       "closure_status": "closed",
       "coverage_score": 1.0,
       "formal_scope": "abstract_protocol_safety_and_bounded_liveness",
-      "file_count": 15,
-      "line_count": 2163,
+      "file_count": 18,
+      "line_count": 2327,
       "rust_file_count": 0,
       "test_function_count_static": 0,
       "required_axes": [
@@ -601,20 +656,20 @@
         },
         "S3_implementation_mapping": {
           "status": "closed",
-          "file_count": 15,
+          "file_count": 18,
           "representative_files": [
             "docs/formal-verification.md",
             "docs/liveness-verification.md",
             "scripts/validate-tla.sh",
+            "spec/tla/YieldCertificationCapacity.cfg",
+            "spec/tla/YieldCertificationCapacity.tla",
+            "spec/tla/YieldCertificationCapacityProofs.tla",
             "spec/tla/YieldControlPlane.cfg",
             "spec/tla/YieldExceptionLiveness.cfg",
             "spec/tla/YieldInvariants.tla",
             "spec/tla/YieldLedger.tla",
             "spec/tla/YieldLifecycle.tla",
-            "spec/tla/YieldLiveness.cfg",
-            "spec/tla/YieldLiveness.tla",
-            "spec/tla/YieldMessaging.tla",
-            "spec/tla/YieldMessagingLiveness.cfg"
+            "spec/tla/YieldLiveness.cfg"
           ],
           "formal_scope": "abstract_protocol_safety_and_bounded_liveness",
           "evidence_paths": [
@@ -684,6 +739,9 @@
         "docs/formal-verification.md",
         "docs/liveness-verification.md",
         "scripts/validate-tla.sh",
+        "spec/tla/YieldCertificationCapacity.cfg",
+        "spec/tla/YieldCertificationCapacity.tla",
+        "spec/tla/YieldCertificationCapacityProofs.tla",
         "spec/tla/YieldControlPlane.cfg",
         "spec/tla/YieldExceptionLiveness.cfg",
         "spec/tla/YieldInvariants.tla",
@@ -705,7 +763,7 @@
       "coverage_score": 1.0,
       "formal_scope": "meta_coverage_for_formal_artifacts",
       "file_count": 11,
-      "line_count": 3830,
+      "line_count": 3912,
       "rust_file_count": 0,
       "test_function_count_static": 0,
       "required_axes": [
@@ -1075,10 +1133,10 @@
       "closure_status": "closed",
       "coverage_score": 1.0,
       "formal_scope": "rust_transitions_project_to_abstract_tla_actions_with_targeted_source_proof",
-      "file_count": 16,
-      "line_count": 2357,
-      "rust_file_count": 14,
-      "test_function_count_static": 26,
+      "file_count": 17,
+      "line_count": 2568,
+      "rust_file_count": 15,
+      "test_function_count_static": 28,
       "required_axes": [
         "source_inventory",
         "specification_or_contract",
@@ -1102,7 +1160,7 @@
       "missing_axes": [],
       "closure_actions": [],
       "hardening_frontier": [
-        "Targeted Kani proof covers the finite built-in asset classifier, transition, and Rust-to-TLA mapping kernels; full line-level proof for services, async workers, SQL, frontend, and infrastructure remains intentionally out of scope."
+        "Targeted Kani proof covers the finite built-in asset classifier, transition, Rust-to-TLA mapping, and AWS certification admission kernels; full line-level proof for services, async workers, SQL, frontend, and infrastructure remains intentionally out of scope."
       ],
       "evidence": {
         "specification_or_contract": {
@@ -1136,7 +1194,8 @@
             "scripts/validate-source-proofs.sh",
             "crates/domain/src/asset.rs",
             "crates/domain/src/sweep.rs",
-            "crates/domain/src/abstract_refinement.rs"
+            "crates/domain/src/abstract_refinement.rs",
+            "crates/domain/src/certification.rs"
           ]
         },
         "drift_validator": {
@@ -1181,11 +1240,12 @@
         },
         "S3_implementation_mapping": {
           "status": "closed",
-          "file_count": 16,
+          "file_count": 17,
           "representative_files": [
             "crates/domain/Cargo.toml",
             "crates/domain/src/abstract_refinement.rs",
             "crates/domain/src/asset.rs",
+            "crates/domain/src/certification.rs",
             "crates/domain/src/errors.rs",
             "crates/domain/src/events.rs",
             "crates/domain/src/invariants.rs",
@@ -1193,8 +1253,7 @@
             "crates/domain/src/lib.rs",
             "crates/domain/src/money.rs",
             "crates/domain/src/sweep.rs",
-            "crates/domain/tests/ledger_invariant_tests.rs",
-            "crates/domain/tests/liveness_trace_tests.rs"
+            "crates/domain/tests/ledger_invariant_tests.rs"
           ],
           "formal_scope": "rust_transitions_project_to_abstract_tla_actions_with_targeted_source_proof",
           "evidence_paths": [
@@ -1206,6 +1265,7 @@
             "scripts/validate-source-proofs.sh",
             "crates/domain/src/asset.rs",
             "crates/domain/src/sweep.rs",
+            "crates/domain/src/certification.rs",
             "scripts/validate-refinement.sh",
             "scripts/validate-formal-coverage.sh",
             "scripts/validate-all.sh",
@@ -1277,7 +1337,7 @@
             "A targeted source-level proof is present for the narrow Rust kernel listed in evidence; no line-level formal proof of all Rust source is claimed."
           ],
           "hardening_frontier": [
-            "Targeted Kani proof covers the finite built-in asset classifier, transition, and Rust-to-TLA mapping kernels; full line-level proof for services, async workers, SQL, frontend, and infrastructure remains intentionally out of scope."
+            "Targeted Kani proof covers the finite built-in asset classifier, transition, Rust-to-TLA mapping, and AWS certification admission kernels; full line-level proof for services, async workers, SQL, frontend, and infrastructure remains intentionally out of scope."
           ]
         }
       },
@@ -1285,6 +1345,7 @@
         "crates/domain/Cargo.toml",
         "crates/domain/src/abstract_refinement.rs",
         "crates/domain/src/asset.rs",
+        "crates/domain/src/certification.rs",
         "crates/domain/src/errors.rs",
         "crates/domain/src/events.rs",
         "crates/domain/src/invariants.rs",
@@ -1497,9 +1558,9 @@
       "coverage_score": 1.0,
       "formal_scope": "messaging_idempotency_and_progress_modeled_abstractly",
       "file_count": 7,
-      "line_count": 277,
+      "line_count": 345,
       "rust_file_count": 5,
-      "test_function_count_static": 2,
+      "test_function_count_static": 4,
       "required_axes": [
         "source_inventory",
         "unit_or_property_tests",
@@ -1861,9 +1922,9 @@
       "coverage_score": 1.0,
       "formal_scope": "worker_progress_and_dedupe_tied_to_abstract_liveness_and_safety",
       "file_count": 7,
-      "line_count": 761,
+      "line_count": 818,
       "rust_file_count": 3,
-      "test_function_count_static": 5,
+      "test_function_count_static": 6,
       "required_axes": [
         "source_inventory",
         "unit_or_property_tests",
@@ -2051,9 +2112,9 @@
       "coverage_score": 1.0,
       "formal_scope": "none",
       "file_count": 4,
-      "line_count": 124,
+      "line_count": 211,
       "rust_file_count": 2,
-      "test_function_count_static": 1,
+      "test_function_count_static": 4,
       "required_axes": [
         "source_inventory",
         "unit_or_property_tests",
@@ -2382,7 +2443,7 @@
       "coverage_score": 1.0,
       "formal_scope": "none",
       "file_count": 6,
-      "line_count": 291,
+      "line_count": 292,
       "rust_file_count": 0,
       "test_function_count_static": 0,
       "required_axes": [
@@ -2710,13 +2771,276 @@
       ]
     },
     {
+      "id": "aws_certification_simulation",
+      "title": "AWS Certification Simulation",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "formal_scope": "cloud_simulation_evidence_for_existing_formal_and_runtime_invariants",
+      "file_count": 22,
+      "line_count": 3297,
+      "rust_file_count": 1,
+      "test_function_count_static": 0,
+      "required_axes": [
+        "source_inventory",
+        "specification_or_contract",
+        "static_validation",
+        "unit_or_property_tests",
+        "database_integration",
+        "runtime_or_smoke",
+        "runtime_enforcement",
+        "drift_validator",
+        "ci_gate",
+        "documentation"
+      ],
+      "present_axes": [
+        "source_inventory",
+        "specification_or_contract",
+        "static_validation",
+        "unit_or_property_tests",
+        "database_integration",
+        "runtime_or_smoke",
+        "runtime_enforcement",
+        "drift_validator",
+        "ci_gate",
+        "documentation"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "hardening_frontier": [
+        "Run the opt-in AWS campaign in a sandbox account and attach collected evidence to the tracker before claiming certification success."
+      ],
+      "evidence": {
+        "specification_or_contract": {
+          "paths": [
+            "spec/certification/aws_certification_coverage_map.json",
+            "spec/certification/aws_certification_load.js"
+          ]
+        },
+        "static_validation": {
+          "commands": [
+            "make validate-aws-certification"
+          ],
+          "paths": [
+            "scripts/validate-aws-certification.sh"
+          ]
+        },
+        "unit_or_property_tests": {
+          "commands": [
+            "cargo test --workspace --all-features"
+          ],
+          "paths": [
+            "services/certifier/src/main.rs"
+          ]
+        },
+        "database_integration": {
+          "paths": [
+            "services/certifier/src/main.rs",
+            "crates/persistence/migrations/20260616150400_initial.sql"
+          ]
+        },
+        "runtime_or_smoke": {
+          "commands": [
+            "make aws-cert-run"
+          ],
+          "paths": [
+            "scripts/aws-cert-run.sh",
+            "spec/certification/aws_certification_load.js"
+          ]
+        },
+        "runtime_enforcement": {
+          "paths": [
+            "scripts/aws-cert-preflight.sh",
+            "crates/config/src/lib.rs",
+            "crates/messaging/src/localstack.rs"
+          ]
+        },
+        "drift_validator": {
+          "commands": [
+            "make validate-aws-certification"
+          ],
+          "paths": [
+            "scripts/validate-aws-certification.sh"
+          ]
+        },
+        "ci_gate": {
+          "commands": [
+            "make validate"
+          ],
+          "paths": [
+            "scripts/validate-all.sh"
+          ]
+        },
+        "documentation": {
+          "paths": [
+            "docs/aws-certification.md",
+            "docs/runbooks/aws-simulation.md"
+          ]
+        }
+      },
+      "proof_ladder": {
+        "S0_objective": "Specify, enforce, and validate the AWS Certification Simulation surface as part of the integrated yield control plane.",
+        "S1_contract_or_spec": {
+          "status": "closed",
+          "evidence_paths": [
+            "spec/certification/aws_certification_coverage_map.json",
+            "spec/certification/aws_certification_load.js"
+          ]
+        },
+        "S2_executable_reference_or_validation_model": {
+          "status": "closed",
+          "commands": [
+            "make validate-aws-certification",
+            "cargo test --workspace --all-features",
+            "make aws-cert-run",
+            "make validate"
+          ]
+        },
+        "S3_implementation_mapping": {
+          "status": "closed",
+          "file_count": 22,
+          "representative_files": [
+            "infra/aws-simulation/.terraform.lock.hcl",
+            "infra/aws-simulation/README.md",
+            "infra/aws-simulation/main.tf",
+            "infra/aws-simulation/outputs.tf",
+            "infra/aws-simulation/variables.tf",
+            "infra/aws-simulation/versions.tf",
+            "scripts/aws-cert-admission-check.sh",
+            "scripts/aws-cert-bootstrap-iam.sh",
+            "scripts/aws-cert-collect.sh",
+            "scripts/aws-cert-deploy.sh",
+            "scripts/aws-cert-destroy.sh",
+            "scripts/aws-cert-preflight.sh"
+          ],
+          "formal_scope": "cloud_simulation_evidence_for_existing_formal_and_runtime_invariants",
+          "evidence_paths": [
+            "spec/certification/aws_certification_coverage_map.json",
+            "spec/certification/aws_certification_load.js",
+            "scripts/validate-aws-certification.sh",
+            "services/certifier/src/main.rs",
+            "crates/persistence/migrations/20260616150400_initial.sql",
+            "scripts/aws-cert-run.sh",
+            "scripts/aws-cert-preflight.sh",
+            "crates/config/src/lib.rs",
+            "crates/messaging/src/localstack.rs",
+            "scripts/validate-all.sh",
+            "docs/aws-certification.md",
+            "docs/runbooks/aws-simulation.md"
+          ]
+        },
+        "S4_proof_obligations": [
+          {
+            "id": "aws_certification_simulation.source_inventory",
+            "axis": "source_inventory",
+            "status": "closed",
+            "closure_action": "Assign all files in this surface and keep unmapped files at zero."
+          },
+          {
+            "id": "aws_certification_simulation.specification_or_contract",
+            "axis": "specification_or_contract",
+            "status": "closed",
+            "closure_action": "Add or bind this surface to an OpenAPI, AsyncAPI, state-machine, TLA+, schema, or documented contract."
+          },
+          {
+            "id": "aws_certification_simulation.static_validation",
+            "axis": "static_validation",
+            "status": "closed",
+            "closure_action": "Add a deterministic local validator for this surface."
+          },
+          {
+            "id": "aws_certification_simulation.unit_or_property_tests",
+            "axis": "unit_or_property_tests",
+            "status": "closed",
+            "closure_action": "Add unit, property, route, or component tests for this surface."
+          },
+          {
+            "id": "aws_certification_simulation.database_integration",
+            "axis": "database_integration",
+            "status": "closed",
+            "closure_action": "Add DB-backed validation for this surface."
+          },
+          {
+            "id": "aws_certification_simulation.runtime_or_smoke",
+            "axis": "runtime_or_smoke",
+            "status": "closed",
+            "closure_action": "Add Docker, LocalStack, kind, or smoke evidence for this surface."
+          },
+          {
+            "id": "aws_certification_simulation.runtime_enforcement",
+            "axis": "runtime_enforcement",
+            "status": "closed",
+            "closure_action": "Bind the rule to a domain guard, SQL constraint, middleware, worker policy, or runtime script."
+          },
+          {
+            "id": "aws_certification_simulation.drift_validator",
+            "axis": "drift_validator",
+            "status": "closed",
+            "closure_action": "Add a script that fails when this surface drifts from its source of truth."
+          },
+          {
+            "id": "aws_certification_simulation.ci_gate",
+            "axis": "ci_gate",
+            "status": "closed",
+            "closure_action": "Invoke the surface validator from make validate or GitHub Actions."
+          },
+          {
+            "id": "aws_certification_simulation.documentation",
+            "axis": "documentation",
+            "status": "closed",
+            "closure_action": "Document the surface and its validation commands."
+          }
+        ],
+        "S5_machine_check": {
+          "status": "closed",
+          "commands": [
+            "make validate-aws-certification",
+            "cargo test --workspace --all-features",
+            "make aws-cert-run",
+            "make validate"
+          ]
+        },
+        "S6_assumptions_and_limits": {
+          "limits": [
+            "Runtime evidence is local/CI LocalStack, Docker Compose, or kind-shaped evidence, not a production deployment proof."
+          ],
+          "hardening_frontier": [
+            "Run the opt-in AWS campaign in a sandbox account and attach collected evidence to the tracker before claiming certification success."
+          ]
+        }
+      },
+      "files": [
+        "infra/aws-simulation/.terraform.lock.hcl",
+        "infra/aws-simulation/README.md",
+        "infra/aws-simulation/main.tf",
+        "infra/aws-simulation/outputs.tf",
+        "infra/aws-simulation/variables.tf",
+        "infra/aws-simulation/versions.tf",
+        "scripts/aws-cert-admission-check.sh",
+        "scripts/aws-cert-bootstrap-iam.sh",
+        "scripts/aws-cert-collect.sh",
+        "scripts/aws-cert-deploy.sh",
+        "scripts/aws-cert-destroy.sh",
+        "scripts/aws-cert-preflight.sh",
+        "scripts/aws-cert-run.sh",
+        "scripts/aws-cert-teardown-iam.sh",
+        "scripts/aws-cert-wait-ecs-services-stable.sh",
+        "scripts/aws-cert-wait-queues-drained.sh",
+        "scripts/validate-aws-certification.sh",
+        "services/certifier/Cargo.toml",
+        "services/certifier/Dockerfile",
+        "services/certifier/src/main.rs",
+        "spec/certification/aws_certification_coverage_map.json",
+        "spec/certification/aws_certification_load.js"
+      ]
+    },
+    {
       "id": "docs_runbooks_adrs",
       "title": "Documentation, Runbooks, and ADRs",
       "closure_status": "closed",
       "coverage_score": 1.0,
       "formal_scope": "none",
-      "file_count": 49,
-      "line_count": 1966,
+      "file_count": 55,
+      "line_count": 2555,
       "rust_file_count": 0,
       "test_function_count_static": 0,
       "required_axes": [
@@ -2777,7 +3101,7 @@
         },
         "S3_implementation_mapping": {
           "status": "closed",
-          "file_count": 49,
+          "file_count": 55,
           "representative_files": [
             "docs/adr/0001-use-rust-workspace-and-shared-domain-crates.md",
             "docs/adr/0002-use-localstack-for-local-sns-sqs.md",
@@ -2863,11 +3187,13 @@
         "docs/agentic/index.md",
         "docs/agentic/working-agreement.md",
         "docs/architecture.md",
+        "docs/aws-certification.md",
         "docs/bootstrap.md",
         "docs/index.md",
         "docs/local-development.md",
         "docs/operations.md",
         "docs/production-readiness.md",
+        "docs/runbooks/aws-simulation.md",
         "docs/runbooks/failure-injection.md",
         "docs/runbooks/index.md",
         "docs/runbooks/kubernetes-kind.md",
@@ -2877,6 +3203,10 @@
         "docs/security.md",
         "docs/testing.md",
         "docs/traceability.md",
+        "docs/trackers/aws-certification-formal-diagnosis.md",
+        "docs/trackers/aws-certification-simulation-implementation.md",
+        "docs/trackers/aws-certification-simulation-planning.md",
+        "docs/trackers/aws-certification-simulation-tracking.md",
         "docs/trackers/formal-liveness-implementation.md",
         "docs/trackers/formal-liveness-planning.md",
         "docs/trackers/formal-liveness-tracking.md",
