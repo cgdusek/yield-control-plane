@@ -54,6 +54,7 @@ trap 'rm -rf "$TLC_METADIR" "$ROOT_DIR/.tlacache"' EXIT
 java -cp "$TLA_TOOLS_JAR:spec/tla:$TLAPS_LIB" \
   tla2sany.SANY \
   spec/tla/YieldLifecycle.tla \
+  spec/tla/YieldLiveness.tla \
   spec/tla/YieldProofs.tla \
   spec/tla/no_double_sweep.tla
 
@@ -63,10 +64,22 @@ PATH="$(dirname "$TLAPM_BIN"):$TLAPS_LIB/bin:$PATH" \
 PATH="$(dirname "$TLAPM_BIN"):$TLAPS_LIB/bin:$PATH" \
   "$TLAPM_BIN" -I spec/tla spec/tla/no_double_sweep.tla
 
-java -cp "$TLA_TOOLS_JAR:spec/tla" \
-  tlc2.TLC \
-  -metadir "$TLC_METADIR" \
-  -config spec/tla/YieldControlPlane.cfg \
-  spec/tla/YieldLifecycle.tla
+run_tlc() {
+  local module="$1"
+  local config="$2"
+  local name="$3"
+  local metadir="$TLC_METADIR/$name"
+  mkdir -p "$metadir"
+  java -cp "$TLA_TOOLS_JAR:spec/tla" \
+    tlc2.TLC \
+    -metadir "$metadir" \
+    -config "$config" \
+    "$module"
+}
+
+run_tlc spec/tla/YieldLifecycle.tla spec/tla/YieldControlPlane.cfg safety
+run_tlc spec/tla/YieldLiveness.tla spec/tla/YieldLiveness.cfg lifecycle-liveness
+run_tlc spec/tla/YieldLiveness.tla spec/tla/YieldExceptionLiveness.cfg exception-liveness
+run_tlc spec/tla/YieldLiveness.tla spec/tla/YieldMessagingLiveness.cfg messaging-liveness
 
 echo "TLA validation passed."

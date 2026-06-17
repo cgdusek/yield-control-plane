@@ -4,6 +4,7 @@ set -euo pipefail
 ./scripts/validate-tla.sh
 ./scripts/validate-refinement.sh
 ./scripts/validate-formal-coverage.sh
+./scripts/validate-liveness-coverage.sh
 ./scripts/validate-specs.sh
 ./scripts/validate-k8s.sh
 ./scripts/validate-docs.sh

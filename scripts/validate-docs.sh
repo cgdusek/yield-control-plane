@@ -19,6 +19,7 @@ required = [
     "docs/operations.md",
     "docs/security.md",
     "docs/formal-verification.md",
+    "docs/liveness-verification.md",
     "docs/production-readiness.md",
     "docs/traceability.md",
     "docs/runbooks/index.md",

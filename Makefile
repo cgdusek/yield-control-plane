@@ -1,4 +1,4 @@
-.PHONY: check-tools bootstrap validate-tla validate-refinement validate-formal-coverage validate-specs validate-k8s validate-docs validate fmt lint test dev-up dev-down dev-reset smoke smoke-failure-paths docker-build k8s-up k8s-smoke k8s-down
+.PHONY: check-tools bootstrap validate-tla validate-refinement validate-formal-coverage validate-liveness validate-specs validate-k8s validate-docs validate fmt lint test dev-up dev-down dev-reset smoke smoke-failure-paths docker-build k8s-up k8s-smoke k8s-down
 
 check-tools:
 	./scripts/check-tools.sh
@@ -17,6 +17,9 @@ validate-refinement:
 
 validate-formal-coverage:
 	./scripts/validate-formal-coverage.sh
+
+validate-liveness:
+	./scripts/validate-liveness-coverage.sh
 
 validate-k8s:
 	./scripts/validate-k8s.sh

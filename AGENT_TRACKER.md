@@ -8,9 +8,10 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 - Preserved project copy: `spec/source/fidelity_defi_yield_platform_spec.md` (pending Gate 1)
 
 ## Current Gate
-- Gate: Gate 13 formal refinement hardening extension
+- Gate: Gate 13 formal liveness coverage extension
 - Status: Passed
-- Start Time: 2026-06-17T02:32:05Z
+- Start Time: 2026-06-17T02:45:12Z
+- End Time: 2026-06-17T03:18:06Z
 
 ## Gate Status Table
 | Gate | Objective | Status | Evidence | Last Updated |
@@ -31,6 +32,7 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 | Gate 13 | CI/CD and final verification | Passed | `.github/workflows/ci.yml`, `make validate`, CI YAML parse, DB-backed persistence tests, marker scan | 2026-06-16T16:10:33Z |
 | Formal extension | TLAPS/TLC verification spine and invariant traceability | Passed | `make validate-tla`, `make validate-specs`, `make validate-docs`, `make check-tools`, `make validate`; formal docs and tracking artifacts added | 2026-06-17T00:38:18Z |
 | Formal refinement hardening | Raw-action TLAPS proofs and Rust-to-TLA refinement-lite evidence | Passed | `make validate` passed with raw-action TLAPS, TLC temporal append-only check, Rust-to-TLA mapping validation, exhaustive Rust transition projection tests, and invariant coverage convergence validator | 2026-06-17T02:36:46Z |
+| Formal liveness coverage | Conditional liveness specs, bounded TLC checks, Rust progress tests, runtime evidence, and CI drift gate | Passed | `make validate`, `make smoke`, `make smoke-failure-paths`, DB-backed tests, TLAPS-feasibility validator, worker retry/delete policy tests | 2026-06-17T03:18:06Z |
 
 ## Requirements Traceability Summary
 - Domain model and state machine: `spec/domain/sweep_order.machine.yaml`, `crates/domain`, domain tests.
@@ -177,6 +179,23 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 | 2026-06-17T02:35:00Z | `cargo fmt --all --check`; `make validate-tla`; `make validate-formal-coverage`; `make validate-docs` | `/Users/charlesdusek/Code/yield-control-plane` | Failed / Passed / Passed / Passed | Rustfmt caught one wrapping diff in the new test; TLAPS proved 131 obligations, TLC completed with 5,643 distinct states and no errors, formal coverage and docs passed. |
 | 2026-06-17T02:36:46Z | `cargo fmt --all`; `cargo fmt --all --check`; `cargo test -p institutional-yield-domain --test refinement_trace_tests`; `make validate-refinement`; `make validate`; `test ! -d .tlacache && test ! -d states`; `git status --short`; marker scan | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Full static validation passed after F6 hardening; generated TLA state is clean; marker scan has only intentional historical/rule/source/UI matches. |
 | 2026-06-17T02:36:46Z | `make validate-docs`; `test ! -d .tlacache && test ! -d states` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Final tracker/doc updates validated; generated TLA state remains clean. |
+| 2026-06-17T02:45:12Z | `git commit -m "Add formal verification and refinement gates"`; `git push origin main`; `git status -sb`; `git rev-parse --short HEAD` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Committed and pushed completed formal safety/refinement baseline `d288365` to `origin/main` before liveness work. |
+| 2026-06-17T02:48:23Z | `make validate-tla` | `/Users/charlesdusek/Code/yield-control-plane` | Failed | New lifecycle liveness model reached intended `Settled` terminal state and TLC reported deadlock because no further progress action is enabled. |
+| 2026-06-17T02:49:13Z | `make validate-tla` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Safety TLAPS/TLC passed; lifecycle, exception, and messaging liveness TLC configs completed with no errors after disabling deadlock checks for terminal progress models. |
+| 2026-06-17T02:50:00Z | `cargo test -p institutional-yield-domain --test liveness_trace_tests`; `cargo test -p institutional-yield-persistence --all-features` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Added domain progress trace tests and persistence outbox/inbox progress tests; persistence DB cases follow existing `RUN_DATABASE_TESTS=1` gating. |
+| 2026-06-17T02:51:00Z | `make validate-liveness` | `/Users/charlesdusek/Code/yield-control-plane` | Failed then Passed | Liveness validator caught stale evidence paths; corrected matrix references and liveness coverage validation passed. |
+| 2026-06-17T03:03:49Z | `make dev-reset`; `make dev-up` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Removed stale Compose containers/volumes, rebuilt current API/worker/mock/frontend images, and brought the fresh local runtime up healthy. |
+| 2026-06-17T03:03:49Z | edit `spec/refinement/liveness_coverage.yaml`, `scripts/validate-liveness-coverage.sh`, `docs/liveness-verification.md` | `/Users/charlesdusek/Code/yield-control-plane` | In Progress | Hardened the liveness validator design so every property must cite TLAPS safety proof evidence where feasible, or explicitly classify temporal fairness obligations as not directly TLAPS-feasible. |
+| 2026-06-17T03:04:00Z | `make validate-liveness` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Hardened liveness validator parsed `YieldProofs.tla`, checked TLAPS feasibility metadata, and verified theorem evidence. |
+| 2026-06-17T03:05:00Z | `RUN_DATABASE_TESTS=1 DATABASE_URL=postgres://yield:yield@127.0.0.1:15432/yield_control cargo test -p institutional-yield-persistence --all-features` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | 7 DB-backed persistence tests passed, including outbox retry and inbox dedupe progress tests. |
+| 2026-06-17T03:06:00Z | `make smoke` | `/Users/charlesdusek/Code/yield-control-plane` | Failed | Transfer-agent worker had exited on a stale test-created message; smoke order remained `Created`. |
+| 2026-06-17T03:08:00Z | `cargo fmt --all --check`; `cargo test -p institutional-yield-worker --all-features` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Added worker consumer-loop retry/delete policy and unit tests for handler, inbox-recording, and malformed-message failures. |
+| 2026-06-17T03:15:00Z | `make dev-reset`; `make dev-up`; `make smoke`; `make smoke-failure-paths` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Rebuilt patched worker image from clean volumes; happy-path smoke reached `Active`; failure-path smoke passed. |
+| 2026-06-17T03:16:17Z | `RUN_DATABASE_TESTS=1 DATABASE_URL=postgres://yield:yield@127.0.0.1:15432/yield_control cargo test -p institutional-yield-persistence --all-features`; `sleep 3 && docker compose ps` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | DB-backed tests passed against the live runtime and all workers remained up afterward. |
+| 2026-06-17T03:17:45Z | `make validate` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Full gate passed: SANY, TLAPS 131+1 obligations, TLC safety/liveness checks, refinement/formal/liveness coverage validators, specs, k8s manifests, docs, Rust fmt/clippy/tests, and frontend checks. |
+| 2026-06-17T03:18:00Z | `make dev-down` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Local Compose runtime stopped and containers/network removed. |
+| 2026-06-17T03:18:06Z | `test ! -d .tlacache && test ! -d states`; `git status -sb`; marker scan | `/Users/charlesdusek/Code/yield-control-plane` | Passed with intentional marker matches | Generated TLAPS/TLC state is clean; marker matches are standing rule text, historical tracker evidence, validator pattern, preserved source request, and UI input hint. |
+| 2026-06-17T03:18:06Z | `make validate-docs` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Tracker closure edits validated. |
 
 ## Decisions Made
 - 2026-06-16T14:48:00Z: User added a hard constraint that no artifact may be ornamental, decorative, inert, or merely skeletal. Every artifact must be executable, validated, enforced by tests/scripts/policies, or explicitly tracked as a bounded deferral. Added to `AGENTS.md` and `docs/agentic/working-agreement.md`.
@@ -185,6 +204,9 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 - 2026-06-17T00:38:18Z: Formal proof boundary is explicit: TLAPS checks the abstract safety-guarded protocol, TLC checks bounded interleavings, and Rust/SQL/runtime gates provide implementation conformance evidence rather than a full Rust-to-TLA refinement proof.
 - 2026-06-17T01:47:51Z: Formal refinement hardening will replace safety-guarded action proofs with raw-action preservation where TLAPS can check them, and will add executable Rust-to-TLA mapping evidence without claiming a full source-level refinement proof.
 - 2026-06-17T02:32:05Z: Additional refinement hardening will fail the gate if a TLA `Next` action lacks a `PreservesInv` theorem, or if any declared Rust transition path no longer projects to the matching TLA action.
+- 2026-06-17T02:45:12Z: Formal liveness coverage is scoped to conditional progress under explicit fairness and environment assumptions, plus bounded TLC model checks and Rust/runtime evidence. It does not claim universal progress under arbitrary external failure.
+- 2026-06-17T03:03:49Z: The liveness coverage validator must require TLAPS theorem evidence for every mathematically feasible safety obligation supporting a progress path. Pure temporal fairness/eventuality claims must be explicitly classified as not directly TLAPS-feasible and remain bounded by TLC/Rust/runtime evidence.
+- 2026-06-17T03:16:17Z: Worker consumers must not exit on per-message failures. Malformed messages are deleteable poison messages; inbox-recording or handler failures are logged and left for retry so stale or transient messages do not halt liveness for later messages.
 
 ## Defects / Failures
 | Timestamp | Failure | Root-Cause Hypothesis | Mitigation | Follow-Up Gate |
@@ -219,6 +241,9 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 | 2026-06-16T16:04:00Z | `make validate-docs` failed on `docs/agentic/working-agreement.md`. | The new validator correctly rejected unfinished-work marker language in an existing guide. | Reworded the guide while preserving the enforceable-artifact rule, then reran docs validation. | Gate 12 |
 | 2026-06-17T01:54:40Z | Raw `make validate-tla` failed in `YieldProofs.tla`. | The shared `Move` action was too broad for Rust refinement because it admitted moving an uncreated order without setting non-FIDD product metadata; several wrapper lemmas inherited that invalid abstraction. | Constrain lifecycle moves to existing orders, decompose wrappers into direct action proofs where TLAPS needs concrete status facts, then rerun `make validate-tla`. | Formal refinement hardening |
 | 2026-06-17T02:34:00Z | `cargo test -p institutional-yield-domain --test refinement_trace_tests` failed after F6 test addition. | The new test hard-coded 35 declared transition paths, but `rust_tla_mapping.yaml` declares 38 paths including all exception-opening statuses. | Replace the magic count with a YAML-derived expected path count and rerun the refinement test. | Formal refinement hardening |
+| 2026-06-17T02:48:23Z | `make validate-tla` failed after adding liveness configs. | TLC deadlock checking is inappropriate for finite progress models that intentionally stop at terminal statuses after satisfying liveness properties. | Add `CHECK_DEADLOCK FALSE` to liveness configs and keep the safety config's deadlock behavior unchanged. | Formal liveness coverage |
+| 2026-06-17T03:03:49Z | Initial post-liveness `make smoke` and `make smoke-failure-paths` attempts returned HTTP 404. | The long-running Compose API container was serving a stale image from before the current `/ready` route and liveness changes. | Run `make dev-reset` and fresh `make dev-up` to rebuild current images before rerunning smoke gates. | Formal liveness coverage |
+| 2026-06-17T03:06:00Z | `make smoke` stalled at `Created` and failed after polling. | DB-backed tests had inserted outbox events while runtime workers were up; after test cleanup, a stale queued event made the transfer-agent worker return `record not found` and exit because the consumer propagated handler errors. | Make queue consumers log per-message failures and continue; leave handler/inbox failures for retry, delete malformed poison messages, add worker tests, rebuild runtime, and rerun smoke gates. | Formal liveness coverage |
 
 ## Environment
 - OS: Darwin Tao.local 25.5.0 arm64
@@ -242,9 +267,11 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 ## Final Verification
 - `make validate` passed.
 - `make validate-tla` passed.
-- `make dev-up` passed and the Compose runtime is running.
+- `make validate-liveness` passed with TLAPS theorem evidence required where feasible.
+- `make dev-up` passed; `make dev-down` passed after smoke validation.
 - `make smoke` passed.
 - `make smoke-failure-paths` passed.
+- Worker consumer-loop retry/delete policy tests passed.
 - `make validate-k8s` passed.
 - `make k8s-up` passed and the kind runtime is running.
 - `make k8s-smoke` passed.

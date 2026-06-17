@@ -3,6 +3,10 @@ use institutional_yield_persistence::{
     connect, create_sweep_order, list_positions, migrate, repositories::apply_command,
     CreateSweepOrderInput, PersistenceError,
 };
+use institutional_yield_persistence::{
+    inbox::record_inbox_message,
+    outbox::{lease_pending_outbox, mark_failed, mark_published},
+};
 use rust_decimal::Decimal;
 use sqlx::PgPool;
 use std::{env, str::FromStr};
@@ -235,4 +239,60 @@ async fn ledger_entries_are_append_only() {
         .execute(pool)
         .await;
     assert!(result.is_err());
+}
+
+#[tokio::test]
+async fn failed_outbox_event_becomes_leasable_until_published() {
+    let Some(db) = test_pool().await else {
+        return;
+    };
+    let pool = &db.pool;
+    create_sweep_order(
+        pool,
+        order_input(Uuid::new_v4(), "outbox-progress", "10.00"),
+    )
+    .await
+    .expect("order creates outbox event");
+
+    let first_lease = lease_pending_outbox(pool, 30, 10)
+        .await
+        .expect("lease pending outbox event");
+    assert_eq!(first_lease.len(), 1);
+    let event_id = first_lease[0].event_id;
+
+    mark_failed(pool, event_id, "transient publish failure")
+        .await
+        .expect("mark failed releases lease");
+    let retry_lease = lease_pending_outbox(pool, 30, 10)
+        .await
+        .expect("failed outbox event is leasable again");
+    assert_eq!(retry_lease.len(), 1);
+    assert_eq!(retry_lease[0].event_id, event_id);
+
+    mark_published(pool, event_id)
+        .await
+        .expect("mark published completes progress");
+    let after_publish = lease_pending_outbox(pool, 30, 10)
+        .await
+        .expect("published event should not lease again");
+    assert!(after_publish.is_empty());
+}
+
+#[tokio::test]
+async fn inbox_message_progresses_once_then_deduplicates() {
+    let Some(db) = test_pool().await else {
+        return;
+    };
+    let pool = &db.pool;
+    let event_id = Uuid::new_v4();
+
+    let first = record_inbox_message(pool, "reconciliation", "message-1", event_id)
+        .await
+        .expect("first inbox record succeeds");
+    let duplicate = record_inbox_message(pool, "reconciliation", "message-1", event_id)
+        .await
+        .expect("duplicate inbox record is handled");
+
+    assert!(first);
+    assert!(!duplicate);
 }

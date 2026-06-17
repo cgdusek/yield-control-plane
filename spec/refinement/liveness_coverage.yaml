@@ -1,0 +1,244 @@
+version: 1
+objective: Every in-scope progress claim has a temporal formula, explicit fairness and environment assumptions, bounded TLC evidence, Rust or runtime evidence, and CI drift validation.
+required_axes:
+  - tla_temporal_property
+  - fairness_assumption
+  - tlaps_feasibility
+  - tlc_bounded_check
+  - rust_progress_test
+  - runtime_progress_enforcement
+  - observable_or_smoke
+  - drift_checked
+shared:
+  tla_module: spec/tla/YieldLiveness.tla
+  proof_module: spec/tla/YieldProofs.tla
+  validators:
+    - scripts/validate-tla.sh
+    - scripts/validate-liveness-coverage.sh
+  ci_commands:
+    - make validate-tla
+    - make validate-liveness
+    - make validate
+  allowed_statuses:
+    - bounded-pass
+    - conditional
+properties:
+  - id: CreatedEventuallyActiveOrTerminal
+    status: bounded-pass
+    axes: [tla_temporal_property, fairness_assumption, tlaps_feasibility, tlc_bounded_check, rust_progress_test, runtime_progress_enforcement, observable_or_smoke, drift_checked]
+    tla_property: CreatedEventuallyActiveOrTerminal
+    fairness: LifecycleFairSpec
+    tlaps:
+      temporal_property_feasible: false
+      infeasible_reason: TLAPS is required for the inductive safety obligations on this path, while the temporal fairness/eventuality claim is checked by TLC.
+      supporting_safety_theorems:
+        - CreateOrderPreservesInv
+        - CheckEligibilityPreservesInv
+        - CheckDisclosuresPreservesInv
+        - ApprovePreservesInv
+        - LockCashPreservesInv
+        - SubmitSubscriptionPreservesInv
+        - ConfirmTransferAgentPreservesInv
+        - ObserveChainMirrorPreservesInv
+        - BookPositionPreservesInv
+        - ReconcilePreservesInv
+        - ActivatePreservesInv
+        - OpenExceptionPreservesInv
+        - CancelPreservesInv
+        - NextPreservesInv
+        - SpecImpliesAlwaysSafety
+    assumptions:
+      - fair scheduling of enabled lifecycle commands
+      - transfer-agent confirmation eventually available in the abstract model
+      - reconciliation eventually matches in the abstract model
+    tlc_config: spec/tla/YieldLiveness.cfg
+    rust_tests:
+      - path: crates/domain/tests/liveness_trace_tests.rs
+        contains: [subscription_progress_reaches_active_under_happy_path_assumptions]
+    runtime_enforcement:
+      - path: services/worker/src/workers/mod.rs
+        contains: [handle_transfer_agent_event, SweepCommand::ConfirmTransferAgent, SweepCommand::BookPosition]
+      - path: services/worker/src/workers/mod.rs
+        contains: [handle_reconciliation_event, SweepCommand::Reconcile, SweepCommand::Activate]
+    observability:
+      - path: scripts/smoke-create-sweep.sh
+        contains: [Active, positions]
+  - id: ActiveEventuallyRedeemedOrTerminal
+    status: bounded-pass
+    axes: [tla_temporal_property, fairness_assumption, tlaps_feasibility, tlc_bounded_check, rust_progress_test, runtime_progress_enforcement, observable_or_smoke, drift_checked]
+    tla_property: ActiveEventuallyRedeemedOrTerminal
+    fairness: LifecycleFairSpec
+    tlaps:
+      temporal_property_feasible: false
+      infeasible_reason: TLAPS is required for the inductive safety obligations on this path, while the temporal fairness/eventuality claim is checked by TLC.
+      supporting_safety_theorems:
+        - RequestRedemptionPreservesInv
+        - ReserveSharesPreservesInv
+        - SubmitRedemptionPreservesInv
+        - ConfirmRedemptionPreservesInv
+        - CreditCashPreservesInv
+        - SettleRedemptionPreservesInv
+        - OpenExceptionPreservesInv
+        - CancelPreservesInv
+        - NextPreservesInv
+        - SpecImpliesAlwaysSafety
+    assumptions:
+      - fair scheduling of redemption commands
+      - redemption confirmation eventually available in the abstract model
+      - cash credit confirmation eventually available in the abstract model
+    tlc_config: spec/tla/YieldLiveness.cfg
+    rust_tests:
+      - path: crates/domain/tests/liveness_trace_tests.rs
+        contains: [redemption_progress_reaches_settled_under_confirmation_assumptions]
+    runtime_enforcement:
+      - path: crates/domain/src/sweep.rs
+        contains: [RequestRedemption, ReserveShares, SubmitRedemption, ConfirmRedemption, CreditCash, SettleRedemption]
+      - path: crates/domain/src/sweep.rs
+        contains: [RedemptionCashCredited, "to: Status::CashCredited"]
+    observability:
+      - path: crates/domain/tests/refinement_trace_tests.rs
+        contains: [redemption_trace_refines_cash_credit_history_invariant]
+  - id: OpenExceptionEventuallyClosedIfResolved
+    status: conditional
+    axes: [tla_temporal_property, fairness_assumption, tlaps_feasibility, tlc_bounded_check, rust_progress_test, runtime_progress_enforcement, observable_or_smoke, drift_checked]
+    tla_property: OpenExceptionEventuallyClosedIfResolved
+    fairness: ExceptionFairSpec
+    tlaps:
+      temporal_property_feasible: false
+      infeasible_reason: TLAPS is required for the inductive safety obligations on this path, while the temporal fairness/eventuality claim is checked by TLC.
+      supporting_safety_theorems:
+        - OpenExceptionPreservesInv
+        - CloseExceptionPreservesInv
+        - NextPreservesInv
+        - SpecImpliesAlwaysSafety
+    assumptions:
+      - operator eventually supplies a valid exception resolution
+      - close-exception command is fairly scheduled after resolution
+    tlc_config: spec/tla/YieldExceptionLiveness.cfg
+    rust_tests:
+      - path: crates/domain/tests/liveness_trace_tests.rs
+        contains: [exception_resolution_progress_reaches_exception_closed_if_operator_resolves]
+    runtime_enforcement:
+      - path: services/api/src/routes/mod.rs
+        contains: [resolve_break, resolve_reconciliation_break]
+      - path: crates/persistence/src/repositories.rs
+        contains: [resolve_reconciliation_break, resolved_at]
+    observability:
+      - path: docs/runbooks/reconciliation-breaks.md
+        contains: [reconciliation-breaks, resolve]
+  - id: ReconciliationBreakEventuallyOpensException
+    status: conditional
+    axes: [tla_temporal_property, fairness_assumption, tlaps_feasibility, tlc_bounded_check, rust_progress_test, runtime_progress_enforcement, observable_or_smoke, drift_checked]
+    tla_property: ReconciliationBreakEventuallyOpensException
+    fairness: ExceptionFairSpec
+    tlaps:
+      temporal_property_feasible: false
+      infeasible_reason: TLAPS is required for the inductive safety obligations on this path, while the temporal fairness/eventuality claim is checked by TLC.
+      supporting_safety_theorems:
+        - OpenExceptionPreservesInv
+        - NextPreservesInv
+        - SpecImpliesAlwaysSafety
+    assumptions:
+      - reconciliation mismatch persists
+      - reconciliation worker is fairly scheduled
+    tlc_config: spec/tla/YieldExceptionLiveness.cfg
+    rust_tests:
+      - path: crates/domain/tests/liveness_trace_tests.rs
+        contains: [exception_resolution_progress_reaches_exception_closed_if_operator_resolves]
+    runtime_enforcement:
+      - path: services/worker/src/workers/mod.rs
+        contains: [reconciliation-mismatch, SweepCommand::OpenException]
+      - path: crates/persistence/src/repositories.rs
+        contains: [insert into reconciliation_breaks, local-reconciliation-worker]
+    observability:
+      - path: scripts/smoke-failure-paths.sh
+        contains: [reconciliation-mismatch, reconciliation-breaks]
+  - id: OutboxEventEventuallyPublishedOrFailed
+    status: conditional
+    axes: [tla_temporal_property, fairness_assumption, tlaps_feasibility, tlc_bounded_check, rust_progress_test, runtime_progress_enforcement, observable_or_smoke, drift_checked]
+    tla_property: OutboxEventEventuallyPublishedOrFailed
+    fairness: MessagingFairSpec
+    tlaps:
+      temporal_property_feasible: false
+      infeasible_reason: TLAPS is required for the inductive safety obligations on this path, while the temporal fairness/eventuality claim is checked by TLC.
+      supporting_safety_theorems:
+        - LeaseOutboxPreservesInv
+        - PublishOutboxPreservesInv
+        - NextPreservesInv
+        - SpecImpliesAlwaysSafety
+    assumptions:
+      - outbox publisher is fairly scheduled
+      - SNS publish eventually succeeds or transient failures are marked failed for retry
+    tlc_config: spec/tla/YieldMessagingLiveness.cfg
+    rust_tests:
+      - path: crates/persistence/tests/repository_tests.rs
+        contains: [failed_outbox_event_becomes_leasable_until_published]
+    runtime_enforcement:
+      - path: crates/persistence/src/outbox.rs
+        contains: [lease_pending_outbox, mark_published, mark_failed]
+      - path: services/worker/src/workers/mod.rs
+        contains: [run_outbox_publisher, mark_published, mark_failed]
+    observability:
+      - path: scripts/smoke-create-sweep.sh
+        contains: [Active]
+  - id: LeaseDoesNotStayStuck
+    status: conditional
+    axes: [tla_temporal_property, fairness_assumption, tlaps_feasibility, tlc_bounded_check, rust_progress_test, runtime_progress_enforcement, observable_or_smoke, drift_checked]
+    tla_property: LeaseDoesNotStayStuck
+    fairness: MessagingFairSpec
+    tlaps:
+      temporal_property_feasible: false
+      infeasible_reason: TLAPS is required for the inductive safety obligations on this path, while the temporal fairness/eventuality claim is checked by TLC.
+      supporting_safety_theorems:
+        - LeaseOutboxPreservesInv
+        - PublishOutboxPreservesInv
+        - NextPreservesInv
+        - SpecImpliesAlwaysSafety
+    assumptions:
+      - failed publish attempts release the lease
+      - publisher polling continues
+    tlc_config: spec/tla/YieldMessagingLiveness.cfg
+    rust_tests:
+      - path: crates/persistence/tests/repository_tests.rs
+        contains: [failed_outbox_event_becomes_leasable_until_published]
+    runtime_enforcement:
+      - path: crates/persistence/src/outbox.rs
+        contains: [status = 'failed', leased_until = null]
+      - path: crates/persistence/src/outbox.rs
+        contains: [leased_until is null or leased_until < now()]
+    observability:
+      - path: services/worker/src/workers/mod.rs
+        contains: [tokio::time::sleep, Duration::from_millis]
+  - id: InboxMessageEventuallyProcessedOrDeduplicated
+    status: conditional
+    axes: [tla_temporal_property, fairness_assumption, tlaps_feasibility, tlc_bounded_check, rust_progress_test, runtime_progress_enforcement, observable_or_smoke, drift_checked]
+    tla_property: InboxMessageEventuallyProcessedOrDeduplicated
+    fairness: MessagingFairSpec
+    tlaps:
+      temporal_property_feasible: false
+      infeasible_reason: TLAPS is required for the inductive safety obligations on this path, while the temporal fairness/eventuality claim is checked by TLC.
+      supporting_safety_theorems:
+        - ReceiveMessagePreservesInv
+        - ProcessMessagePreservesInv
+        - DeleteMessagePreservesInv
+        - NextPreservesInv
+        - SpecImpliesAlwaysSafety
+    assumptions:
+      - SQS eventually delivers a visible message
+      - worker is fairly scheduled after message delivery
+    tlc_config: spec/tla/YieldMessagingLiveness.cfg
+    rust_tests:
+      - path: crates/persistence/tests/repository_tests.rs
+        contains: [inbox_message_progresses_once_then_deduplicates]
+      - path: services/worker/src/workers/mod.rs
+        contains: [handler_errors_are_retried_without_exiting_consumer_policy, inbox_recording_errors_are_retried, malformed_messages_are_deleteable_poison_messages]
+    runtime_enforcement:
+      - path: crates/persistence/src/inbox.rs
+        contains: [record_inbox_message, on conflict]
+      - path: services/worker/src/workers/mod.rs
+        contains: [record_inbox_message, should_process, consumer.delete]
+      - path: services/worker/src/workers/mod.rs
+        contains: [disposition_for_processing_failure, MessageProcessingFailure::Handler, MessageDisposition::Retry]
+    observability:
+      - path: scripts/smoke-failure-paths.sh
+        contains: [duplicate-demo-key]

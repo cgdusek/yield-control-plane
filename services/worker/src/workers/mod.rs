@@ -124,16 +124,80 @@ where
         tokio::select! {
             _ = tokio::signal::ctrl_c() => return Ok(()),
             messages = consumer.receive(10, 5) => {
-                for message in messages? {
-                    let envelope = serde_json::from_str::<EventEnvelope>(&message.body)?;
-                    let should_process = record_inbox_message(&pool, consumer_name, &message.message_id, envelope.event_id).await?;
-                    if should_process {
-                        handler(config.clone(), pool.clone(), envelope).await?;
+                let messages = match messages {
+                    Ok(messages) => messages,
+                    Err(error) => {
+                        tracing::error!(%error, consumer_name, "queue receive failed");
+                        continue;
                     }
-                    consumer.delete(&message.receipt_handle).await?;
+                };
+                for message in messages {
+                    let envelope = match serde_json::from_str::<EventEnvelope>(&message.body) {
+                        Ok(envelope) => envelope,
+                        Err(error) => {
+                            tracing::error!(%error, consumer_name, message_id = %message.message_id, "invalid queue message body");
+                            delete_after_processing_error(&consumer, &message.receipt_handle, consumer_name, &message.message_id, disposition_for_processing_failure(MessageProcessingFailure::InvalidBody)).await;
+                            continue;
+                        }
+                    };
+                    let should_process = match record_inbox_message(&pool, consumer_name, &message.message_id, envelope.event_id).await {
+                        Ok(should_process) => should_process,
+                        Err(error) => {
+                            tracing::error!(%error, consumer_name, message_id = %message.message_id, event_id = %envelope.event_id, "failed to record inbox message");
+                            delete_after_processing_error(&consumer, &message.receipt_handle, consumer_name, &message.message_id, disposition_for_processing_failure(MessageProcessingFailure::InboxRecord)).await;
+                            continue;
+                        }
+                    };
+                    if should_process {
+                        if let Err(error) = handler(config.clone(), pool.clone(), envelope.clone()).await {
+                            tracing::error!(%error, consumer_name, message_id = %message.message_id, event_id = %envelope.event_id, event_type = %envelope.event_type, "worker message handler failed");
+                            delete_after_processing_error(&consumer, &message.receipt_handle, consumer_name, &message.message_id, disposition_for_processing_failure(MessageProcessingFailure::Handler)).await;
+                            continue;
+                        }
+                    }
+                    if let Err(error) = consumer.delete(&message.receipt_handle).await {
+                        tracing::error!(%error, consumer_name, message_id = %message.message_id, "failed to delete processed queue message");
+                    }
                 }
             }
         }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum MessageDisposition {
+    Delete,
+    Retry,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum MessageProcessingFailure {
+    InvalidBody,
+    InboxRecord,
+    Handler,
+}
+
+fn disposition_for_processing_failure(failure: MessageProcessingFailure) -> MessageDisposition {
+    match failure {
+        MessageProcessingFailure::InvalidBody => MessageDisposition::Delete,
+        MessageProcessingFailure::InboxRecord | MessageProcessingFailure::Handler => {
+            MessageDisposition::Retry
+        }
+    }
+}
+
+async fn delete_after_processing_error(
+    consumer: &SqsConsumer,
+    receipt_handle: &str,
+    consumer_name: &str,
+    message_id: &str,
+    disposition: MessageDisposition,
+) {
+    if disposition == MessageDisposition::Retry {
+        return;
+    }
+    if let Err(error) = consumer.delete(receipt_handle).await {
+        tracing::error!(%error, consumer_name, message_id, "failed to delete rejected queue message");
     }
 }
 
@@ -410,6 +474,30 @@ mod tests {
         assert_eq!(
             queue_url("http://localstack:4566", "transfer-agent-worker-queue"),
             "http://localstack:4566/000000000000/transfer-agent-worker-queue"
+        );
+    }
+
+    #[test]
+    fn handler_errors_are_retried_without_exiting_consumer_policy() {
+        assert_eq!(
+            disposition_for_processing_failure(MessageProcessingFailure::Handler),
+            MessageDisposition::Retry
+        );
+    }
+
+    #[test]
+    fn inbox_recording_errors_are_retried() {
+        assert_eq!(
+            disposition_for_processing_failure(MessageProcessingFailure::InboxRecord),
+            MessageDisposition::Retry
+        );
+    }
+
+    #[test]
+    fn malformed_messages_are_deleteable_poison_messages() {
+        assert_eq!(
+            disposition_for_processing_failure(MessageProcessingFailure::InvalidBody),
+            MessageDisposition::Delete
         );
     }
 }
