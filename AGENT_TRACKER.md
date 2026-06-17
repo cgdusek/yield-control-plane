@@ -8,10 +8,9 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 - Preserved project copy: `spec/source/fidelity_defi_yield_platform_spec.md` (pending Gate 1)
 
 ## Current Gate
-- Gate: Gate 13 formal liveness coverage extension
-- Status: Passed
-- Start Time: 2026-06-17T02:45:12Z
-- End Time: 2026-06-17T03:18:06Z
+- Gate: Gate 13 CI monitoring and GitHub Actions hardening
+- Status: In Progress
+- Start Time: 2026-06-17T03:28:01Z
 
 ## Gate Status Table
 | Gate | Objective | Status | Evidence | Last Updated |
@@ -33,6 +32,7 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 | Formal extension | TLAPS/TLC verification spine and invariant traceability | Passed | `make validate-tla`, `make validate-specs`, `make validate-docs`, `make check-tools`, `make validate`; formal docs and tracking artifacts added | 2026-06-17T00:38:18Z |
 | Formal refinement hardening | Raw-action TLAPS proofs and Rust-to-TLA refinement-lite evidence | Passed | `make validate` passed with raw-action TLAPS, TLC temporal append-only check, Rust-to-TLA mapping validation, exhaustive Rust transition projection tests, and invariant coverage convergence validator | 2026-06-17T02:36:46Z |
 | Formal liveness coverage | Conditional liveness specs, bounded TLC checks, Rust progress tests, runtime evidence, and CI drift gate | Passed | `make validate`, `make smoke`, `make smoke-failure-paths`, DB-backed tests, TLAPS-feasibility validator, worker retry/delete policy tests | 2026-06-17T03:18:06Z |
+| CI monitoring and GitHub Actions hardening | Monitor pushed `main` CI and remedy until green | In Progress | Run `27663616349` failed in integration `Install OS tools`; patch pending | 2026-06-17T03:28:01Z |
 
 ## Requirements Traceability Summary
 - Domain model and state machine: `spec/domain/sweep_order.machine.yaml`, `crates/domain`, domain tests.
@@ -196,6 +196,8 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 | 2026-06-17T03:18:00Z | `make dev-down` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Local Compose runtime stopped and containers/network removed. |
 | 2026-06-17T03:18:06Z | `test ! -d .tlacache && test ! -d states`; `git status -sb`; marker scan | `/Users/charlesdusek/Code/yield-control-plane` | Passed with intentional marker matches | Generated TLAPS/TLC state is clean; marker matches are standing rule text, historical tracker evidence, validator pattern, preserved source request, and UI input hint. |
 | 2026-06-17T03:18:06Z | `make validate-docs` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Tracker closure edits validated. |
+| 2026-06-17T03:28:01Z | `gh run view 27663616349`; `gh run watch 27663616349 --exit-status`; `gh run view 27663616349 --job 81812908849 --log` | `/Users/charlesdusek/Code/yield-control-plane` | Failed | Static job passed; integration job failed in `Install OS tools` because Ubuntu 24.04 has no `awscli` apt installation candidate. |
+| 2026-06-17T03:28:01Z | `python3 - <<'PY' ... yaml.safe_load('.github/workflows/ci.yml')`; `make validate-docs`; `git diff --check` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | CI workflow YAML, tracker docs, and whitespace checks passed after moving CI AWS CLI installation from apt to pip. |
 
 ## Decisions Made
 - 2026-06-16T14:48:00Z: User added a hard constraint that no artifact may be ornamental, decorative, inert, or merely skeletal. Every artifact must be executable, validated, enforced by tests/scripts/policies, or explicitly tracked as a bounded deferral. Added to `AGENTS.md` and `docs/agentic/working-agreement.md`.
@@ -207,6 +209,7 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 - 2026-06-17T02:45:12Z: Formal liveness coverage is scoped to conditional progress under explicit fairness and environment assumptions, plus bounded TLC model checks and Rust/runtime evidence. It does not claim universal progress under arbitrary external failure.
 - 2026-06-17T03:03:49Z: The liveness coverage validator must require TLAPS theorem evidence for every mathematically feasible safety obligation supporting a progress path. Pure temporal fairness/eventuality claims must be explicitly classified as not directly TLAPS-feasible and remain bounded by TLC/Rust/runtime evidence.
 - 2026-06-17T03:16:17Z: Worker consumers must not exit on per-message failures. Malformed messages are deleteable poison messages; inbox-recording or handler failures are logged and left for retry so stale or transient messages do not halt liveness for later messages.
+- 2026-06-17T03:28:01Z: GitHub Actions integration job installs AWS CLI through pip and adds `$HOME/.local/bin` to `GITHUB_PATH` instead of relying on Ubuntu 24.04 apt packaging for `awscli`.
 
 ## Defects / Failures
 | Timestamp | Failure | Root-Cause Hypothesis | Mitigation | Follow-Up Gate |
@@ -244,6 +247,7 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 | 2026-06-17T02:48:23Z | `make validate-tla` failed after adding liveness configs. | TLC deadlock checking is inappropriate for finite progress models that intentionally stop at terminal statuses after satisfying liveness properties. | Add `CHECK_DEADLOCK FALSE` to liveness configs and keep the safety config's deadlock behavior unchanged. | Formal liveness coverage |
 | 2026-06-17T03:03:49Z | Initial post-liveness `make smoke` and `make smoke-failure-paths` attempts returned HTTP 404. | The long-running Compose API container was serving a stale image from before the current `/ready` route and liveness changes. | Run `make dev-reset` and fresh `make dev-up` to rebuild current images before rerunning smoke gates. | Formal liveness coverage |
 | 2026-06-17T03:06:00Z | `make smoke` stalled at `Created` and failed after polling. | DB-backed tests had inserted outbox events while runtime workers were up; after test cleanup, a stale queued event made the transfer-agent worker return `record not found` and exit because the consumer propagated handler errors. | Make queue consumers log per-message failures and continue; leave handler/inbox failures for retry, delete malformed poison messages, add worker tests, rebuild runtime, and rerun smoke gates. | Formal liveness coverage |
+| 2026-06-17T03:28:01Z | GitHub Actions run `27663616349` failed. | The `Postgres, LocalStack, and Smoke Gates` job installed `awscli` with apt, but `awscli` has no installation candidate on the current Ubuntu 24.04 runner image. | Install AWS CLI with `python3 -m pip install --user awscli` and add `$HOME/.local/bin` to `GITHUB_PATH`, then rerun CI. | Gate 13 CI monitoring |
 
 ## Environment
 - OS: Darwin Tao.local 25.5.0 arm64
