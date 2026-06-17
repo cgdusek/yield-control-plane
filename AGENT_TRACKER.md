@@ -8,9 +8,9 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 - Preserved project copy: `spec/source/fidelity_defi_yield_platform_spec.md` (pending Gate 1)
 
 ## Current Gate
-- Gate: AWS production-style certification campaign execution
+- Gate: AWS certification closure CI remediation
 - Status: In Progress
-- Start Time: 2026-06-17T15:09:46Z
+- Start Time: 2026-06-17T21:07:02Z
 - End Time: Pending
 
 ## Gate Status Table
@@ -42,6 +42,7 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 | AWS certification simulation workstream | Add cost-bounded AWS ECS/Fargate Spot certification simulation artifacts, fail-closed preflight, runtime config hardening, evidence collection, and standards mapping | Passed | `make validate`, `make validate-aws-certification` with OpenTofu installed, DB-backed persistence tests, happy/failure smoke gates, repo surface coverage map closed with AWS certification surface | 2026-06-17T14:58:30Z |
 | AWS certification root-boundary hardening | Ensure every AWS certification lifecycle command enforces the non-root preflight before cloud-side deploy, run, collect, or destroy behavior | Passed | `aws-cert-run` and `aws-cert-collect` now invoke preflight; `make validate-aws-certification`, `make validate-docs`, shell syntax checks, and `make validate` passed | 2026-06-17T15:07:10Z |
 | AWS production-style certification campaign execution | Execute the root-bootstrap-to-scoped-role certification flow: local baseline, non-root AWS preflight, deploy, run, collect evidence, destroy, and final validation | Passed | Dirty stack destroyed; `$750` guardrail configured; scoped-role preflight passed; CI run `27709578309` passed; deploy/run/collect/destroy/root-teardown passed; DB invariant report has 10 passed checks and 0 failures; internal certification report added; post-report validation passed; commit `110a4be` pushed; CI run `27718744119` passed both jobs | 2026-06-17T20:56:02Z |
+| AWS certification closure CI remediation | Keep the post-campaign closure commit green after documentation and coverage-map closure updates | In Progress | GitHub Actions run `27719275199` passed integration/smoke but failed static while installing TLAPS on Ubuntu 24.04; workflow remediation pins the TLAPS-heavy static lane to Ubuntu 22.04 while preserving `make validate` | 2026-06-17T21:07:02Z |
 
 ## Requirements Traceability Summary
 - Domain model and state machine: `spec/domain/sweep_order.machine.yaml`, `crates/domain`, domain tests.
@@ -385,6 +386,8 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 | 2026-06-17T20:44:49Z | `make generate-repo-surface-coverage-map`; `make validate`; `git diff --check` | Passed | Post-report full validation passed, including TLAPS/TLC, Kani source proofs, repo/formal/liveness coverage validators, specs, k8s, AWS certification static validation, docs, Rust, and frontend checks. | AWS simulation live execution |
 | 2026-06-17T20:45:52Z | `make validate-repo-surface-coverage-map` | Failed then remedied | Final tracker/report edits made `spec/refinement/repo_surface_coverage_map.json` stale; regenerated the map before final commit. | AWS simulation live execution |
 | 2026-06-17T20:56:02Z | `git push`; `gh run watch 27718744119 --exit-status` | Passed | Commit `110a4be` pushed to `main`; GitHub Actions run `27718744119` passed both `Static, Rust, and Frontend Gates` and `Postgres, LocalStack, and Smoke Gates`. | AWS simulation live execution |
+| 2026-06-17T21:05:45Z | `gh run watch 27719275199 --exit-status`; `gh run view 27719275199 --job 82000184228 --log` | Failed / Diagnosed | Closure commit `7ecb23c` passed integration/smoke, but static CI failed before repo proof obligations when TLAPS 1.5.0's bundled PolyML/Isabelle build aborted on the Ubuntu 24.04 runner. Remediation pins only the TLAPS-heavy static job to Ubuntu 22.04 while continuing to run `make validate`. | AWS certification closure CI remediation |
+| 2026-06-17T21:11:03Z | `make generate-repo-surface-coverage-map`; workflow YAML parse; `make validate-docs`; `make validate-repo-surface-coverage-map`; `make validate-aws-certification`; `git diff --check`; `make validate` | Passed | Local remediation validation passed, including TLAPS/TLC, 23 Kani harnesses, repo/formal/liveness coverage validators, specs, k8s, AWS certification static validation, docs, Rust, and frontend tests; generated TLA state was cleaned. | AWS certification closure CI remediation |
 
 ## Environment
 - OS: Darwin Tao.local 25.5.0 arm64

@@ -18,7 +18,10 @@ env:
 jobs:
   validate:
     name: Static, Rust, and Frontend Gates
-    runs-on: ubuntu-latest
+    # TLAPS 1.5.0 bundles an old Isabelle/PolyML stack that can abort while
+    # compiling on Ubuntu 24.04 runners. Keep the TLAPS-heavy gate on 22.04
+    # while still running the same fail-closed `make validate` command.
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v6
 
