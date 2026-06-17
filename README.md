@@ -36,6 +36,8 @@ Local URLs:
 make validate-tla
 make validate-refinement
 make validate-formal-coverage
+make validate-formal-coverage-map
+make validate-repo-surface-coverage-map
 make validate-liveness
 make validate-specs
 make validate-k8s

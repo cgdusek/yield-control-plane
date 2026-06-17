@@ -8,10 +8,10 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 - Preserved project copy: `spec/source/fidelity_defi_yield_platform_spec.md` (pending Gate 1)
 
 ## Current Gate
-- Gate: Gate 13 CI monitoring and GitHub Actions hardening
+- Gate: Repository surface coverage JSON mapping
 - Status: Passed
-- Start Time: 2026-06-17T03:28:01Z
-- End Time: 2026-06-17T03:37:58Z
+- Start Time: 2026-06-17T04:02:25Z
+- End Time: 2026-06-17T04:10:49Z
 
 ## Gate Status Table
 | Gate | Objective | Status | Evidence | Last Updated |
@@ -34,6 +34,8 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 | Formal refinement hardening | Raw-action TLAPS proofs and Rust-to-TLA refinement-lite evidence | Passed | `make validate` passed with raw-action TLAPS, TLC temporal append-only check, Rust-to-TLA mapping validation, exhaustive Rust transition projection tests, and invariant coverage convergence validator | 2026-06-17T02:36:46Z |
 | Formal liveness coverage | Conditional liveness specs, bounded TLC checks, Rust progress tests, runtime evidence, and CI drift gate | Passed | `make validate`, `make smoke`, `make smoke-failure-paths`, DB-backed tests, TLAPS-feasibility validator, worker retry/delete policy tests | 2026-06-17T03:18:06Z |
 | CI monitoring and GitHub Actions hardening | Monitor pushed `main` CI and remedy until green | Passed | GitHub Actions run `27663822949` passed both static and integration jobs after CI AWS CLI install fix | 2026-06-17T03:37:58Z |
+| Formal coverage JSON mapping | Deterministic JSON map for safety/liveness/refinement coverage closure planning | Passed | `spec/refinement/formal_coverage_map.json`, `make validate-formal-coverage-map`, `make validate` | 2026-06-17T04:01:51Z |
+| Repository surface coverage JSON mapping | Quantify validation coverage across all repo surfaces and closure frontiers | Passed | `spec/refinement/repo_surface_coverage_map.json`, `make validate-repo-surface-coverage-map`, `make validate` | 2026-06-17T04:10:49Z |
 
 ## Requirements Traceability Summary
 - Domain model and state machine: `spec/domain/sweep_order.machine.yaml`, `crates/domain`, domain tests.
@@ -201,6 +203,11 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 | 2026-06-17T03:28:01Z | `python3 - <<'PY' ... yaml.safe_load('.github/workflows/ci.yml')`; `make validate-docs`; `git diff --check` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | CI workflow YAML, tracker docs, and whitespace checks passed after moving CI AWS CLI installation from apt to pip. |
 | 2026-06-17T03:29:43Z | `git commit -m "Fix CI AWS CLI installation"`; `git push origin main` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Pushed CI fix commit `7bbaf25` to `origin/main`. |
 | 2026-06-17T03:37:58Z | `gh run watch 27663822949 --exit-status`; `gh run view 27663822949 --json databaseId,status,conclusion,url,headSha,jobs` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | GitHub Actions `Local Gates` passed: static job completed in 4m21s; integration job completed in 7m50s with DB-backed tests, Compose runtime, smoke gates, and cleanup all green. |
+| 2026-06-17T04:00:00Z | `make generate-formal-coverage-map`; `make validate-formal-coverage-map`; `make validate-formal-coverage`; `make validate-liveness`; `make validate-refinement`; `make validate-docs`; `git diff --check` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Generated deterministic JSON formal coverage map and verified it is current against source matrices and validation scripts. |
+| 2026-06-17T04:01:51Z | `make validate` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Full validation gate passed with the new `scripts/validate-formal-coverage-map.sh` drift check included in `scripts/validate-all.sh`. |
+| 2026-06-17T04:06:00Z | `make generate-repo-surface-coverage-map`; `make validate-repo-surface-coverage-map`; `make validate-formal-coverage-map` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Generated whole-repository surface coverage JSON with 15/15 closed surfaces, 190/190 mapped files, zero unmapped files, and zero conflicts. |
+| 2026-06-17T04:09:07Z | `make validate` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Full validation gate passed with both generated coverage-map drift checks included in `scripts/validate-all.sh`. |
+| 2026-06-17T04:10:49Z | `make generate-repo-surface-coverage-map`; `make validate-repo-surface-coverage-map`; `make validate` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Regenerated the repo surface map with S0-S6 proof ladders per surface and reran the full validation gate. |
 
 ## Decisions Made
 - 2026-06-16T14:48:00Z: User added a hard constraint that no artifact may be ornamental, decorative, inert, or merely skeletal. Every artifact must be executable, validated, enforced by tests/scripts/policies, or explicitly tracked as a bounded deferral. Added to `AGENTS.md` and `docs/agentic/working-agreement.md`.
@@ -213,6 +220,9 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 - 2026-06-17T03:03:49Z: The liveness coverage validator must require TLAPS theorem evidence for every mathematically feasible safety obligation supporting a progress path. Pure temporal fairness/eventuality claims must be explicitly classified as not directly TLAPS-feasible and remain bounded by TLC/Rust/runtime evidence.
 - 2026-06-17T03:16:17Z: Worker consumers must not exit on per-message failures. Malformed messages are deleteable poison messages; inbox-recording or handler failures are logged and left for retry so stale or transient messages do not halt liveness for later messages.
 - 2026-06-17T03:28:01Z: GitHub Actions integration job installs AWS CLI through pip and adds `$HOME/.local/bin` to `GITHUB_PATH` instead of relying on Ubuntu 24.04 apt packaging for `awscli`.
+- 2026-06-17T03:58:44Z: Formal coverage closure planning will use a generated JSON map derived from the existing invariant, liveness, and Rust-to-TLA YAML matrices. The JSON artifact must be validated for drift rather than manually edited.
+- 2026-06-17T04:02:25Z: Whole-repository coverage will be tracked separately from formal invariant coverage because repo surfaces include frontend, Docker, Kubernetes, docs, CI, scripts, LocalStack, and operational runbooks. The surface map must quantify evidence breadth and identify closure actions without claiming line-level formal proof of the full codebase.
+- 2026-06-17T04:10:49Z: Each repository surface in the JSON map now carries an S0-S6 proof ladder so future hardening rounds can move from surface objective to contract, executable evidence, implementation mapping, proof obligations, machine checks, and assumptions.
 
 ## Defects / Failures
 | Timestamp | Failure | Root-Cause Hypothesis | Mitigation | Follow-Up Gate |

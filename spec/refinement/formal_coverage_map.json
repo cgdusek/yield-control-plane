@@ -1,0 +1,1683 @@
+{
+  "version": 1,
+  "artifact": "formal_coverage_map",
+  "source_of_truth": [
+    "spec/refinement/invariant_coverage.yaml",
+    "spec/refinement/liveness_coverage.yaml",
+    "spec/refinement/rust_tla_mapping.yaml"
+  ],
+  "closure_semantics": {
+    "closed": "All required safety axes are present and validators bind the item to make validate.",
+    "closed_bounded": "The liveness claim has explicit assumptions and bounded TLC/Rust/runtime evidence.",
+    "closed_under_assumptions": "The liveness claim is covered only while its listed fairness and environment assumptions hold.",
+    "needs_work": "At least one required axis, status, or closure condition is missing."
+  },
+  "summary": {
+    "safety": {
+      "total": 13,
+      "closed": 13,
+      "needs_work": 0,
+      "closure_ratio": 1.0
+    },
+    "liveness": {
+      "total": 7,
+      "closed_bounded": 2,
+      "closed_under_assumptions": 5,
+      "needs_work": 0,
+      "conditional_assumption_count": 10,
+      "machine_checked_axis_ratio": 1.0
+    },
+    "rust_to_tla_refinement": {
+      "command_count": 19,
+      "transition_path_count": 38,
+      "closed_transition_path_count": 38,
+      "closure_ratio": 1.0
+    },
+    "tlaps": {
+      "unique_theorem_references": 35
+    },
+    "closure": {
+      "needs_work_count": 0,
+      "needs_work_item_ids": [],
+      "absolute_liveness_open_assumption_count": 10
+    }
+  },
+  "safety": [
+    {
+      "id": "NoDuplicateIdempotency",
+      "kind": "safety_invariant",
+      "status": "covered",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "required_axes": [
+        "tla_definition",
+        "tlaps_checked",
+        "tlc_bounded",
+        "rust_projection",
+        "rust_tested",
+        "runtime_enforced",
+        "drift_checked"
+      ],
+      "present_axes": [
+        "tla_definition",
+        "tlaps_checked",
+        "tlc_bounded",
+        "rust_projection",
+        "rust_tested",
+        "runtime_enforced",
+        "drift_checked"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "evidence": {
+        "tla_definition": "NoDuplicateIdempotency",
+        "tlaps_theorems": [
+          "CreateOrderPreservesInv",
+          "NextPreservesInv",
+          "InvImpliesSafety"
+        ],
+        "tlc": {
+          "invariants": [
+            "Inv",
+            "Safety"
+          ]
+        },
+        "rust_tests": [
+          "crates/persistence/tests/repository_tests.rs"
+        ],
+        "runtime_enforcement": [
+          "crates/persistence/migrations/20260616150400_initial.sql",
+          "crates/persistence/src/repositories.rs"
+        ]
+      }
+    },
+    {
+      "id": "NoDuplicateConfirmation",
+      "kind": "safety_invariant",
+      "status": "covered",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "required_axes": [
+        "tla_definition",
+        "tlaps_checked",
+        "tlc_bounded",
+        "rust_projection",
+        "rust_tested",
+        "runtime_enforced",
+        "drift_checked"
+      ],
+      "present_axes": [
+        "tla_definition",
+        "tlaps_checked",
+        "tlc_bounded",
+        "rust_projection",
+        "rust_tested",
+        "runtime_enforced",
+        "drift_checked"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "evidence": {
+        "tla_definition": "NoDuplicateConfirmation",
+        "tlaps_theorems": [
+          "ConfirmTransferAgentPreservesInv",
+          "NextPreservesInv",
+          "InvImpliesSafety"
+        ],
+        "tlc": {
+          "invariants": [
+            "Inv",
+            "Safety"
+          ]
+        },
+        "rust_tests": [
+          "crates/persistence/tests/repository_tests.rs"
+        ],
+        "runtime_enforcement": [
+          "crates/persistence/migrations/20260616150400_initial.sql",
+          "crates/persistence/src/repositories.rs"
+        ]
+      }
+    },
+    {
+      "id": "OnePositionPerOrder",
+      "kind": "safety_invariant",
+      "status": "covered",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "required_axes": [
+        "tla_definition",
+        "tlaps_checked",
+        "tlc_bounded",
+        "rust_projection",
+        "rust_tested",
+        "runtime_enforced",
+        "drift_checked"
+      ],
+      "present_axes": [
+        "tla_definition",
+        "tlaps_checked",
+        "tlc_bounded",
+        "rust_projection",
+        "rust_tested",
+        "runtime_enforced",
+        "drift_checked"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "evidence": {
+        "tla_definition": "OnePositionPerOrder",
+        "tlaps_theorems": [
+          "BookPositionPreservesInv",
+          "NextPreservesInv",
+          "InvImpliesSafety"
+        ],
+        "tlc": {
+          "invariants": [
+            "Inv",
+            "Safety"
+          ]
+        },
+        "rust_tests": [
+          "crates/persistence/tests/repository_tests.rs"
+        ],
+        "runtime_enforcement": [
+          "crates/persistence/migrations/20260616150400_initial.sql",
+          "crates/persistence/src/repositories.rs"
+        ]
+      }
+    },
+    {
+      "id": "PositionBookedRequiresTransferAgentConfirmation",
+      "kind": "safety_invariant",
+      "status": "covered",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "required_axes": [
+        "tla_definition",
+        "tlaps_checked",
+        "tlc_bounded",
+        "rust_projection",
+        "rust_tested",
+        "runtime_enforced",
+        "drift_checked"
+      ],
+      "present_axes": [
+        "tla_definition",
+        "tlaps_checked",
+        "tlc_bounded",
+        "rust_projection",
+        "rust_tested",
+        "runtime_enforced",
+        "drift_checked"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "evidence": {
+        "tla_definition": "PositionBookedRequiresTransferAgentConfirmation",
+        "tlaps_theorems": [
+          "BookPositionPreservesInv",
+          "NextPreservesInv",
+          "InvImpliesSafety"
+        ],
+        "tlc": {
+          "invariants": [
+            "Inv",
+            "Safety"
+          ]
+        },
+        "rust_tests": [
+          "crates/domain/tests/ledger_invariant_tests.rs",
+          "crates/domain/tests/sweep_state_machine_tests.rs",
+          "crates/domain/tests/refinement_trace_tests.rs"
+        ],
+        "runtime_enforcement": [
+          "crates/domain/src/ledger.rs",
+          "crates/persistence/src/repositories.rs",
+          "crates/persistence/migrations/20260616150400_initial.sql"
+        ]
+      }
+    },
+    {
+      "id": "ActiveRequiresReconciledHistory",
+      "kind": "safety_invariant",
+      "status": "covered",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "required_axes": [
+        "tla_definition",
+        "tlaps_checked",
+        "tlc_bounded",
+        "rust_projection",
+        "rust_tested",
+        "runtime_enforced",
+        "drift_checked"
+      ],
+      "present_axes": [
+        "tla_definition",
+        "tlaps_checked",
+        "tlc_bounded",
+        "rust_projection",
+        "rust_tested",
+        "runtime_enforced",
+        "drift_checked"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "evidence": {
+        "tla_definition": "ActiveRequiresReconciledHistory",
+        "tlaps_theorems": [
+          "ActivatePreservesInv",
+          "NextPreservesInv",
+          "InvImpliesSafety"
+        ],
+        "tlc": {
+          "invariants": [
+            "Inv",
+            "Safety"
+          ]
+        },
+        "rust_tests": [
+          "crates/domain/tests/sweep_property_tests.rs",
+          "crates/domain/tests/sweep_state_machine_tests.rs",
+          "crates/domain/tests/refinement_trace_tests.rs"
+        ],
+        "runtime_enforcement": [
+          "crates/domain/src/sweep.rs",
+          "crates/persistence/src/repositories.rs"
+        ]
+      }
+    },
+    {
+      "id": "CashCreditedRequiresRedemptionConfirmationHistory",
+      "kind": "safety_invariant",
+      "status": "covered",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "required_axes": [
+        "tla_definition",
+        "tlaps_checked",
+        "tlc_bounded",
+        "rust_projection",
+        "rust_tested",
+        "runtime_enforced",
+        "drift_checked"
+      ],
+      "present_axes": [
+        "tla_definition",
+        "tlaps_checked",
+        "tlc_bounded",
+        "rust_projection",
+        "rust_tested",
+        "runtime_enforced",
+        "drift_checked"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "evidence": {
+        "tla_definition": "CashCreditedRequiresRedemptionConfirmationHistory",
+        "tlaps_theorems": [
+          "CreditCashPreservesInv",
+          "NextPreservesInv",
+          "InvImpliesSafety"
+        ],
+        "tlc": {
+          "invariants": [
+            "Inv",
+            "Safety"
+          ]
+        },
+        "rust_tests": [
+          "crates/domain/tests/sweep_property_tests.rs",
+          "crates/domain/tests/refinement_trace_tests.rs"
+        ],
+        "runtime_enforcement": [
+          "crates/domain/src/sweep.rs",
+          "crates/domain/src/abstract_refinement.rs"
+        ]
+      }
+    },
+    {
+      "id": "CurrentStatusInHistory",
+      "kind": "safety_invariant",
+      "status": "covered",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "required_axes": [
+        "tla_definition",
+        "tlaps_checked",
+        "tlc_bounded",
+        "rust_projection",
+        "rust_tested",
+        "runtime_enforced",
+        "drift_checked"
+      ],
+      "present_axes": [
+        "tla_definition",
+        "tlaps_checked",
+        "tlc_bounded",
+        "rust_projection",
+        "rust_tested",
+        "runtime_enforced",
+        "drift_checked"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "evidence": {
+        "tla_definition": "CurrentStatusInHistory",
+        "tlaps_theorems": [
+          "CreateOrderPreservesInv",
+          "MovePreservesInv",
+          "NextPreservesInv",
+          "StutterPreservesInv"
+        ],
+        "tlc": {
+          "invariants": [
+            "Inv"
+          ]
+        },
+        "rust_tests": [
+          "crates/domain/tests/refinement_trace_tests.rs"
+        ],
+        "runtime_enforcement": [
+          "crates/domain/src/abstract_refinement.rs",
+          "crates/domain/src/sweep.rs"
+        ]
+      }
+    },
+    {
+      "id": "NoFiddYieldSource",
+      "kind": "safety_invariant",
+      "status": "covered",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "required_axes": [
+        "tla_definition",
+        "tlaps_checked",
+        "tlc_bounded",
+        "rust_projection",
+        "rust_tested",
+        "runtime_enforced",
+        "drift_checked"
+      ],
+      "present_axes": [
+        "tla_definition",
+        "tlaps_checked",
+        "tlc_bounded",
+        "rust_projection",
+        "rust_tested",
+        "runtime_enforced",
+        "drift_checked"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "evidence": {
+        "tla_definition": "NoFiddYieldSource",
+        "tlaps_theorems": [
+          "CreateOrderPreservesInv",
+          "NextPreservesInv",
+          "InvImpliesSafety"
+        ],
+        "tlc": {
+          "invariants": [
+            "Inv",
+            "Safety"
+          ]
+        },
+        "rust_tests": [
+          "crates/domain/tests/ledger_invariant_tests.rs",
+          "crates/persistence/tests/repository_tests.rs",
+          "crates/domain/tests/refinement_trace_tests.rs"
+        ],
+        "runtime_enforcement": [
+          "crates/domain/src/invariants.rs",
+          "crates/domain/src/asset.rs",
+          "crates/persistence/src/repositories.rs"
+        ]
+      }
+    },
+    {
+      "id": "LedgerBalancedPerAsset",
+      "kind": "safety_invariant",
+      "status": "covered",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "required_axes": [
+        "tla_definition",
+        "tlaps_checked",
+        "tlc_bounded",
+        "rust_projection",
+        "rust_tested",
+        "runtime_enforced",
+        "drift_checked"
+      ],
+      "present_axes": [
+        "tla_definition",
+        "tlaps_checked",
+        "tlc_bounded",
+        "rust_projection",
+        "rust_tested",
+        "runtime_enforced",
+        "drift_checked"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "evidence": {
+        "tla_definition": "LedgerBalancedPerAsset",
+        "tlaps_theorems": [
+          "LockCashPreservesInv",
+          "BookPositionPreservesInv",
+          "CreditCashPreservesInv",
+          "NextPreservesInv"
+        ],
+        "tlc": {
+          "invariants": [
+            "Inv",
+            "Safety"
+          ]
+        },
+        "rust_tests": [
+          "crates/domain/tests/ledger_invariant_tests.rs",
+          "crates/domain/tests/refinement_trace_tests.rs"
+        ],
+        "runtime_enforcement": [
+          "crates/domain/src/ledger.rs",
+          "crates/persistence/src/repositories.rs"
+        ]
+      }
+    },
+    {
+      "id": "LedgerAppendOnly",
+      "kind": "safety_invariant",
+      "status": "covered",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "required_axes": [
+        "tla_definition",
+        "tlaps_checked",
+        "tlc_bounded",
+        "rust_projection",
+        "rust_tested",
+        "runtime_enforced",
+        "drift_checked"
+      ],
+      "present_axes": [
+        "tla_definition",
+        "tlaps_checked",
+        "tlc_bounded",
+        "rust_projection",
+        "rust_tested",
+        "runtime_enforced",
+        "drift_checked"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "evidence": {
+        "tla_definition": "LedgerAppendOnly",
+        "tlaps_theorems": [
+          "LedgerAppendOnlyPreserved",
+          "CreateOrderAppendOnly",
+          "LockCashAppendOnly",
+          "BookPositionAppendOnly",
+          "CreditCashAppendOnly"
+        ],
+        "tlc": {
+          "properties": [
+            "LedgerAppendOnlyTemporal"
+          ]
+        },
+        "rust_tests": [
+          "crates/persistence/tests/repository_tests.rs",
+          "crates/domain/tests/refinement_trace_tests.rs"
+        ],
+        "runtime_enforcement": [
+          "crates/persistence/migrations/20260616150400_initial.sql"
+        ]
+      }
+    },
+    {
+      "id": "InboxDeduplicatesWorkerEffects",
+      "kind": "safety_invariant",
+      "status": "covered",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "required_axes": [
+        "tla_definition",
+        "tlaps_checked",
+        "tlc_bounded",
+        "rust_projection",
+        "rust_tested",
+        "runtime_enforced",
+        "drift_checked"
+      ],
+      "present_axes": [
+        "tla_definition",
+        "tlaps_checked",
+        "tlc_bounded",
+        "rust_projection",
+        "rust_tested",
+        "runtime_enforced",
+        "drift_checked"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "evidence": {
+        "tla_definition": "InboxDeduplicatesWorkerEffects",
+        "tlaps_theorems": [
+          "ReceiveMessagePreservesInv",
+          "ProcessMessagePreservesInv",
+          "NextPreservesInv"
+        ],
+        "tlc": {
+          "invariants": [
+            "Inv",
+            "Safety"
+          ]
+        },
+        "rust_tests": [
+          "crates/persistence/tests/repository_tests.rs",
+          "scripts/smoke-failure-paths.sh"
+        ],
+        "runtime_enforcement": [
+          "crates/persistence/migrations/20260616150400_initial.sql",
+          "crates/persistence/src/inbox.rs",
+          "services/worker/src/workers/mod.rs"
+        ]
+      }
+    },
+    {
+      "id": "OutboxRetryDoesNotDuplicateBusinessEffects",
+      "kind": "safety_invariant",
+      "status": "covered",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "required_axes": [
+        "tla_definition",
+        "tlaps_checked",
+        "tlc_bounded",
+        "rust_projection",
+        "rust_tested",
+        "runtime_enforced",
+        "drift_checked"
+      ],
+      "present_axes": [
+        "tla_definition",
+        "tlaps_checked",
+        "tlc_bounded",
+        "rust_projection",
+        "rust_tested",
+        "runtime_enforced",
+        "drift_checked"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "evidence": {
+        "tla_definition": "OutboxRetryDoesNotDuplicateBusinessEffects",
+        "tlaps_theorems": [
+          "LeaseOutboxPreservesInv",
+          "PublishOutboxPreservesInv",
+          "NextPreservesInv"
+        ],
+        "tlc": {
+          "invariants": [
+            "Inv",
+            "Safety"
+          ]
+        },
+        "rust_tests": [
+          "scripts/smoke-create-sweep.sh",
+          "scripts/smoke-failure-paths.sh"
+        ],
+        "runtime_enforcement": [
+          "crates/persistence/migrations/20260616150400_initial.sql",
+          "crates/persistence/src/outbox.rs",
+          "services/worker/src/workers/mod.rs"
+        ]
+      }
+    },
+    {
+      "id": "WriteCommandCarriesCorrelationAndIdempotency",
+      "kind": "safety_invariant",
+      "status": "covered",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "required_axes": [
+        "tla_definition",
+        "tlaps_checked",
+        "tlc_bounded",
+        "rust_projection",
+        "rust_tested",
+        "runtime_enforced",
+        "drift_checked"
+      ],
+      "present_axes": [
+        "tla_definition",
+        "tlaps_checked",
+        "tlc_bounded",
+        "rust_projection",
+        "rust_tested",
+        "runtime_enforced",
+        "drift_checked"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "evidence": {
+        "tla_definition": "WriteCommandCarriesCorrelationAndIdempotency",
+        "tlaps_theorems": [
+          "CreateOrderPreservesInv",
+          "NextPreservesInv",
+          "InvImpliesSafety"
+        ],
+        "tlc": {
+          "invariants": [
+            "Inv",
+            "Safety"
+          ]
+        },
+        "rust_tests": [
+          "services/api/tests/api_tests.rs",
+          "crates/persistence/tests/repository_tests.rs"
+        ],
+        "runtime_enforcement": [
+          "services/api/src/middleware/mod.rs",
+          "spec/openapi.yaml",
+          "scripts/validate-specs.sh"
+        ]
+      }
+    }
+  ],
+  "liveness": [
+    {
+      "id": "CreatedEventuallyActiveOrTerminal",
+      "kind": "liveness_property",
+      "status": "bounded-pass",
+      "closure_status": "closed_bounded",
+      "coverage_score": 1.0,
+      "required_axes": [
+        "tla_temporal_property",
+        "fairness_assumption",
+        "tlaps_feasibility",
+        "tlc_bounded_check",
+        "rust_progress_test",
+        "runtime_progress_enforcement",
+        "observable_or_smoke",
+        "drift_checked"
+      ],
+      "present_axes": [
+        "tla_temporal_property",
+        "fairness_assumption",
+        "tlaps_feasibility",
+        "tlc_bounded_check",
+        "rust_progress_test",
+        "runtime_progress_enforcement",
+        "observable_or_smoke",
+        "drift_checked"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "assumptions": [
+        "fair scheduling of enabled lifecycle commands",
+        "transfer-agent confirmation eventually available in the abstract model",
+        "reconciliation eventually matches in the abstract model"
+      ],
+      "evidence": {
+        "tla_property": "CreatedEventuallyActiveOrTerminal",
+        "fairness": "LifecycleFairSpec",
+        "tlc_config": "spec/tla/YieldLiveness.cfg",
+        "tlaps_temporal_property_feasible": false,
+        "tlaps_property_theorems": [],
+        "tlaps_supporting_safety_theorems": [
+          "CreateOrderPreservesInv",
+          "CheckEligibilityPreservesInv",
+          "CheckDisclosuresPreservesInv",
+          "ApprovePreservesInv",
+          "LockCashPreservesInv",
+          "SubmitSubscriptionPreservesInv",
+          "ConfirmTransferAgentPreservesInv",
+          "ObserveChainMirrorPreservesInv",
+          "BookPositionPreservesInv",
+          "ReconcilePreservesInv",
+          "ActivatePreservesInv",
+          "OpenExceptionPreservesInv",
+          "CancelPreservesInv",
+          "NextPreservesInv",
+          "SpecImpliesAlwaysSafety"
+        ],
+        "rust_tests": [
+          "crates/domain/tests/liveness_trace_tests.rs"
+        ],
+        "runtime_enforcement": [
+          "services/worker/src/workers/mod.rs"
+        ],
+        "observability": [
+          "scripts/smoke-create-sweep.sh"
+        ]
+      }
+    },
+    {
+      "id": "ActiveEventuallyRedeemedOrTerminal",
+      "kind": "liveness_property",
+      "status": "bounded-pass",
+      "closure_status": "closed_bounded",
+      "coverage_score": 1.0,
+      "required_axes": [
+        "tla_temporal_property",
+        "fairness_assumption",
+        "tlaps_feasibility",
+        "tlc_bounded_check",
+        "rust_progress_test",
+        "runtime_progress_enforcement",
+        "observable_or_smoke",
+        "drift_checked"
+      ],
+      "present_axes": [
+        "tla_temporal_property",
+        "fairness_assumption",
+        "tlaps_feasibility",
+        "tlc_bounded_check",
+        "rust_progress_test",
+        "runtime_progress_enforcement",
+        "observable_or_smoke",
+        "drift_checked"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "assumptions": [
+        "fair scheduling of redemption commands",
+        "redemption confirmation eventually available in the abstract model",
+        "cash credit confirmation eventually available in the abstract model"
+      ],
+      "evidence": {
+        "tla_property": "ActiveEventuallyRedeemedOrTerminal",
+        "fairness": "LifecycleFairSpec",
+        "tlc_config": "spec/tla/YieldLiveness.cfg",
+        "tlaps_temporal_property_feasible": false,
+        "tlaps_property_theorems": [],
+        "tlaps_supporting_safety_theorems": [
+          "RequestRedemptionPreservesInv",
+          "ReserveSharesPreservesInv",
+          "SubmitRedemptionPreservesInv",
+          "ConfirmRedemptionPreservesInv",
+          "CreditCashPreservesInv",
+          "SettleRedemptionPreservesInv",
+          "OpenExceptionPreservesInv",
+          "CancelPreservesInv",
+          "NextPreservesInv",
+          "SpecImpliesAlwaysSafety"
+        ],
+        "rust_tests": [
+          "crates/domain/tests/liveness_trace_tests.rs"
+        ],
+        "runtime_enforcement": [
+          "crates/domain/src/sweep.rs"
+        ],
+        "observability": [
+          "crates/domain/tests/refinement_trace_tests.rs"
+        ]
+      }
+    },
+    {
+      "id": "OpenExceptionEventuallyClosedIfResolved",
+      "kind": "liveness_property",
+      "status": "conditional",
+      "closure_status": "closed_under_assumptions",
+      "coverage_score": 1.0,
+      "required_axes": [
+        "tla_temporal_property",
+        "fairness_assumption",
+        "tlaps_feasibility",
+        "tlc_bounded_check",
+        "rust_progress_test",
+        "runtime_progress_enforcement",
+        "observable_or_smoke",
+        "drift_checked"
+      ],
+      "present_axes": [
+        "tla_temporal_property",
+        "fairness_assumption",
+        "tlaps_feasibility",
+        "tlc_bounded_check",
+        "rust_progress_test",
+        "runtime_progress_enforcement",
+        "observable_or_smoke",
+        "drift_checked"
+      ],
+      "missing_axes": [],
+      "closure_actions": [
+        "To close unconditionally, discharge or operationally enforce liveness assumption: operator eventually supplies a valid exception resolution",
+        "To close unconditionally, discharge or operationally enforce liveness assumption: close-exception command is fairly scheduled after resolution"
+      ],
+      "assumptions": [
+        "operator eventually supplies a valid exception resolution",
+        "close-exception command is fairly scheduled after resolution"
+      ],
+      "evidence": {
+        "tla_property": "OpenExceptionEventuallyClosedIfResolved",
+        "fairness": "ExceptionFairSpec",
+        "tlc_config": "spec/tla/YieldExceptionLiveness.cfg",
+        "tlaps_temporal_property_feasible": false,
+        "tlaps_property_theorems": [],
+        "tlaps_supporting_safety_theorems": [
+          "OpenExceptionPreservesInv",
+          "CloseExceptionPreservesInv",
+          "NextPreservesInv",
+          "SpecImpliesAlwaysSafety"
+        ],
+        "rust_tests": [
+          "crates/domain/tests/liveness_trace_tests.rs"
+        ],
+        "runtime_enforcement": [
+          "services/api/src/routes/mod.rs",
+          "crates/persistence/src/repositories.rs"
+        ],
+        "observability": [
+          "docs/runbooks/reconciliation-breaks.md"
+        ]
+      }
+    },
+    {
+      "id": "ReconciliationBreakEventuallyOpensException",
+      "kind": "liveness_property",
+      "status": "conditional",
+      "closure_status": "closed_under_assumptions",
+      "coverage_score": 1.0,
+      "required_axes": [
+        "tla_temporal_property",
+        "fairness_assumption",
+        "tlaps_feasibility",
+        "tlc_bounded_check",
+        "rust_progress_test",
+        "runtime_progress_enforcement",
+        "observable_or_smoke",
+        "drift_checked"
+      ],
+      "present_axes": [
+        "tla_temporal_property",
+        "fairness_assumption",
+        "tlaps_feasibility",
+        "tlc_bounded_check",
+        "rust_progress_test",
+        "runtime_progress_enforcement",
+        "observable_or_smoke",
+        "drift_checked"
+      ],
+      "missing_axes": [],
+      "closure_actions": [
+        "To close unconditionally, discharge or operationally enforce liveness assumption: reconciliation mismatch persists",
+        "To close unconditionally, discharge or operationally enforce liveness assumption: reconciliation worker is fairly scheduled"
+      ],
+      "assumptions": [
+        "reconciliation mismatch persists",
+        "reconciliation worker is fairly scheduled"
+      ],
+      "evidence": {
+        "tla_property": "ReconciliationBreakEventuallyOpensException",
+        "fairness": "ExceptionFairSpec",
+        "tlc_config": "spec/tla/YieldExceptionLiveness.cfg",
+        "tlaps_temporal_property_feasible": false,
+        "tlaps_property_theorems": [],
+        "tlaps_supporting_safety_theorems": [
+          "OpenExceptionPreservesInv",
+          "NextPreservesInv",
+          "SpecImpliesAlwaysSafety"
+        ],
+        "rust_tests": [
+          "crates/domain/tests/liveness_trace_tests.rs"
+        ],
+        "runtime_enforcement": [
+          "services/worker/src/workers/mod.rs",
+          "crates/persistence/src/repositories.rs"
+        ],
+        "observability": [
+          "scripts/smoke-failure-paths.sh"
+        ]
+      }
+    },
+    {
+      "id": "OutboxEventEventuallyPublishedOrFailed",
+      "kind": "liveness_property",
+      "status": "conditional",
+      "closure_status": "closed_under_assumptions",
+      "coverage_score": 1.0,
+      "required_axes": [
+        "tla_temporal_property",
+        "fairness_assumption",
+        "tlaps_feasibility",
+        "tlc_bounded_check",
+        "rust_progress_test",
+        "runtime_progress_enforcement",
+        "observable_or_smoke",
+        "drift_checked"
+      ],
+      "present_axes": [
+        "tla_temporal_property",
+        "fairness_assumption",
+        "tlaps_feasibility",
+        "tlc_bounded_check",
+        "rust_progress_test",
+        "runtime_progress_enforcement",
+        "observable_or_smoke",
+        "drift_checked"
+      ],
+      "missing_axes": [],
+      "closure_actions": [
+        "To close unconditionally, discharge or operationally enforce liveness assumption: outbox publisher is fairly scheduled",
+        "To close unconditionally, discharge or operationally enforce liveness assumption: SNS publish eventually succeeds or transient failures are marked failed for retry"
+      ],
+      "assumptions": [
+        "outbox publisher is fairly scheduled",
+        "SNS publish eventually succeeds or transient failures are marked failed for retry"
+      ],
+      "evidence": {
+        "tla_property": "OutboxEventEventuallyPublishedOrFailed",
+        "fairness": "MessagingFairSpec",
+        "tlc_config": "spec/tla/YieldMessagingLiveness.cfg",
+        "tlaps_temporal_property_feasible": false,
+        "tlaps_property_theorems": [],
+        "tlaps_supporting_safety_theorems": [
+          "LeaseOutboxPreservesInv",
+          "PublishOutboxPreservesInv",
+          "NextPreservesInv",
+          "SpecImpliesAlwaysSafety"
+        ],
+        "rust_tests": [
+          "crates/persistence/tests/repository_tests.rs"
+        ],
+        "runtime_enforcement": [
+          "crates/persistence/src/outbox.rs",
+          "services/worker/src/workers/mod.rs"
+        ],
+        "observability": [
+          "scripts/smoke-create-sweep.sh"
+        ]
+      }
+    },
+    {
+      "id": "LeaseDoesNotStayStuck",
+      "kind": "liveness_property",
+      "status": "conditional",
+      "closure_status": "closed_under_assumptions",
+      "coverage_score": 1.0,
+      "required_axes": [
+        "tla_temporal_property",
+        "fairness_assumption",
+        "tlaps_feasibility",
+        "tlc_bounded_check",
+        "rust_progress_test",
+        "runtime_progress_enforcement",
+        "observable_or_smoke",
+        "drift_checked"
+      ],
+      "present_axes": [
+        "tla_temporal_property",
+        "fairness_assumption",
+        "tlaps_feasibility",
+        "tlc_bounded_check",
+        "rust_progress_test",
+        "runtime_progress_enforcement",
+        "observable_or_smoke",
+        "drift_checked"
+      ],
+      "missing_axes": [],
+      "closure_actions": [
+        "To close unconditionally, discharge or operationally enforce liveness assumption: failed publish attempts release the lease",
+        "To close unconditionally, discharge or operationally enforce liveness assumption: publisher polling continues"
+      ],
+      "assumptions": [
+        "failed publish attempts release the lease",
+        "publisher polling continues"
+      ],
+      "evidence": {
+        "tla_property": "LeaseDoesNotStayStuck",
+        "fairness": "MessagingFairSpec",
+        "tlc_config": "spec/tla/YieldMessagingLiveness.cfg",
+        "tlaps_temporal_property_feasible": false,
+        "tlaps_property_theorems": [],
+        "tlaps_supporting_safety_theorems": [
+          "LeaseOutboxPreservesInv",
+          "PublishOutboxPreservesInv",
+          "NextPreservesInv",
+          "SpecImpliesAlwaysSafety"
+        ],
+        "rust_tests": [
+          "crates/persistence/tests/repository_tests.rs"
+        ],
+        "runtime_enforcement": [
+          "crates/persistence/src/outbox.rs"
+        ],
+        "observability": [
+          "services/worker/src/workers/mod.rs"
+        ]
+      }
+    },
+    {
+      "id": "InboxMessageEventuallyProcessedOrDeduplicated",
+      "kind": "liveness_property",
+      "status": "conditional",
+      "closure_status": "closed_under_assumptions",
+      "coverage_score": 1.0,
+      "required_axes": [
+        "tla_temporal_property",
+        "fairness_assumption",
+        "tlaps_feasibility",
+        "tlc_bounded_check",
+        "rust_progress_test",
+        "runtime_progress_enforcement",
+        "observable_or_smoke",
+        "drift_checked"
+      ],
+      "present_axes": [
+        "tla_temporal_property",
+        "fairness_assumption",
+        "tlaps_feasibility",
+        "tlc_bounded_check",
+        "rust_progress_test",
+        "runtime_progress_enforcement",
+        "observable_or_smoke",
+        "drift_checked"
+      ],
+      "missing_axes": [],
+      "closure_actions": [
+        "To close unconditionally, discharge or operationally enforce liveness assumption: SQS eventually delivers a visible message",
+        "To close unconditionally, discharge or operationally enforce liveness assumption: worker is fairly scheduled after message delivery"
+      ],
+      "assumptions": [
+        "SQS eventually delivers a visible message",
+        "worker is fairly scheduled after message delivery"
+      ],
+      "evidence": {
+        "tla_property": "InboxMessageEventuallyProcessedOrDeduplicated",
+        "fairness": "MessagingFairSpec",
+        "tlc_config": "spec/tla/YieldMessagingLiveness.cfg",
+        "tlaps_temporal_property_feasible": false,
+        "tlaps_property_theorems": [],
+        "tlaps_supporting_safety_theorems": [
+          "ReceiveMessagePreservesInv",
+          "ProcessMessagePreservesInv",
+          "DeleteMessagePreservesInv",
+          "NextPreservesInv",
+          "SpecImpliesAlwaysSafety"
+        ],
+        "rust_tests": [
+          "crates/persistence/tests/repository_tests.rs",
+          "services/worker/src/workers/mod.rs"
+        ],
+        "runtime_enforcement": [
+          "crates/persistence/src/inbox.rs",
+          "services/worker/src/workers/mod.rs"
+        ],
+        "observability": [
+          "scripts/smoke-failure-paths.sh"
+        ]
+      }
+    }
+  ],
+  "rust_to_tla_refinement": {
+    "boundary": "Rust domain transition outcomes refine TLA lifecycle actions after order creation.",
+    "creation_boundary": {
+      "tla_action": "CreateOrder",
+      "rust_runtime": [
+        "services/api/src/routes/sweep_orders.rs",
+        "crates/persistence/src/repository.rs"
+      ],
+      "note": "API order creation establishes the initial Created domain state used by the Rust refinement tests."
+    },
+    "command_count": 19,
+    "transition_path_count": 38,
+    "commands": [
+      {
+        "command": "CheckEligibility",
+        "tla_action": "CheckEligibility",
+        "from": [
+          "Created"
+        ],
+        "to": "EligibilityChecked",
+        "proof": "CheckEligibilityPreservesInv",
+        "closure_status": "closed"
+      },
+      {
+        "command": "CheckDisclosures",
+        "tla_action": "CheckDisclosures",
+        "from": [
+          "EligibilityChecked"
+        ],
+        "to": "DisclosureChecked",
+        "proof": "CheckDisclosuresPreservesInv",
+        "closure_status": "closed"
+      },
+      {
+        "command": "Approve",
+        "tla_action": "Approve",
+        "from": [
+          "DisclosureChecked"
+        ],
+        "to": "Approved",
+        "proof": "ApprovePreservesInv",
+        "closure_status": "closed"
+      },
+      {
+        "command": "LockCash",
+        "tla_action": "LockCash",
+        "from": [
+          "Approved"
+        ],
+        "to": "CashLocked",
+        "proof": "LockCashPreservesInv",
+        "closure_status": "closed"
+      },
+      {
+        "command": "SubmitSubscription",
+        "tla_action": "SubmitSubscription",
+        "from": [
+          "CashLocked"
+        ],
+        "to": "SubscriptionSubmitted",
+        "proof": "SubmitSubscriptionPreservesInv",
+        "closure_status": "closed"
+      },
+      {
+        "command": "ConfirmTransferAgent",
+        "tla_action": "ConfirmTransferAgent",
+        "from": [
+          "SubscriptionSubmitted"
+        ],
+        "to": "TransferAgentConfirmed",
+        "proof": "ConfirmTransferAgentPreservesInv",
+        "closure_status": "closed"
+      },
+      {
+        "command": "ObserveChainMirror",
+        "tla_action": "ObserveChainMirror",
+        "from": [
+          "TransferAgentConfirmed"
+        ],
+        "to": "ChainMirrorObserved",
+        "proof": "ObserveChainMirrorPreservesInv",
+        "closure_status": "closed"
+      },
+      {
+        "command": "BookPosition",
+        "tla_action": "BookPosition",
+        "from": [
+          "TransferAgentConfirmed",
+          "ChainMirrorObserved"
+        ],
+        "to": "PositionBooked",
+        "proof": "BookPositionPreservesInv",
+        "closure_status": "closed"
+      },
+      {
+        "command": "Reconcile",
+        "tla_action": "Reconcile",
+        "from": [
+          "PositionBooked"
+        ],
+        "to": "Reconciled",
+        "proof": "ReconcilePreservesInv",
+        "closure_status": "closed"
+      },
+      {
+        "command": "Activate",
+        "tla_action": "Activate",
+        "from": [
+          "Reconciled"
+        ],
+        "to": "Active",
+        "proof": "ActivatePreservesInv",
+        "closure_status": "closed"
+      },
+      {
+        "command": "RequestRedemption",
+        "tla_action": "RequestRedemption",
+        "from": [
+          "Active"
+        ],
+        "to": "RedemptionRequested",
+        "proof": "RequestRedemptionPreservesInv",
+        "closure_status": "closed"
+      },
+      {
+        "command": "ReserveShares",
+        "tla_action": "ReserveShares",
+        "from": [
+          "RedemptionRequested"
+        ],
+        "to": "SharesReserved",
+        "proof": "ReserveSharesPreservesInv",
+        "closure_status": "closed"
+      },
+      {
+        "command": "SubmitRedemption",
+        "tla_action": "SubmitRedemption",
+        "from": [
+          "SharesReserved"
+        ],
+        "to": "RedemptionSubmitted",
+        "proof": "SubmitRedemptionPreservesInv",
+        "closure_status": "closed"
+      },
+      {
+        "command": "ConfirmRedemption",
+        "tla_action": "ConfirmRedemption",
+        "from": [
+          "RedemptionSubmitted"
+        ],
+        "to": "RedemptionConfirmed",
+        "proof": "ConfirmRedemptionPreservesInv",
+        "closure_status": "closed"
+      },
+      {
+        "command": "CreditCash",
+        "tla_action": "CreditCash",
+        "from": [
+          "RedemptionConfirmed"
+        ],
+        "to": "CashCredited",
+        "proof": "CreditCashPreservesInv",
+        "closure_status": "closed"
+      },
+      {
+        "command": "SettleRedemption",
+        "tla_action": "SettleRedemption",
+        "from": [
+          "CashCredited"
+        ],
+        "to": "Settled",
+        "proof": "SettleRedemptionPreservesInv",
+        "closure_status": "closed"
+      },
+      {
+        "command": "OpenException",
+        "tla_action": "OpenException",
+        "from": [
+          "Created",
+          "EligibilityChecked",
+          "DisclosureChecked",
+          "Approved",
+          "CashLocked",
+          "SubscriptionSubmitted",
+          "TransferAgentConfirmed",
+          "ChainMirrorObserved",
+          "PositionBooked",
+          "Reconciled",
+          "Active",
+          "RedemptionRequested",
+          "SharesReserved",
+          "RedemptionSubmitted",
+          "RedemptionConfirmed",
+          "CashCredited"
+        ],
+        "to": "ExceptionOpen",
+        "proof": "OpenExceptionPreservesInv",
+        "closure_status": "closed"
+      },
+      {
+        "command": "CloseException",
+        "tla_action": "CloseException",
+        "from": [
+          "ExceptionOpen"
+        ],
+        "to": "ExceptionClosed",
+        "proof": "CloseExceptionPreservesInv",
+        "closure_status": "closed"
+      },
+      {
+        "command": "Cancel",
+        "tla_action": "Cancel",
+        "from": [
+          "Created",
+          "EligibilityChecked",
+          "DisclosureChecked",
+          "Approved"
+        ],
+        "to": "Cancelled",
+        "proof": "CancelPreservesInv",
+        "closure_status": "closed"
+      }
+    ],
+    "transition_paths": [
+      {
+        "command": "CheckEligibility",
+        "from": "Created",
+        "to": "EligibilityChecked",
+        "tla_action": "CheckEligibility",
+        "proof": "CheckEligibilityPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "CheckDisclosures",
+        "from": "EligibilityChecked",
+        "to": "DisclosureChecked",
+        "tla_action": "CheckDisclosures",
+        "proof": "CheckDisclosuresPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "Approve",
+        "from": "DisclosureChecked",
+        "to": "Approved",
+        "tla_action": "Approve",
+        "proof": "ApprovePreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "LockCash",
+        "from": "Approved",
+        "to": "CashLocked",
+        "tla_action": "LockCash",
+        "proof": "LockCashPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "SubmitSubscription",
+        "from": "CashLocked",
+        "to": "SubscriptionSubmitted",
+        "tla_action": "SubmitSubscription",
+        "proof": "SubmitSubscriptionPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "ConfirmTransferAgent",
+        "from": "SubscriptionSubmitted",
+        "to": "TransferAgentConfirmed",
+        "tla_action": "ConfirmTransferAgent",
+        "proof": "ConfirmTransferAgentPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "ObserveChainMirror",
+        "from": "TransferAgentConfirmed",
+        "to": "ChainMirrorObserved",
+        "tla_action": "ObserveChainMirror",
+        "proof": "ObserveChainMirrorPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "BookPosition",
+        "from": "TransferAgentConfirmed",
+        "to": "PositionBooked",
+        "tla_action": "BookPosition",
+        "proof": "BookPositionPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "BookPosition",
+        "from": "ChainMirrorObserved",
+        "to": "PositionBooked",
+        "tla_action": "BookPosition",
+        "proof": "BookPositionPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "Reconcile",
+        "from": "PositionBooked",
+        "to": "Reconciled",
+        "tla_action": "Reconcile",
+        "proof": "ReconcilePreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "Activate",
+        "from": "Reconciled",
+        "to": "Active",
+        "tla_action": "Activate",
+        "proof": "ActivatePreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "RequestRedemption",
+        "from": "Active",
+        "to": "RedemptionRequested",
+        "tla_action": "RequestRedemption",
+        "proof": "RequestRedemptionPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "ReserveShares",
+        "from": "RedemptionRequested",
+        "to": "SharesReserved",
+        "tla_action": "ReserveShares",
+        "proof": "ReserveSharesPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "SubmitRedemption",
+        "from": "SharesReserved",
+        "to": "RedemptionSubmitted",
+        "tla_action": "SubmitRedemption",
+        "proof": "SubmitRedemptionPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "ConfirmRedemption",
+        "from": "RedemptionSubmitted",
+        "to": "RedemptionConfirmed",
+        "tla_action": "ConfirmRedemption",
+        "proof": "ConfirmRedemptionPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "CreditCash",
+        "from": "RedemptionConfirmed",
+        "to": "CashCredited",
+        "tla_action": "CreditCash",
+        "proof": "CreditCashPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "SettleRedemption",
+        "from": "CashCredited",
+        "to": "Settled",
+        "tla_action": "SettleRedemption",
+        "proof": "SettleRedemptionPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "OpenException",
+        "from": "Created",
+        "to": "ExceptionOpen",
+        "tla_action": "OpenException",
+        "proof": "OpenExceptionPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "OpenException",
+        "from": "EligibilityChecked",
+        "to": "ExceptionOpen",
+        "tla_action": "OpenException",
+        "proof": "OpenExceptionPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "OpenException",
+        "from": "DisclosureChecked",
+        "to": "ExceptionOpen",
+        "tla_action": "OpenException",
+        "proof": "OpenExceptionPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "OpenException",
+        "from": "Approved",
+        "to": "ExceptionOpen",
+        "tla_action": "OpenException",
+        "proof": "OpenExceptionPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "OpenException",
+        "from": "CashLocked",
+        "to": "ExceptionOpen",
+        "tla_action": "OpenException",
+        "proof": "OpenExceptionPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "OpenException",
+        "from": "SubscriptionSubmitted",
+        "to": "ExceptionOpen",
+        "tla_action": "OpenException",
+        "proof": "OpenExceptionPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "OpenException",
+        "from": "TransferAgentConfirmed",
+        "to": "ExceptionOpen",
+        "tla_action": "OpenException",
+        "proof": "OpenExceptionPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "OpenException",
+        "from": "ChainMirrorObserved",
+        "to": "ExceptionOpen",
+        "tla_action": "OpenException",
+        "proof": "OpenExceptionPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "OpenException",
+        "from": "PositionBooked",
+        "to": "ExceptionOpen",
+        "tla_action": "OpenException",
+        "proof": "OpenExceptionPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "OpenException",
+        "from": "Reconciled",
+        "to": "ExceptionOpen",
+        "tla_action": "OpenException",
+        "proof": "OpenExceptionPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "OpenException",
+        "from": "Active",
+        "to": "ExceptionOpen",
+        "tla_action": "OpenException",
+        "proof": "OpenExceptionPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "OpenException",
+        "from": "RedemptionRequested",
+        "to": "ExceptionOpen",
+        "tla_action": "OpenException",
+        "proof": "OpenExceptionPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "OpenException",
+        "from": "SharesReserved",
+        "to": "ExceptionOpen",
+        "tla_action": "OpenException",
+        "proof": "OpenExceptionPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "OpenException",
+        "from": "RedemptionSubmitted",
+        "to": "ExceptionOpen",
+        "tla_action": "OpenException",
+        "proof": "OpenExceptionPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "OpenException",
+        "from": "RedemptionConfirmed",
+        "to": "ExceptionOpen",
+        "tla_action": "OpenException",
+        "proof": "OpenExceptionPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "OpenException",
+        "from": "CashCredited",
+        "to": "ExceptionOpen",
+        "tla_action": "OpenException",
+        "proof": "OpenExceptionPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "CloseException",
+        "from": "ExceptionOpen",
+        "to": "ExceptionClosed",
+        "tla_action": "CloseException",
+        "proof": "CloseExceptionPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "Cancel",
+        "from": "Created",
+        "to": "Cancelled",
+        "tla_action": "Cancel",
+        "proof": "CancelPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "Cancel",
+        "from": "EligibilityChecked",
+        "to": "Cancelled",
+        "tla_action": "Cancel",
+        "proof": "CancelPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "Cancel",
+        "from": "DisclosureChecked",
+        "to": "Cancelled",
+        "tla_action": "Cancel",
+        "proof": "CancelPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      },
+      {
+        "command": "Cancel",
+        "from": "Approved",
+        "to": "Cancelled",
+        "tla_action": "Cancel",
+        "proof": "CancelPreservesInv",
+        "closure_status": "closed",
+        "closure_actions": []
+      }
+    ]
+  }
+}

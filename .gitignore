@@ -13,6 +13,8 @@ build/
 *.p12
 *.sqlite
 tmp/
+__pycache__/
+*.pyc
 .cargo/
 .tlacache/
 states/

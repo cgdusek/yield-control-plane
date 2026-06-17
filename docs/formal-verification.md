@@ -8,6 +8,8 @@ Run the formal gate with:
 make validate-tla
 make validate-refinement
 make validate-formal-coverage
+make validate-formal-coverage-map
+make validate-repo-surface-coverage-map
 ```
 
 `scripts/validate-tla.sh` downloads `tla2tools.jar` and installs TLAPS under ignored `tools/` paths when the local machine does not already provide them. It then runs SANY parsing, TLAPS proof checking, and TLC model checking.
@@ -19,6 +21,10 @@ The TLA+ protocol uses raw lifecycle, ledger, and messaging actions in [YieldLif
 The repository now provides refinement-lite evidence: [rust_tla_mapping.yaml](../spec/refinement/rust_tla_mapping.yaml) maps each Rust `SweepCommand` to a TLA action and TLAPS theorem, [abstract_refinement.rs](../crates/domain/src/abstract_refinement.rs) projects accepted Rust transitions into abstract state, and `scripts/validate-refinement.sh` rejects drift across Rust enums, TLA `Next`, Rust `TlaAction`, and TLAPS theorem names. The refinement tests also load the YAML mapping, exercise declared paths against the Rust `transition(...)` function, and fail if any accepted Rust transition lacks mapping evidence. This is executable conformance evidence, not a full source-level Rust proof.
 
 [invariant_coverage.yaml](../spec/refinement/invariant_coverage.yaml) is the invariant-level convergence matrix. `scripts/validate-formal-coverage.sh` parses the matrix, TLA catalog, TLAPS theorems, TLC config, Rust tests, runtime enforcement files, and full validation script so an invariant cannot be marked covered without executable evidence.
+
+[formal_coverage_map.json](../spec/refinement/formal_coverage_map.json) is the generated closure map for reviewing the current state. Refresh it with `make generate-formal-coverage-map`; verify it with `make validate-formal-coverage-map`. The map is derived from the invariant, liveness, and Rust-to-TLA matrices and records each item as `closed`, `closed_bounded`, `closed_under_assumptions`, or `needs_work` with concrete closure actions.
+
+[repo_surface_coverage_map.json](../spec/refinement/repo_surface_coverage_map.json) is the generated integrated surface map. Refresh it with `make generate-repo-surface-coverage-map`; verify it with `make validate-repo-surface-coverage-map`. It assigns every tracked source file to one major surface and records the surface contract, code-level enforcement, formal relationship, validation gates, closure status, and hardening frontier. This is the control plane for deciding which surfaces to specify or enforce next.
 
 ## Formal Spine
 
@@ -54,7 +60,9 @@ The repository now provides refinement-lite evidence: [rust_tla_mapping.yaml](..
 make validate-tla
 make validate-refinement
 make validate-formal-coverage
+make validate-formal-coverage-map
+make validate-repo-surface-coverage-map
 make validate
 ```
 
-The full validation gate runs `scripts/validate-tla.sh`, `scripts/validate-refinement.sh`, and `scripts/validate-formal-coverage.sh` before specs, Kubernetes manifests, docs, Rust, and frontend checks.
+The full validation gate runs `scripts/validate-tla.sh`, `scripts/validate-refinement.sh`, `scripts/validate-formal-coverage.sh`, `scripts/validate-formal-coverage-map.sh`, and `scripts/validate-repo-surface-coverage-map.sh` before specs, Kubernetes manifests, docs, Rust, and frontend checks.

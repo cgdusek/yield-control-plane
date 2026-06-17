@@ -1,0 +1,2733 @@
+{
+  "version": 1,
+  "artifact": "repo_surface_coverage_map",
+  "source_of_truth": [
+    "git ls-files --cached --others --exclude-standard",
+    "Makefile",
+    "scripts/validate-all.sh",
+    ".github/workflows/ci.yml",
+    "spec/refinement/formal_coverage_map.json"
+  ],
+  "excluded_derived_self_artifacts": [
+    "spec/refinement/repo_surface_coverage_map.json"
+  ],
+  "closure_semantics": {
+    "closed": "All required validation axes for this surface have executable evidence and the surface owns at least one file.",
+    "needs_work": "The surface has unmapped files, missing required axes, missing evidence, or no assigned files."
+  },
+  "integrated_verification_goal": {
+    "intent": "Use JSON to track all major repo surfaces, specify each surface at the strongest appropriate abstraction level, enforce the corresponding rule at code or runtime level, and keep every mapping under CI drift checks.",
+    "proof_boundary": "The integrated system is formally verified at the abstract protocol level with TLAPS/TLC and connected to implementation by refinement-lite Rust traces, validators, runtime enforcement, and smoke gates.",
+    "non_claim": "This map does not claim full source-level theorem-prover verification of every Rust, TypeScript, YAML, shell, or Markdown line."
+  },
+  "summary": {
+    "surface_count": 15,
+    "closed_surface_count": 15,
+    "needs_work_surface_count": 0,
+    "surface_closure_ratio": 1.0,
+    "mapped_file_count": 190,
+    "unmapped_file_count": 0,
+    "conflicting_file_count": 0,
+    "all_mappable_file_count": 190,
+    "file_mapping_ratio": 1.0,
+    "line_count": 26762,
+    "formalized_surface_count": 6,
+    "formalized_surface_ratio": 0.4,
+    "formalized_file_count": 66,
+    "formalized_file_ratio": 0.3474,
+    "formalized_line_count": 10282,
+    "formalized_line_ratio": 0.3842,
+    "rust_file_count": 40,
+    "rust_line_count": 5024,
+    "rust_test_function_count_static": 43,
+    "source_level_rust_verification": {
+      "line_level_rust_formal_proof_ratio": 0.0,
+      "reason": "The repo proves an abstract protocol and checks Rust trace/refinement evidence; it does not prove every Rust source line.",
+      "abstract_rust_to_tla_refinement": {
+        "command_count": 19,
+        "transition_path_count": 38,
+        "closed_transition_path_count": 38,
+        "closure_ratio": 1.0
+      }
+    },
+    "formal_coverage_summary": {
+      "safety": {
+        "total": 13,
+        "closed": 13,
+        "needs_work": 0,
+        "closure_ratio": 1.0
+      },
+      "liveness": {
+        "total": 7,
+        "closed_bounded": 2,
+        "closed_under_assumptions": 5,
+        "needs_work": 0,
+        "conditional_assumption_count": 10,
+        "machine_checked_axis_ratio": 1.0
+      },
+      "rust_to_tla_refinement": {
+        "command_count": 19,
+        "transition_path_count": 38,
+        "closed_transition_path_count": 38,
+        "closure_ratio": 1.0
+      },
+      "tlaps": {
+        "unique_theorem_references": 35
+      },
+      "closure": {
+        "needs_work_count": 0,
+        "needs_work_item_ids": [],
+        "absolute_liveness_open_assumption_count": 10
+      }
+    }
+  },
+  "unmapped_files": [],
+  "conflicting_files": {},
+  "surfaces": [
+    {
+      "id": "repository_control_plane",
+      "title": "Repository Control Plane",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "formal_scope": "none",
+      "file_count": 13,
+      "line_count": 6901,
+      "rust_file_count": 0,
+      "test_function_count_static": 0,
+      "required_axes": [
+        "source_inventory",
+        "static_validation",
+        "ci_gate",
+        "documentation"
+      ],
+      "present_axes": [
+        "source_inventory",
+        "static_validation",
+        "ci_gate",
+        "documentation"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "hardening_frontier": [
+        "Add a release artifact manifest if this repo starts publishing deployable versions."
+      ],
+      "evidence": {
+        "static_validation": {
+          "commands": [
+            "make check-tools",
+            "make validate"
+          ],
+          "paths": [
+            "scripts/check-tools.sh"
+          ]
+        },
+        "ci_gate": {
+          "commands": [
+            "make validate"
+          ],
+          "paths": [
+            ".github/workflows/ci.yml"
+          ]
+        },
+        "documentation": {
+          "paths": [
+            "README.md",
+            "AGENTS.md",
+            "AGENT_TRACKER.md"
+          ]
+        }
+      },
+      "proof_ladder": {
+        "S0_objective": "Specify, enforce, and validate the Repository Control Plane surface as part of the integrated yield control plane.",
+        "S1_contract_or_spec": {
+          "status": "not_required",
+          "evidence_paths": []
+        },
+        "S2_executable_reference_or_validation_model": {
+          "status": "closed",
+          "commands": [
+            "make check-tools",
+            "make validate"
+          ]
+        },
+        "S3_implementation_mapping": {
+          "status": "closed",
+          "file_count": 13,
+          "representative_files": [
+            ".dockerignore",
+            ".editorconfig",
+            ".env.example",
+            ".gitignore",
+            "AGENTS.md",
+            "AGENT_TRACKER.md",
+            "Cargo.lock",
+            "Cargo.toml",
+            "Makefile",
+            "README.md",
+            "justfile",
+            "pnpm-lock.yaml"
+          ],
+          "formal_scope": "none",
+          "evidence_paths": [
+            "scripts/check-tools.sh",
+            ".github/workflows/ci.yml",
+            "README.md",
+            "AGENTS.md",
+            "AGENT_TRACKER.md"
+          ]
+        },
+        "S4_proof_obligations": [
+          {
+            "id": "repository_control_plane.source_inventory",
+            "axis": "source_inventory",
+            "status": "closed",
+            "closure_action": "Assign all files in this surface and keep unmapped files at zero."
+          },
+          {
+            "id": "repository_control_plane.static_validation",
+            "axis": "static_validation",
+            "status": "closed",
+            "closure_action": "Add a deterministic local validator for this surface."
+          },
+          {
+            "id": "repository_control_plane.ci_gate",
+            "axis": "ci_gate",
+            "status": "closed",
+            "closure_action": "Invoke the surface validator from make validate or GitHub Actions."
+          },
+          {
+            "id": "repository_control_plane.documentation",
+            "axis": "documentation",
+            "status": "closed",
+            "closure_action": "Document the surface and its validation commands."
+          }
+        ],
+        "S5_machine_check": {
+          "status": "closed",
+          "commands": [
+            "make check-tools",
+            "make validate"
+          ]
+        },
+        "S6_assumptions_and_limits": {
+          "limits": [
+            "This surface is specified and enforced by contracts, validators, tests, runtime gates, or documentation, not by a dedicated theorem-prover model."
+          ],
+          "hardening_frontier": [
+            "Add a release artifact manifest if this repo starts publishing deployable versions."
+          ]
+        }
+      },
+      "files": [
+        ".dockerignore",
+        ".editorconfig",
+        ".env.example",
+        ".gitignore",
+        "AGENTS.md",
+        "AGENT_TRACKER.md",
+        "Cargo.lock",
+        "Cargo.toml",
+        "Makefile",
+        "README.md",
+        "justfile",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml"
+      ]
+    },
+    {
+      "id": "ci_cd",
+      "title": "CI/CD Gates",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "formal_scope": "none",
+      "file_count": 4,
+      "line_count": 198,
+      "rust_file_count": 0,
+      "test_function_count_static": 0,
+      "required_axes": [
+        "source_inventory",
+        "static_validation",
+        "runtime_or_smoke",
+        "ci_gate",
+        "documentation"
+      ],
+      "present_axes": [
+        "source_inventory",
+        "static_validation",
+        "runtime_or_smoke",
+        "ci_gate",
+        "documentation"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "hardening_frontier": [
+        "Add branch protection or required-check policy evidence if repository administration becomes in scope."
+      ],
+      "evidence": {
+        "static_validation": {
+          "commands": [
+            "make validate"
+          ],
+          "paths": [
+            "scripts/validate-all.sh"
+          ]
+        },
+        "runtime_or_smoke": {
+          "commands": [
+            "make smoke",
+            "make smoke-failure-paths"
+          ],
+          "paths": [
+            ".github/workflows/ci.yml"
+          ]
+        },
+        "ci_gate": {
+          "paths": [
+            ".github/workflows/ci.yml"
+          ]
+        },
+        "documentation": {
+          "paths": [
+            "docs/testing.md",
+            "docs/bootstrap.md"
+          ]
+        }
+      },
+      "proof_ladder": {
+        "S0_objective": "Specify, enforce, and validate the CI/CD Gates surface as part of the integrated yield control plane.",
+        "S1_contract_or_spec": {
+          "status": "not_required",
+          "evidence_paths": []
+        },
+        "S2_executable_reference_or_validation_model": {
+          "status": "closed",
+          "commands": [
+            "make validate",
+            "make smoke",
+            "make smoke-failure-paths"
+          ]
+        },
+        "S3_implementation_mapping": {
+          "status": "closed",
+          "file_count": 4,
+          "representative_files": [
+            ".github/workflows/ci.yml",
+            "scripts/bootstrap-local.sh",
+            "scripts/check-tools.sh",
+            "scripts/validate-all.sh"
+          ],
+          "formal_scope": "none",
+          "evidence_paths": [
+            "scripts/validate-all.sh",
+            ".github/workflows/ci.yml",
+            "docs/testing.md",
+            "docs/bootstrap.md"
+          ]
+        },
+        "S4_proof_obligations": [
+          {
+            "id": "ci_cd.source_inventory",
+            "axis": "source_inventory",
+            "status": "closed",
+            "closure_action": "Assign all files in this surface and keep unmapped files at zero."
+          },
+          {
+            "id": "ci_cd.static_validation",
+            "axis": "static_validation",
+            "status": "closed",
+            "closure_action": "Add a deterministic local validator for this surface."
+          },
+          {
+            "id": "ci_cd.runtime_or_smoke",
+            "axis": "runtime_or_smoke",
+            "status": "closed",
+            "closure_action": "Add Docker, LocalStack, kind, or smoke evidence for this surface."
+          },
+          {
+            "id": "ci_cd.ci_gate",
+            "axis": "ci_gate",
+            "status": "closed",
+            "closure_action": "Invoke the surface validator from make validate or GitHub Actions."
+          },
+          {
+            "id": "ci_cd.documentation",
+            "axis": "documentation",
+            "status": "closed",
+            "closure_action": "Document the surface and its validation commands."
+          }
+        ],
+        "S5_machine_check": {
+          "status": "closed",
+          "commands": [
+            "make validate",
+            "make smoke",
+            "make smoke-failure-paths"
+          ]
+        },
+        "S6_assumptions_and_limits": {
+          "limits": [
+            "This surface is specified and enforced by contracts, validators, tests, runtime gates, or documentation, not by a dedicated theorem-prover model.",
+            "Runtime evidence is local/CI LocalStack, Docker Compose, or kind-shaped evidence, not a production deployment proof."
+          ],
+          "hardening_frontier": [
+            "Add branch protection or required-check policy evidence if repository administration becomes in scope."
+          ]
+        }
+      },
+      "files": [
+        ".github/workflows/ci.yml",
+        "scripts/bootstrap-local.sh",
+        "scripts/check-tools.sh",
+        "scripts/validate-all.sh"
+      ]
+    },
+    {
+      "id": "formal_methods",
+      "title": "TLA+, TLAPS, and TLC",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "formal_scope": "abstract_protocol_safety_and_bounded_liveness",
+      "file_count": 15,
+      "line_count": 2159,
+      "rust_file_count": 0,
+      "test_function_count_static": 0,
+      "required_axes": [
+        "source_inventory",
+        "specification_or_contract",
+        "formal_model",
+        "drift_validator",
+        "ci_gate",
+        "documentation"
+      ],
+      "present_axes": [
+        "source_inventory",
+        "specification_or_contract",
+        "formal_model",
+        "drift_validator",
+        "ci_gate",
+        "documentation"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "hardening_frontier": [
+        "Increase TLC model bounds or split larger liveness models when state-space growth permits."
+      ],
+      "evidence": {
+        "specification_or_contract": {
+          "paths": [
+            "spec/tla/YieldLifecycle.tla",
+            "spec/tla/YieldLiveness.tla"
+          ]
+        },
+        "formal_model": {
+          "commands": [
+            "make validate-tla"
+          ],
+          "paths": [
+            "spec/tla/YieldProofs.tla",
+            "spec/tla/YieldControlPlane.cfg"
+          ]
+        },
+        "drift_validator": {
+          "paths": [
+            "scripts/validate-tla.sh"
+          ]
+        },
+        "ci_gate": {
+          "commands": [
+            "make validate-tla",
+            "make validate"
+          ],
+          "paths": [
+            "scripts/validate-all.sh"
+          ]
+        },
+        "documentation": {
+          "paths": [
+            "docs/formal-verification.md",
+            "docs/liveness-verification.md"
+          ]
+        }
+      },
+      "proof_ladder": {
+        "S0_objective": "Specify, enforce, and validate the TLA+, TLAPS, and TLC surface as part of the integrated yield control plane.",
+        "S1_contract_or_spec": {
+          "status": "closed",
+          "evidence_paths": [
+            "spec/tla/YieldLifecycle.tla",
+            "spec/tla/YieldLiveness.tla"
+          ]
+        },
+        "S2_executable_reference_or_validation_model": {
+          "status": "needs_work",
+          "commands": [
+            "make validate-tla",
+            "make validate"
+          ]
+        },
+        "S3_implementation_mapping": {
+          "status": "closed",
+          "file_count": 15,
+          "representative_files": [
+            "docs/formal-verification.md",
+            "docs/liveness-verification.md",
+            "scripts/validate-tla.sh",
+            "spec/tla/YieldControlPlane.cfg",
+            "spec/tla/YieldExceptionLiveness.cfg",
+            "spec/tla/YieldInvariants.tla",
+            "spec/tla/YieldLedger.tla",
+            "spec/tla/YieldLifecycle.tla",
+            "spec/tla/YieldLiveness.cfg",
+            "spec/tla/YieldLiveness.tla",
+            "spec/tla/YieldMessaging.tla",
+            "spec/tla/YieldMessagingLiveness.cfg"
+          ],
+          "formal_scope": "abstract_protocol_safety_and_bounded_liveness",
+          "evidence_paths": [
+            "spec/tla/YieldLifecycle.tla",
+            "spec/tla/YieldLiveness.tla",
+            "spec/tla/YieldProofs.tla",
+            "spec/tla/YieldControlPlane.cfg",
+            "scripts/validate-tla.sh",
+            "scripts/validate-all.sh",
+            "docs/formal-verification.md",
+            "docs/liveness-verification.md"
+          ]
+        },
+        "S4_proof_obligations": [
+          {
+            "id": "formal_methods.source_inventory",
+            "axis": "source_inventory",
+            "status": "closed",
+            "closure_action": "Assign all files in this surface and keep unmapped files at zero."
+          },
+          {
+            "id": "formal_methods.specification_or_contract",
+            "axis": "specification_or_contract",
+            "status": "closed",
+            "closure_action": "Add or bind this surface to an OpenAPI, AsyncAPI, state-machine, TLA+, schema, or documented contract."
+          },
+          {
+            "id": "formal_methods.formal_model",
+            "axis": "formal_model",
+            "status": "closed",
+            "closure_action": "Add or extend the TLA+/TLAPS/TLC model for the safety or liveness semantics on this surface."
+          },
+          {
+            "id": "formal_methods.drift_validator",
+            "axis": "drift_validator",
+            "status": "closed",
+            "closure_action": "Add a script that fails when this surface drifts from its source of truth."
+          },
+          {
+            "id": "formal_methods.ci_gate",
+            "axis": "ci_gate",
+            "status": "closed",
+            "closure_action": "Invoke the surface validator from make validate or GitHub Actions."
+          },
+          {
+            "id": "formal_methods.documentation",
+            "axis": "documentation",
+            "status": "closed",
+            "closure_action": "Document the surface and its validation commands."
+          }
+        ],
+        "S5_machine_check": {
+          "status": "closed",
+          "commands": [
+            "make validate-tla",
+            "make validate"
+          ]
+        },
+        "S6_assumptions_and_limits": {
+          "limits": [],
+          "hardening_frontier": [
+            "Increase TLC model bounds or split larger liveness models when state-space growth permits."
+          ]
+        }
+      },
+      "files": [
+        "docs/formal-verification.md",
+        "docs/liveness-verification.md",
+        "scripts/validate-tla.sh",
+        "spec/tla/YieldControlPlane.cfg",
+        "spec/tla/YieldExceptionLiveness.cfg",
+        "spec/tla/YieldInvariants.tla",
+        "spec/tla/YieldLedger.tla",
+        "spec/tla/YieldLifecycle.tla",
+        "spec/tla/YieldLiveness.cfg",
+        "spec/tla/YieldLiveness.tla",
+        "spec/tla/YieldMessaging.tla",
+        "spec/tla/YieldMessagingLiveness.cfg",
+        "spec/tla/YieldProofs.tla",
+        "spec/tla/YieldTypes.tla",
+        "spec/tla/no_double_sweep.tla"
+      ]
+    },
+    {
+      "id": "coverage_governance",
+      "title": "Coverage Governance and Drift Maps",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "formal_scope": "meta_coverage_for_formal_artifacts",
+      "file_count": 11,
+      "line_count": 3655,
+      "rust_file_count": 0,
+      "test_function_count_static": 0,
+      "required_axes": [
+        "source_inventory",
+        "specification_or_contract",
+        "drift_validator",
+        "ci_gate",
+        "documentation"
+      ],
+      "present_axes": [
+        "source_inventory",
+        "specification_or_contract",
+        "drift_validator",
+        "ci_gate",
+        "documentation"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "hardening_frontier": [
+        "Add severity weights per invariant if prioritization becomes ambiguous."
+      ],
+      "evidence": {
+        "specification_or_contract": {
+          "paths": [
+            "spec/refinement/invariant_coverage.yaml",
+            "spec/refinement/liveness_coverage.yaml",
+            "spec/refinement/rust_tla_mapping.yaml",
+            "spec/refinement/formal_coverage_map.json"
+          ]
+        },
+        "drift_validator": {
+          "commands": [
+            "make validate-formal-coverage",
+            "make validate-liveness",
+            "make validate-refinement",
+            "make validate-formal-coverage-map",
+            "make validate-repo-surface-coverage-map"
+          ],
+          "paths": [
+            "scripts/validate-formal-coverage.sh",
+            "scripts/validate-liveness-coverage.sh",
+            "scripts/validate-refinement.sh",
+            "scripts/validate-formal-coverage-map.sh",
+            "scripts/validate-repo-surface-coverage-map.sh"
+          ]
+        },
+        "ci_gate": {
+          "commands": [
+            "make validate"
+          ],
+          "paths": [
+            "scripts/validate-all.sh"
+          ]
+        },
+        "documentation": {
+          "paths": [
+            "docs/formal-verification.md",
+            "docs/testing.md"
+          ]
+        }
+      },
+      "proof_ladder": {
+        "S0_objective": "Specify, enforce, and validate the Coverage Governance and Drift Maps surface as part of the integrated yield control plane.",
+        "S1_contract_or_spec": {
+          "status": "closed",
+          "evidence_paths": [
+            "spec/refinement/invariant_coverage.yaml",
+            "spec/refinement/liveness_coverage.yaml",
+            "spec/refinement/rust_tla_mapping.yaml",
+            "spec/refinement/formal_coverage_map.json"
+          ]
+        },
+        "S2_executable_reference_or_validation_model": {
+          "status": "needs_work",
+          "commands": [
+            "make validate-formal-coverage",
+            "make validate-liveness",
+            "make validate-refinement",
+            "make validate-formal-coverage-map",
+            "make validate-repo-surface-coverage-map",
+            "make validate"
+          ]
+        },
+        "S3_implementation_mapping": {
+          "status": "closed",
+          "file_count": 11,
+          "representative_files": [
+            "scripts/generate-formal-coverage-map.py",
+            "scripts/generate-repo-surface-coverage-map.py",
+            "scripts/validate-formal-coverage-map.sh",
+            "scripts/validate-formal-coverage.sh",
+            "scripts/validate-liveness-coverage.sh",
+            "scripts/validate-refinement.sh",
+            "scripts/validate-repo-surface-coverage-map.sh",
+            "spec/refinement/formal_coverage_map.json",
+            "spec/refinement/invariant_coverage.yaml",
+            "spec/refinement/liveness_coverage.yaml",
+            "spec/refinement/rust_tla_mapping.yaml"
+          ],
+          "formal_scope": "meta_coverage_for_formal_artifacts",
+          "evidence_paths": [
+            "spec/refinement/invariant_coverage.yaml",
+            "spec/refinement/liveness_coverage.yaml",
+            "spec/refinement/rust_tla_mapping.yaml",
+            "spec/refinement/formal_coverage_map.json",
+            "scripts/validate-formal-coverage.sh",
+            "scripts/validate-liveness-coverage.sh",
+            "scripts/validate-refinement.sh",
+            "scripts/validate-formal-coverage-map.sh",
+            "scripts/validate-repo-surface-coverage-map.sh",
+            "scripts/validate-all.sh",
+            "docs/formal-verification.md",
+            "docs/testing.md"
+          ]
+        },
+        "S4_proof_obligations": [
+          {
+            "id": "coverage_governance.source_inventory",
+            "axis": "source_inventory",
+            "status": "closed",
+            "closure_action": "Assign all files in this surface and keep unmapped files at zero."
+          },
+          {
+            "id": "coverage_governance.specification_or_contract",
+            "axis": "specification_or_contract",
+            "status": "closed",
+            "closure_action": "Add or bind this surface to an OpenAPI, AsyncAPI, state-machine, TLA+, schema, or documented contract."
+          },
+          {
+            "id": "coverage_governance.drift_validator",
+            "axis": "drift_validator",
+            "status": "closed",
+            "closure_action": "Add a script that fails when this surface drifts from its source of truth."
+          },
+          {
+            "id": "coverage_governance.ci_gate",
+            "axis": "ci_gate",
+            "status": "closed",
+            "closure_action": "Invoke the surface validator from make validate or GitHub Actions."
+          },
+          {
+            "id": "coverage_governance.documentation",
+            "axis": "documentation",
+            "status": "closed",
+            "closure_action": "Document the surface and its validation commands."
+          }
+        ],
+        "S5_machine_check": {
+          "status": "closed",
+          "commands": [
+            "make validate-formal-coverage",
+            "make validate-liveness",
+            "make validate-refinement",
+            "make validate-formal-coverage-map",
+            "make validate-repo-surface-coverage-map",
+            "make validate"
+          ]
+        },
+        "S6_assumptions_and_limits": {
+          "limits": [],
+          "hardening_frontier": [
+            "Add severity weights per invariant if prioritization becomes ambiguous."
+          ]
+        }
+      },
+      "files": [
+        "scripts/generate-formal-coverage-map.py",
+        "scripts/generate-repo-surface-coverage-map.py",
+        "scripts/validate-formal-coverage-map.sh",
+        "scripts/validate-formal-coverage.sh",
+        "scripts/validate-liveness-coverage.sh",
+        "scripts/validate-refinement.sh",
+        "scripts/validate-repo-surface-coverage-map.sh",
+        "spec/refinement/formal_coverage_map.json",
+        "spec/refinement/invariant_coverage.yaml",
+        "spec/refinement/liveness_coverage.yaml",
+        "spec/refinement/rust_tla_mapping.yaml"
+      ]
+    },
+    {
+      "id": "api_event_and_domain_specs",
+      "title": "API, Event, and Domain Specifications",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "formal_scope": "none",
+      "file_count": 14,
+      "line_count": 2515,
+      "rust_file_count": 0,
+      "test_function_count_static": 0,
+      "required_axes": [
+        "source_inventory",
+        "specification_or_contract",
+        "static_validation",
+        "drift_validator",
+        "ci_gate",
+        "documentation"
+      ],
+      "present_axes": [
+        "source_inventory",
+        "specification_or_contract",
+        "static_validation",
+        "drift_validator",
+        "ci_gate",
+        "documentation"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "hardening_frontier": [
+        "Add full JSON Schema validation when the validator dependency is intentionally pinned."
+      ],
+      "evidence": {
+        "specification_or_contract": {
+          "paths": [
+            "spec/openapi.yaml",
+            "spec/asyncapi.yaml",
+            "spec/domain/sweep_order.machine.yaml"
+          ]
+        },
+        "static_validation": {
+          "commands": [
+            "make validate-specs"
+          ],
+          "paths": [
+            "scripts/validate-specs.sh"
+          ]
+        },
+        "drift_validator": {
+          "paths": [
+            "scripts/validate-specs.sh"
+          ]
+        },
+        "ci_gate": {
+          "commands": [
+            "make validate-specs",
+            "make validate"
+          ],
+          "paths": [
+            "scripts/validate-all.sh"
+          ]
+        },
+        "documentation": {
+          "paths": [
+            "docs/traceability.md",
+            "docs/architecture.md"
+          ]
+        }
+      },
+      "proof_ladder": {
+        "S0_objective": "Specify, enforce, and validate the API, Event, and Domain Specifications surface as part of the integrated yield control plane.",
+        "S1_contract_or_spec": {
+          "status": "closed",
+          "evidence_paths": [
+            "spec/openapi.yaml",
+            "spec/asyncapi.yaml",
+            "spec/domain/sweep_order.machine.yaml"
+          ]
+        },
+        "S2_executable_reference_or_validation_model": {
+          "status": "closed",
+          "commands": [
+            "make validate-specs",
+            "make validate"
+          ]
+        },
+        "S3_implementation_mapping": {
+          "status": "closed",
+          "file_count": 14,
+          "representative_files": [
+            "scripts/validate-specs.sh",
+            "spec/asyncapi.yaml",
+            "spec/diagrams/architecture.mmd",
+            "spec/diagrams/local-runtime.mmd",
+            "spec/diagrams/sweep-order-state-machine.mmd",
+            "spec/domain/sweep_order.machine.yaml",
+            "spec/openapi.yaml",
+            "spec/schemas/events/event-envelope.schema.json",
+            "spec/schemas/events/position-booked.v1.schema.json",
+            "spec/schemas/events/reconciliation-break-opened.v1.schema.json",
+            "spec/schemas/events/sweep-cash-locked.v1.schema.json",
+            "spec/schemas/events/sweep-order-created.v1.schema.json"
+          ],
+          "formal_scope": "none",
+          "evidence_paths": [
+            "spec/openapi.yaml",
+            "spec/asyncapi.yaml",
+            "spec/domain/sweep_order.machine.yaml",
+            "scripts/validate-specs.sh",
+            "scripts/validate-all.sh",
+            "docs/traceability.md",
+            "docs/architecture.md"
+          ]
+        },
+        "S4_proof_obligations": [
+          {
+            "id": "api_event_and_domain_specs.source_inventory",
+            "axis": "source_inventory",
+            "status": "closed",
+            "closure_action": "Assign all files in this surface and keep unmapped files at zero."
+          },
+          {
+            "id": "api_event_and_domain_specs.specification_or_contract",
+            "axis": "specification_or_contract",
+            "status": "closed",
+            "closure_action": "Add or bind this surface to an OpenAPI, AsyncAPI, state-machine, TLA+, schema, or documented contract."
+          },
+          {
+            "id": "api_event_and_domain_specs.static_validation",
+            "axis": "static_validation",
+            "status": "closed",
+            "closure_action": "Add a deterministic local validator for this surface."
+          },
+          {
+            "id": "api_event_and_domain_specs.drift_validator",
+            "axis": "drift_validator",
+            "status": "closed",
+            "closure_action": "Add a script that fails when this surface drifts from its source of truth."
+          },
+          {
+            "id": "api_event_and_domain_specs.ci_gate",
+            "axis": "ci_gate",
+            "status": "closed",
+            "closure_action": "Invoke the surface validator from make validate or GitHub Actions."
+          },
+          {
+            "id": "api_event_and_domain_specs.documentation",
+            "axis": "documentation",
+            "status": "closed",
+            "closure_action": "Document the surface and its validation commands."
+          }
+        ],
+        "S5_machine_check": {
+          "status": "closed",
+          "commands": [
+            "make validate-specs",
+            "make validate"
+          ]
+        },
+        "S6_assumptions_and_limits": {
+          "limits": [
+            "This surface is specified and enforced by contracts, validators, tests, runtime gates, or documentation, not by a dedicated theorem-prover model."
+          ],
+          "hardening_frontier": [
+            "Add full JSON Schema validation when the validator dependency is intentionally pinned."
+          ]
+        }
+      },
+      "files": [
+        "scripts/validate-specs.sh",
+        "spec/asyncapi.yaml",
+        "spec/diagrams/architecture.mmd",
+        "spec/diagrams/local-runtime.mmd",
+        "spec/diagrams/sweep-order-state-machine.mmd",
+        "spec/domain/sweep_order.machine.yaml",
+        "spec/openapi.yaml",
+        "spec/schemas/events/event-envelope.schema.json",
+        "spec/schemas/events/position-booked.v1.schema.json",
+        "spec/schemas/events/reconciliation-break-opened.v1.schema.json",
+        "spec/schemas/events/sweep-cash-locked.v1.schema.json",
+        "spec/schemas/events/sweep-order-created.v1.schema.json",
+        "spec/schemas/events/transfer-agent-confirmed.v1.schema.json",
+        "spec/source/fidelity_defi_yield_platform_spec.md"
+      ]
+    },
+    {
+      "id": "rust_domain_core",
+      "title": "Rust Domain Core",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "formal_scope": "rust_transitions_project_to_abstract_tla_actions",
+      "file_count": 15,
+      "line_count": 1855,
+      "rust_file_count": 14,
+      "test_function_count_static": 26,
+      "required_axes": [
+        "source_inventory",
+        "specification_or_contract",
+        "unit_or_property_tests",
+        "formal_projection",
+        "drift_validator",
+        "ci_gate",
+        "documentation"
+      ],
+      "present_axes": [
+        "source_inventory",
+        "specification_or_contract",
+        "unit_or_property_tests",
+        "formal_projection",
+        "drift_validator",
+        "ci_gate",
+        "documentation"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "hardening_frontier": [
+        "A full line-level Rust proof is not present; add Kani/Prusti/Creusot-style proofs only for narrow arithmetic or transition kernels if needed."
+      ],
+      "evidence": {
+        "specification_or_contract": {
+          "paths": [
+            "spec/domain/sweep_order.machine.yaml",
+            "spec/tla/YieldLifecycle.tla"
+          ]
+        },
+        "unit_or_property_tests": {
+          "commands": [
+            "cargo test --workspace --all-features"
+          ],
+          "paths": [
+            "crates/domain/tests"
+          ]
+        },
+        "formal_projection": {
+          "commands": [
+            "make validate-refinement"
+          ],
+          "paths": [
+            "crates/domain/src/abstract_refinement.rs",
+            "spec/refinement/rust_tla_mapping.yaml"
+          ]
+        },
+        "drift_validator": {
+          "paths": [
+            "scripts/validate-refinement.sh",
+            "scripts/validate-formal-coverage.sh"
+          ]
+        },
+        "ci_gate": {
+          "commands": [
+            "make validate"
+          ],
+          "paths": [
+            "scripts/validate-all.sh"
+          ]
+        },
+        "documentation": {
+          "paths": [
+            "docs/formal-verification.md",
+            "docs/traceability.md"
+          ]
+        }
+      },
+      "proof_ladder": {
+        "S0_objective": "Specify, enforce, and validate the Rust Domain Core surface as part of the integrated yield control plane.",
+        "S1_contract_or_spec": {
+          "status": "closed",
+          "evidence_paths": [
+            "spec/domain/sweep_order.machine.yaml",
+            "spec/tla/YieldLifecycle.tla"
+          ]
+        },
+        "S2_executable_reference_or_validation_model": {
+          "status": "closed",
+          "commands": [
+            "cargo test --workspace --all-features",
+            "make validate-refinement",
+            "make validate"
+          ]
+        },
+        "S3_implementation_mapping": {
+          "status": "closed",
+          "file_count": 15,
+          "representative_files": [
+            "crates/domain/Cargo.toml",
+            "crates/domain/src/abstract_refinement.rs",
+            "crates/domain/src/asset.rs",
+            "crates/domain/src/errors.rs",
+            "crates/domain/src/events.rs",
+            "crates/domain/src/invariants.rs",
+            "crates/domain/src/ledger.rs",
+            "crates/domain/src/lib.rs",
+            "crates/domain/src/money.rs",
+            "crates/domain/src/sweep.rs",
+            "crates/domain/tests/ledger_invariant_tests.rs",
+            "crates/domain/tests/liveness_trace_tests.rs"
+          ],
+          "formal_scope": "rust_transitions_project_to_abstract_tla_actions",
+          "evidence_paths": [
+            "spec/domain/sweep_order.machine.yaml",
+            "spec/tla/YieldLifecycle.tla",
+            "crates/domain/tests",
+            "crates/domain/src/abstract_refinement.rs",
+            "spec/refinement/rust_tla_mapping.yaml",
+            "scripts/validate-refinement.sh",
+            "scripts/validate-formal-coverage.sh",
+            "scripts/validate-all.sh",
+            "docs/formal-verification.md",
+            "docs/traceability.md"
+          ]
+        },
+        "S4_proof_obligations": [
+          {
+            "id": "rust_domain_core.source_inventory",
+            "axis": "source_inventory",
+            "status": "closed",
+            "closure_action": "Assign all files in this surface and keep unmapped files at zero."
+          },
+          {
+            "id": "rust_domain_core.specification_or_contract",
+            "axis": "specification_or_contract",
+            "status": "closed",
+            "closure_action": "Add or bind this surface to an OpenAPI, AsyncAPI, state-machine, TLA+, schema, or documented contract."
+          },
+          {
+            "id": "rust_domain_core.unit_or_property_tests",
+            "axis": "unit_or_property_tests",
+            "status": "closed",
+            "closure_action": "Add unit, property, route, or component tests for this surface."
+          },
+          {
+            "id": "rust_domain_core.formal_projection",
+            "axis": "formal_projection",
+            "status": "closed",
+            "closure_action": "Map implementation traces or commands from this surface into the abstract formal protocol."
+          },
+          {
+            "id": "rust_domain_core.drift_validator",
+            "axis": "drift_validator",
+            "status": "closed",
+            "closure_action": "Add a script that fails when this surface drifts from its source of truth."
+          },
+          {
+            "id": "rust_domain_core.ci_gate",
+            "axis": "ci_gate",
+            "status": "closed",
+            "closure_action": "Invoke the surface validator from make validate or GitHub Actions."
+          },
+          {
+            "id": "rust_domain_core.documentation",
+            "axis": "documentation",
+            "status": "closed",
+            "closure_action": "Document the surface and its validation commands."
+          }
+        ],
+        "S5_machine_check": {
+          "status": "closed",
+          "commands": [
+            "cargo test --workspace --all-features",
+            "make validate-refinement",
+            "make validate"
+          ]
+        },
+        "S6_assumptions_and_limits": {
+          "limits": [
+            "No line-level formal proof of all Rust source is claimed; Rust coverage is by tests, runtime enforcement, and refinement evidence where applicable."
+          ],
+          "hardening_frontier": [
+            "A full line-level Rust proof is not present; add Kani/Prusti/Creusot-style proofs only for narrow arithmetic or transition kernels if needed."
+          ]
+        }
+      },
+      "files": [
+        "crates/domain/Cargo.toml",
+        "crates/domain/src/abstract_refinement.rs",
+        "crates/domain/src/asset.rs",
+        "crates/domain/src/errors.rs",
+        "crates/domain/src/events.rs",
+        "crates/domain/src/invariants.rs",
+        "crates/domain/src/ledger.rs",
+        "crates/domain/src/lib.rs",
+        "crates/domain/src/money.rs",
+        "crates/domain/src/sweep.rs",
+        "crates/domain/tests/ledger_invariant_tests.rs",
+        "crates/domain/tests/liveness_trace_tests.rs",
+        "crates/domain/tests/refinement_trace_tests.rs",
+        "crates/domain/tests/sweep_property_tests.rs",
+        "crates/domain/tests/sweep_state_machine_tests.rs"
+      ]
+    },
+    {
+      "id": "rust_persistence_and_sql",
+      "title": "Rust Persistence and SQL Enforcement",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "formal_scope": "runtime_constraints_back_formal_safety_invariants",
+      "file_count": 11,
+      "line_count": 1575,
+      "rust_file_count": 9,
+      "test_function_count_static": 7,
+      "required_axes": [
+        "source_inventory",
+        "unit_or_property_tests",
+        "database_integration",
+        "runtime_enforcement",
+        "formal_projection",
+        "ci_gate",
+        "documentation"
+      ],
+      "present_axes": [
+        "source_inventory",
+        "unit_or_property_tests",
+        "database_integration",
+        "runtime_enforcement",
+        "formal_projection",
+        "ci_gate",
+        "documentation"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "hardening_frontier": [
+        "Add a migration drift checker if more migrations are introduced."
+      ],
+      "evidence": {
+        "unit_or_property_tests": {
+          "commands": [
+            "cargo test --workspace --all-features"
+          ],
+          "paths": [
+            "crates/persistence/tests/repository_tests.rs"
+          ]
+        },
+        "database_integration": {
+          "commands": [
+            "RUN_DATABASE_TESTS=1 DATABASE_URL=postgres://yield:yield@127.0.0.1:15432/yield_control cargo test -p institutional-yield-persistence --all-features"
+          ],
+          "paths": [
+            "crates/persistence/tests/repository_tests.rs"
+          ]
+        },
+        "runtime_enforcement": {
+          "paths": [
+            "crates/persistence/migrations/20260616150400_initial.sql",
+            "crates/persistence/src/repositories.rs"
+          ]
+        },
+        "formal_projection": {
+          "paths": [
+            "spec/refinement/invariant_coverage.yaml"
+          ]
+        },
+        "ci_gate": {
+          "paths": [
+            ".github/workflows/ci.yml",
+            "scripts/validate-all.sh"
+          ]
+        },
+        "documentation": {
+          "paths": [
+            "docs/runbooks/postgres-ledger-integrity.md",
+            "docs/testing.md"
+          ]
+        }
+      },
+      "proof_ladder": {
+        "S0_objective": "Specify, enforce, and validate the Rust Persistence and SQL Enforcement surface as part of the integrated yield control plane.",
+        "S1_contract_or_spec": {
+          "status": "not_required",
+          "evidence_paths": []
+        },
+        "S2_executable_reference_or_validation_model": {
+          "status": "closed",
+          "commands": [
+            "cargo test --workspace --all-features",
+            "RUN_DATABASE_TESTS=1 DATABASE_URL=postgres://yield:yield@127.0.0.1:15432/yield_control cargo test -p institutional-yield-persistence --all-features"
+          ]
+        },
+        "S3_implementation_mapping": {
+          "status": "closed",
+          "file_count": 11,
+          "representative_files": [
+            "crates/persistence/Cargo.toml",
+            "crates/persistence/migrations/20260616150400_initial.sql",
+            "crates/persistence/src/db.rs",
+            "crates/persistence/src/errors.rs",
+            "crates/persistence/src/idempotency.rs",
+            "crates/persistence/src/inbox.rs",
+            "crates/persistence/src/lib.rs",
+            "crates/persistence/src/models.rs",
+            "crates/persistence/src/outbox.rs",
+            "crates/persistence/src/repositories.rs",
+            "crates/persistence/tests/repository_tests.rs"
+          ],
+          "formal_scope": "runtime_constraints_back_formal_safety_invariants",
+          "evidence_paths": [
+            "crates/persistence/tests/repository_tests.rs",
+            "crates/persistence/migrations/20260616150400_initial.sql",
+            "crates/persistence/src/repositories.rs",
+            "spec/refinement/invariant_coverage.yaml",
+            ".github/workflows/ci.yml",
+            "scripts/validate-all.sh",
+            "docs/runbooks/postgres-ledger-integrity.md",
+            "docs/testing.md"
+          ]
+        },
+        "S4_proof_obligations": [
+          {
+            "id": "rust_persistence_and_sql.source_inventory",
+            "axis": "source_inventory",
+            "status": "closed",
+            "closure_action": "Assign all files in this surface and keep unmapped files at zero."
+          },
+          {
+            "id": "rust_persistence_and_sql.unit_or_property_tests",
+            "axis": "unit_or_property_tests",
+            "status": "closed",
+            "closure_action": "Add unit, property, route, or component tests for this surface."
+          },
+          {
+            "id": "rust_persistence_and_sql.database_integration",
+            "axis": "database_integration",
+            "status": "closed",
+            "closure_action": "Add DB-backed validation for this surface."
+          },
+          {
+            "id": "rust_persistence_and_sql.runtime_enforcement",
+            "axis": "runtime_enforcement",
+            "status": "closed",
+            "closure_action": "Bind the rule to a domain guard, SQL constraint, middleware, worker policy, or runtime script."
+          },
+          {
+            "id": "rust_persistence_and_sql.formal_projection",
+            "axis": "formal_projection",
+            "status": "closed",
+            "closure_action": "Map implementation traces or commands from this surface into the abstract formal protocol."
+          },
+          {
+            "id": "rust_persistence_and_sql.ci_gate",
+            "axis": "ci_gate",
+            "status": "closed",
+            "closure_action": "Invoke the surface validator from make validate or GitHub Actions."
+          },
+          {
+            "id": "rust_persistence_and_sql.documentation",
+            "axis": "documentation",
+            "status": "closed",
+            "closure_action": "Document the surface and its validation commands."
+          }
+        ],
+        "S5_machine_check": {
+          "status": "closed",
+          "commands": [
+            "cargo test --workspace --all-features",
+            "RUN_DATABASE_TESTS=1 DATABASE_URL=postgres://yield:yield@127.0.0.1:15432/yield_control cargo test -p institutional-yield-persistence --all-features",
+            "make validate"
+          ]
+        },
+        "S6_assumptions_and_limits": {
+          "limits": [
+            "No line-level formal proof of all Rust source is claimed; Rust coverage is by tests, runtime enforcement, and refinement evidence where applicable."
+          ],
+          "hardening_frontier": [
+            "Add a migration drift checker if more migrations are introduced."
+          ]
+        }
+      },
+      "files": [
+        "crates/persistence/Cargo.toml",
+        "crates/persistence/migrations/20260616150400_initial.sql",
+        "crates/persistence/src/db.rs",
+        "crates/persistence/src/errors.rs",
+        "crates/persistence/src/idempotency.rs",
+        "crates/persistence/src/inbox.rs",
+        "crates/persistence/src/lib.rs",
+        "crates/persistence/src/models.rs",
+        "crates/persistence/src/outbox.rs",
+        "crates/persistence/src/repositories.rs",
+        "crates/persistence/tests/repository_tests.rs"
+      ]
+    },
+    {
+      "id": "rust_messaging_localstack",
+      "title": "Rust Messaging and LocalStack",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "formal_scope": "messaging_idempotency_and_progress_modeled_abstractly",
+      "file_count": 7,
+      "line_count": 277,
+      "rust_file_count": 5,
+      "test_function_count_static": 2,
+      "required_axes": [
+        "source_inventory",
+        "unit_or_property_tests",
+        "runtime_or_smoke",
+        "runtime_enforcement",
+        "ci_gate",
+        "documentation"
+      ],
+      "present_axes": [
+        "source_inventory",
+        "unit_or_property_tests",
+        "runtime_or_smoke",
+        "runtime_enforcement",
+        "ci_gate",
+        "documentation"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "hardening_frontier": [
+        "Add deterministic LocalStack fanout replay tests if event schemas expand."
+      ],
+      "evidence": {
+        "unit_or_property_tests": {
+          "commands": [
+            "cargo test --workspace --all-features"
+          ],
+          "paths": [
+            "crates/messaging/src/localstack.rs"
+          ]
+        },
+        "runtime_or_smoke": {
+          "commands": [
+            "make dev-up",
+            "make smoke"
+          ],
+          "paths": [
+            "scripts/localstack-init.sh",
+            ".github/workflows/ci.yml"
+          ]
+        },
+        "runtime_enforcement": {
+          "paths": [
+            "crates/messaging/src/localstack.rs",
+            "scripts/localstack-init.sh"
+          ]
+        },
+        "ci_gate": {
+          "paths": [
+            ".github/workflows/ci.yml",
+            "scripts/validate-all.sh"
+          ]
+        },
+        "documentation": {
+          "paths": [
+            "docs/runbooks/localstack-sns-sqs.md"
+          ]
+        }
+      },
+      "proof_ladder": {
+        "S0_objective": "Specify, enforce, and validate the Rust Messaging and LocalStack surface as part of the integrated yield control plane.",
+        "S1_contract_or_spec": {
+          "status": "not_required",
+          "evidence_paths": []
+        },
+        "S2_executable_reference_or_validation_model": {
+          "status": "closed",
+          "commands": [
+            "cargo test --workspace --all-features",
+            "make dev-up",
+            "make smoke"
+          ]
+        },
+        "S3_implementation_mapping": {
+          "status": "closed",
+          "file_count": 7,
+          "representative_files": [
+            "crates/messaging/Cargo.toml",
+            "crates/messaging/src/envelope.rs",
+            "crates/messaging/src/lib.rs",
+            "crates/messaging/src/localstack.rs",
+            "crates/messaging/src/sns.rs",
+            "crates/messaging/src/sqs.rs",
+            "scripts/localstack-init.sh"
+          ],
+          "formal_scope": "messaging_idempotency_and_progress_modeled_abstractly",
+          "evidence_paths": [
+            "crates/messaging/src/localstack.rs",
+            "scripts/localstack-init.sh",
+            ".github/workflows/ci.yml",
+            "scripts/validate-all.sh",
+            "docs/runbooks/localstack-sns-sqs.md"
+          ]
+        },
+        "S4_proof_obligations": [
+          {
+            "id": "rust_messaging_localstack.source_inventory",
+            "axis": "source_inventory",
+            "status": "closed",
+            "closure_action": "Assign all files in this surface and keep unmapped files at zero."
+          },
+          {
+            "id": "rust_messaging_localstack.unit_or_property_tests",
+            "axis": "unit_or_property_tests",
+            "status": "closed",
+            "closure_action": "Add unit, property, route, or component tests for this surface."
+          },
+          {
+            "id": "rust_messaging_localstack.runtime_or_smoke",
+            "axis": "runtime_or_smoke",
+            "status": "closed",
+            "closure_action": "Add Docker, LocalStack, kind, or smoke evidence for this surface."
+          },
+          {
+            "id": "rust_messaging_localstack.runtime_enforcement",
+            "axis": "runtime_enforcement",
+            "status": "closed",
+            "closure_action": "Bind the rule to a domain guard, SQL constraint, middleware, worker policy, or runtime script."
+          },
+          {
+            "id": "rust_messaging_localstack.ci_gate",
+            "axis": "ci_gate",
+            "status": "closed",
+            "closure_action": "Invoke the surface validator from make validate or GitHub Actions."
+          },
+          {
+            "id": "rust_messaging_localstack.documentation",
+            "axis": "documentation",
+            "status": "closed",
+            "closure_action": "Document the surface and its validation commands."
+          }
+        ],
+        "S5_machine_check": {
+          "status": "closed",
+          "commands": [
+            "cargo test --workspace --all-features",
+            "make dev-up",
+            "make smoke",
+            "make validate"
+          ]
+        },
+        "S6_assumptions_and_limits": {
+          "limits": [
+            "No line-level formal proof of all Rust source is claimed; Rust coverage is by tests, runtime enforcement, and refinement evidence where applicable.",
+            "Runtime evidence is local/CI LocalStack, Docker Compose, or kind-shaped evidence, not a production deployment proof."
+          ],
+          "hardening_frontier": [
+            "Add deterministic LocalStack fanout replay tests if event schemas expand."
+          ]
+        }
+      },
+      "files": [
+        "crates/messaging/Cargo.toml",
+        "crates/messaging/src/envelope.rs",
+        "crates/messaging/src/lib.rs",
+        "crates/messaging/src/localstack.rs",
+        "crates/messaging/src/sns.rs",
+        "crates/messaging/src/sqs.rs",
+        "scripts/localstack-init.sh"
+      ]
+    },
+    {
+      "id": "rust_api_service",
+      "title": "Rust API Service",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "formal_scope": "none",
+      "file_count": 9,
+      "line_count": 818,
+      "rust_file_count": 7,
+      "test_function_count_static": 2,
+      "required_axes": [
+        "source_inventory",
+        "specification_or_contract",
+        "unit_or_property_tests",
+        "runtime_enforcement",
+        "runtime_or_smoke",
+        "ci_gate",
+        "documentation"
+      ],
+      "present_axes": [
+        "source_inventory",
+        "specification_or_contract",
+        "unit_or_property_tests",
+        "runtime_enforcement",
+        "runtime_or_smoke",
+        "ci_gate",
+        "documentation"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "hardening_frontier": [
+        "Add generated OpenAPI client/server congruence checks if endpoint count grows."
+      ],
+      "evidence": {
+        "specification_or_contract": {
+          "paths": [
+            "spec/openapi.yaml"
+          ]
+        },
+        "unit_or_property_tests": {
+          "commands": [
+            "cargo test --workspace --all-features"
+          ],
+          "paths": [
+            "services/api/tests/api_tests.rs"
+          ]
+        },
+        "runtime_enforcement": {
+          "paths": [
+            "services/api/src/middleware/mod.rs",
+            "services/api/src/routes/mod.rs"
+          ]
+        },
+        "runtime_or_smoke": {
+          "commands": [
+            "make smoke",
+            "make smoke-failure-paths"
+          ],
+          "paths": [
+            "scripts/smoke-create-sweep.sh"
+          ]
+        },
+        "ci_gate": {
+          "paths": [
+            ".github/workflows/ci.yml",
+            "scripts/validate-all.sh"
+          ]
+        },
+        "documentation": {
+          "paths": [
+            "docs/traceability.md",
+            "docs/testing.md"
+          ]
+        }
+      },
+      "proof_ladder": {
+        "S0_objective": "Specify, enforce, and validate the Rust API Service surface as part of the integrated yield control plane.",
+        "S1_contract_or_spec": {
+          "status": "closed",
+          "evidence_paths": [
+            "spec/openapi.yaml"
+          ]
+        },
+        "S2_executable_reference_or_validation_model": {
+          "status": "closed",
+          "commands": [
+            "cargo test --workspace --all-features",
+            "make smoke",
+            "make smoke-failure-paths"
+          ]
+        },
+        "S3_implementation_mapping": {
+          "status": "closed",
+          "file_count": 9,
+          "representative_files": [
+            "services/api/Cargo.toml",
+            "services/api/Dockerfile",
+            "services/api/src/error.rs",
+            "services/api/src/lib.rs",
+            "services/api/src/main.rs",
+            "services/api/src/middleware/mod.rs",
+            "services/api/src/openapi.rs",
+            "services/api/src/routes/mod.rs",
+            "services/api/tests/api_tests.rs"
+          ],
+          "formal_scope": "none",
+          "evidence_paths": [
+            "spec/openapi.yaml",
+            "services/api/tests/api_tests.rs",
+            "services/api/src/middleware/mod.rs",
+            "services/api/src/routes/mod.rs",
+            "scripts/smoke-create-sweep.sh",
+            ".github/workflows/ci.yml",
+            "scripts/validate-all.sh",
+            "docs/traceability.md",
+            "docs/testing.md"
+          ]
+        },
+        "S4_proof_obligations": [
+          {
+            "id": "rust_api_service.source_inventory",
+            "axis": "source_inventory",
+            "status": "closed",
+            "closure_action": "Assign all files in this surface and keep unmapped files at zero."
+          },
+          {
+            "id": "rust_api_service.specification_or_contract",
+            "axis": "specification_or_contract",
+            "status": "closed",
+            "closure_action": "Add or bind this surface to an OpenAPI, AsyncAPI, state-machine, TLA+, schema, or documented contract."
+          },
+          {
+            "id": "rust_api_service.unit_or_property_tests",
+            "axis": "unit_or_property_tests",
+            "status": "closed",
+            "closure_action": "Add unit, property, route, or component tests for this surface."
+          },
+          {
+            "id": "rust_api_service.runtime_enforcement",
+            "axis": "runtime_enforcement",
+            "status": "closed",
+            "closure_action": "Bind the rule to a domain guard, SQL constraint, middleware, worker policy, or runtime script."
+          },
+          {
+            "id": "rust_api_service.runtime_or_smoke",
+            "axis": "runtime_or_smoke",
+            "status": "closed",
+            "closure_action": "Add Docker, LocalStack, kind, or smoke evidence for this surface."
+          },
+          {
+            "id": "rust_api_service.ci_gate",
+            "axis": "ci_gate",
+            "status": "closed",
+            "closure_action": "Invoke the surface validator from make validate or GitHub Actions."
+          },
+          {
+            "id": "rust_api_service.documentation",
+            "axis": "documentation",
+            "status": "closed",
+            "closure_action": "Document the surface and its validation commands."
+          }
+        ],
+        "S5_machine_check": {
+          "status": "closed",
+          "commands": [
+            "cargo test --workspace --all-features",
+            "make smoke",
+            "make smoke-failure-paths",
+            "make validate"
+          ]
+        },
+        "S6_assumptions_and_limits": {
+          "limits": [
+            "This surface is specified and enforced by contracts, validators, tests, runtime gates, or documentation, not by a dedicated theorem-prover model.",
+            "No line-level formal proof of all Rust source is claimed; Rust coverage is by tests, runtime enforcement, and refinement evidence where applicable.",
+            "Runtime evidence is local/CI LocalStack, Docker Compose, or kind-shaped evidence, not a production deployment proof."
+          ],
+          "hardening_frontier": [
+            "Add generated OpenAPI client/server congruence checks if endpoint count grows."
+          ]
+        }
+      },
+      "files": [
+        "services/api/Cargo.toml",
+        "services/api/Dockerfile",
+        "services/api/src/error.rs",
+        "services/api/src/lib.rs",
+        "services/api/src/main.rs",
+        "services/api/src/middleware/mod.rs",
+        "services/api/src/openapi.rs",
+        "services/api/src/routes/mod.rs",
+        "services/api/tests/api_tests.rs"
+      ]
+    },
+    {
+      "id": "rust_workers_and_mocks",
+      "title": "Rust Workers and Local External Simulators",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "formal_scope": "worker_progress_and_dedupe_tied_to_abstract_liveness_and_safety",
+      "file_count": 7,
+      "line_count": 761,
+      "rust_file_count": 3,
+      "test_function_count_static": 5,
+      "required_axes": [
+        "source_inventory",
+        "unit_or_property_tests",
+        "runtime_or_smoke",
+        "runtime_enforcement",
+        "formal_projection",
+        "ci_gate",
+        "documentation"
+      ],
+      "present_axes": [
+        "source_inventory",
+        "unit_or_property_tests",
+        "runtime_or_smoke",
+        "runtime_enforcement",
+        "formal_projection",
+        "ci_gate",
+        "documentation"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "hardening_frontier": [
+        "Add queue-level fault injection beyond current smoke paths if worker count grows."
+      ],
+      "evidence": {
+        "unit_or_property_tests": {
+          "commands": [
+            "cargo test --workspace --all-features"
+          ],
+          "paths": [
+            "services/worker/src/workers/mod.rs",
+            "services/mock-transfer-agent/src/main.rs"
+          ]
+        },
+        "runtime_or_smoke": {
+          "commands": [
+            "make smoke",
+            "make smoke-failure-paths"
+          ],
+          "paths": [
+            "scripts/smoke-create-sweep.sh",
+            "scripts/smoke-failure-paths.sh"
+          ]
+        },
+        "runtime_enforcement": {
+          "paths": [
+            "services/worker/src/workers/mod.rs"
+          ]
+        },
+        "formal_projection": {
+          "paths": [
+            "spec/refinement/liveness_coverage.yaml",
+            "spec/refinement/invariant_coverage.yaml"
+          ]
+        },
+        "ci_gate": {
+          "paths": [
+            ".github/workflows/ci.yml",
+            "scripts/validate-all.sh"
+          ]
+        },
+        "documentation": {
+          "paths": [
+            "docs/liveness-verification.md",
+            "docs/runbooks/failure-injection.md"
+          ]
+        }
+      },
+      "proof_ladder": {
+        "S0_objective": "Specify, enforce, and validate the Rust Workers and Local External Simulators surface as part of the integrated yield control plane.",
+        "S1_contract_or_spec": {
+          "status": "not_required",
+          "evidence_paths": []
+        },
+        "S2_executable_reference_or_validation_model": {
+          "status": "closed",
+          "commands": [
+            "cargo test --workspace --all-features",
+            "make smoke",
+            "make smoke-failure-paths"
+          ]
+        },
+        "S3_implementation_mapping": {
+          "status": "closed",
+          "file_count": 7,
+          "representative_files": [
+            "services/mock-transfer-agent/Cargo.toml",
+            "services/mock-transfer-agent/Dockerfile",
+            "services/mock-transfer-agent/src/main.rs",
+            "services/worker/Cargo.toml",
+            "services/worker/Dockerfile",
+            "services/worker/src/main.rs",
+            "services/worker/src/workers/mod.rs"
+          ],
+          "formal_scope": "worker_progress_and_dedupe_tied_to_abstract_liveness_and_safety",
+          "evidence_paths": [
+            "services/worker/src/workers/mod.rs",
+            "services/mock-transfer-agent/src/main.rs",
+            "scripts/smoke-create-sweep.sh",
+            "scripts/smoke-failure-paths.sh",
+            "spec/refinement/liveness_coverage.yaml",
+            "spec/refinement/invariant_coverage.yaml",
+            ".github/workflows/ci.yml",
+            "scripts/validate-all.sh",
+            "docs/liveness-verification.md",
+            "docs/runbooks/failure-injection.md"
+          ]
+        },
+        "S4_proof_obligations": [
+          {
+            "id": "rust_workers_and_mocks.source_inventory",
+            "axis": "source_inventory",
+            "status": "closed",
+            "closure_action": "Assign all files in this surface and keep unmapped files at zero."
+          },
+          {
+            "id": "rust_workers_and_mocks.unit_or_property_tests",
+            "axis": "unit_or_property_tests",
+            "status": "closed",
+            "closure_action": "Add unit, property, route, or component tests for this surface."
+          },
+          {
+            "id": "rust_workers_and_mocks.runtime_or_smoke",
+            "axis": "runtime_or_smoke",
+            "status": "closed",
+            "closure_action": "Add Docker, LocalStack, kind, or smoke evidence for this surface."
+          },
+          {
+            "id": "rust_workers_and_mocks.runtime_enforcement",
+            "axis": "runtime_enforcement",
+            "status": "closed",
+            "closure_action": "Bind the rule to a domain guard, SQL constraint, middleware, worker policy, or runtime script."
+          },
+          {
+            "id": "rust_workers_and_mocks.formal_projection",
+            "axis": "formal_projection",
+            "status": "closed",
+            "closure_action": "Map implementation traces or commands from this surface into the abstract formal protocol."
+          },
+          {
+            "id": "rust_workers_and_mocks.ci_gate",
+            "axis": "ci_gate",
+            "status": "closed",
+            "closure_action": "Invoke the surface validator from make validate or GitHub Actions."
+          },
+          {
+            "id": "rust_workers_and_mocks.documentation",
+            "axis": "documentation",
+            "status": "closed",
+            "closure_action": "Document the surface and its validation commands."
+          }
+        ],
+        "S5_machine_check": {
+          "status": "closed",
+          "commands": [
+            "cargo test --workspace --all-features",
+            "make smoke",
+            "make smoke-failure-paths",
+            "make validate"
+          ]
+        },
+        "S6_assumptions_and_limits": {
+          "limits": [
+            "No line-level formal proof of all Rust source is claimed; Rust coverage is by tests, runtime enforcement, and refinement evidence where applicable.",
+            "Runtime evidence is local/CI LocalStack, Docker Compose, or kind-shaped evidence, not a production deployment proof."
+          ],
+          "hardening_frontier": [
+            "Add queue-level fault injection beyond current smoke paths if worker count grows."
+          ]
+        }
+      },
+      "files": [
+        "services/mock-transfer-agent/Cargo.toml",
+        "services/mock-transfer-agent/Dockerfile",
+        "services/mock-transfer-agent/src/main.rs",
+        "services/worker/Cargo.toml",
+        "services/worker/Dockerfile",
+        "services/worker/src/main.rs",
+        "services/worker/src/workers/mod.rs"
+      ]
+    },
+    {
+      "id": "shared_rust_infra",
+      "title": "Shared Rust Config and Observability",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "formal_scope": "none",
+      "file_count": 4,
+      "line_count": 124,
+      "rust_file_count": 2,
+      "test_function_count_static": 1,
+      "required_axes": [
+        "source_inventory",
+        "unit_or_property_tests",
+        "runtime_enforcement",
+        "ci_gate",
+        "documentation"
+      ],
+      "present_axes": [
+        "source_inventory",
+        "unit_or_property_tests",
+        "runtime_enforcement",
+        "ci_gate",
+        "documentation"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "hardening_frontier": [
+        "Add metrics assertion tests if observability becomes behaviorally richer."
+      ],
+      "evidence": {
+        "unit_or_property_tests": {
+          "commands": [
+            "cargo test --workspace --all-features"
+          ],
+          "paths": [
+            "crates/config/src/lib.rs"
+          ]
+        },
+        "runtime_enforcement": {
+          "paths": [
+            "crates/config/src/lib.rs",
+            "crates/observability/src/lib.rs"
+          ]
+        },
+        "ci_gate": {
+          "commands": [
+            "make validate"
+          ],
+          "paths": [
+            "scripts/validate-all.sh"
+          ]
+        },
+        "documentation": {
+          "paths": [
+            "docs/operations.md",
+            "docs/security.md"
+          ]
+        }
+      },
+      "proof_ladder": {
+        "S0_objective": "Specify, enforce, and validate the Shared Rust Config and Observability surface as part of the integrated yield control plane.",
+        "S1_contract_or_spec": {
+          "status": "not_required",
+          "evidence_paths": []
+        },
+        "S2_executable_reference_or_validation_model": {
+          "status": "closed",
+          "commands": [
+            "cargo test --workspace --all-features",
+            "make validate"
+          ]
+        },
+        "S3_implementation_mapping": {
+          "status": "closed",
+          "file_count": 4,
+          "representative_files": [
+            "crates/config/Cargo.toml",
+            "crates/config/src/lib.rs",
+            "crates/observability/Cargo.toml",
+            "crates/observability/src/lib.rs"
+          ],
+          "formal_scope": "none",
+          "evidence_paths": [
+            "crates/config/src/lib.rs",
+            "crates/observability/src/lib.rs",
+            "scripts/validate-all.sh",
+            "docs/operations.md",
+            "docs/security.md"
+          ]
+        },
+        "S4_proof_obligations": [
+          {
+            "id": "shared_rust_infra.source_inventory",
+            "axis": "source_inventory",
+            "status": "closed",
+            "closure_action": "Assign all files in this surface and keep unmapped files at zero."
+          },
+          {
+            "id": "shared_rust_infra.unit_or_property_tests",
+            "axis": "unit_or_property_tests",
+            "status": "closed",
+            "closure_action": "Add unit, property, route, or component tests for this surface."
+          },
+          {
+            "id": "shared_rust_infra.runtime_enforcement",
+            "axis": "runtime_enforcement",
+            "status": "closed",
+            "closure_action": "Bind the rule to a domain guard, SQL constraint, middleware, worker policy, or runtime script."
+          },
+          {
+            "id": "shared_rust_infra.ci_gate",
+            "axis": "ci_gate",
+            "status": "closed",
+            "closure_action": "Invoke the surface validator from make validate or GitHub Actions."
+          },
+          {
+            "id": "shared_rust_infra.documentation",
+            "axis": "documentation",
+            "status": "closed",
+            "closure_action": "Document the surface and its validation commands."
+          }
+        ],
+        "S5_machine_check": {
+          "status": "closed",
+          "commands": [
+            "cargo test --workspace --all-features",
+            "make validate"
+          ]
+        },
+        "S6_assumptions_and_limits": {
+          "limits": [
+            "This surface is specified and enforced by contracts, validators, tests, runtime gates, or documentation, not by a dedicated theorem-prover model.",
+            "No line-level formal proof of all Rust source is claimed; Rust coverage is by tests, runtime enforcement, and refinement evidence where applicable."
+          ],
+          "hardening_frontier": [
+            "Add metrics assertion tests if observability becomes behaviorally richer."
+          ]
+        }
+      },
+      "files": [
+        "crates/config/Cargo.toml",
+        "crates/config/src/lib.rs",
+        "crates/observability/Cargo.toml",
+        "crates/observability/src/lib.rs"
+      ]
+    },
+    {
+      "id": "frontend_console",
+      "title": "React/TypeScript Operator Console",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "formal_scope": "none",
+      "file_count": 14,
+      "line_count": 2897,
+      "rust_file_count": 0,
+      "test_function_count_static": 2,
+      "required_axes": [
+        "source_inventory",
+        "specification_or_contract",
+        "static_validation",
+        "unit_or_property_tests",
+        "ci_gate",
+        "documentation"
+      ],
+      "present_axes": [
+        "source_inventory",
+        "specification_or_contract",
+        "static_validation",
+        "unit_or_property_tests",
+        "ci_gate",
+        "documentation"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "hardening_frontier": [
+        "Add browser E2E coverage if UI workflows become safety-significant."
+      ],
+      "evidence": {
+        "specification_or_contract": {
+          "paths": [
+            "spec/openapi.yaml",
+            "web/react-console/src/api/client.ts"
+          ]
+        },
+        "static_validation": {
+          "commands": [
+            "pnpm --filter institutional-yield-react-console typecheck",
+            "pnpm --filter institutional-yield-react-console lint"
+          ]
+        },
+        "unit_or_property_tests": {
+          "commands": [
+            "pnpm --filter institutional-yield-react-console test"
+          ],
+          "paths": [
+            "web/react-console/tests"
+          ]
+        },
+        "ci_gate": {
+          "commands": [
+            "make validate"
+          ],
+          "paths": [
+            "scripts/validate-all.sh"
+          ]
+        },
+        "documentation": {
+          "paths": [
+            "docs/local-development.md",
+            "docs/testing.md"
+          ]
+        }
+      },
+      "proof_ladder": {
+        "S0_objective": "Specify, enforce, and validate the React/TypeScript Operator Console surface as part of the integrated yield control plane.",
+        "S1_contract_or_spec": {
+          "status": "closed",
+          "evidence_paths": [
+            "spec/openapi.yaml",
+            "web/react-console/src/api/client.ts"
+          ]
+        },
+        "S2_executable_reference_or_validation_model": {
+          "status": "closed",
+          "commands": [
+            "pnpm --filter institutional-yield-react-console typecheck",
+            "pnpm --filter institutional-yield-react-console lint",
+            "pnpm --filter institutional-yield-react-console test",
+            "make validate"
+          ]
+        },
+        "S3_implementation_mapping": {
+          "status": "closed",
+          "file_count": 14,
+          "representative_files": [
+            "web/react-console/Dockerfile",
+            "web/react-console/index.html",
+            "web/react-console/package.json",
+            "web/react-console/pnpm-lock.yaml",
+            "web/react-console/pnpm-workspace.yaml",
+            "web/react-console/src/App.tsx",
+            "web/react-console/src/api/client.ts",
+            "web/react-console/src/main.tsx",
+            "web/react-console/src/styles/app.css",
+            "web/react-console/tests/App.test.tsx",
+            "web/react-console/tests/client.test.ts",
+            "web/react-console/tests/setup.ts"
+          ],
+          "formal_scope": "none",
+          "evidence_paths": [
+            "spec/openapi.yaml",
+            "web/react-console/src/api/client.ts",
+            "web/react-console/tests",
+            "scripts/validate-all.sh",
+            "docs/local-development.md",
+            "docs/testing.md"
+          ]
+        },
+        "S4_proof_obligations": [
+          {
+            "id": "frontend_console.source_inventory",
+            "axis": "source_inventory",
+            "status": "closed",
+            "closure_action": "Assign all files in this surface and keep unmapped files at zero."
+          },
+          {
+            "id": "frontend_console.specification_or_contract",
+            "axis": "specification_or_contract",
+            "status": "closed",
+            "closure_action": "Add or bind this surface to an OpenAPI, AsyncAPI, state-machine, TLA+, schema, or documented contract."
+          },
+          {
+            "id": "frontend_console.static_validation",
+            "axis": "static_validation",
+            "status": "closed",
+            "closure_action": "Add a deterministic local validator for this surface."
+          },
+          {
+            "id": "frontend_console.unit_or_property_tests",
+            "axis": "unit_or_property_tests",
+            "status": "closed",
+            "closure_action": "Add unit, property, route, or component tests for this surface."
+          },
+          {
+            "id": "frontend_console.ci_gate",
+            "axis": "ci_gate",
+            "status": "closed",
+            "closure_action": "Invoke the surface validator from make validate or GitHub Actions."
+          },
+          {
+            "id": "frontend_console.documentation",
+            "axis": "documentation",
+            "status": "closed",
+            "closure_action": "Document the surface and its validation commands."
+          }
+        ],
+        "S5_machine_check": {
+          "status": "closed",
+          "commands": [
+            "pnpm --filter institutional-yield-react-console typecheck",
+            "pnpm --filter institutional-yield-react-console lint",
+            "pnpm --filter institutional-yield-react-console test",
+            "make validate"
+          ]
+        },
+        "S6_assumptions_and_limits": {
+          "limits": [
+            "This surface is specified and enforced by contracts, validators, tests, runtime gates, or documentation, not by a dedicated theorem-prover model."
+          ],
+          "hardening_frontier": [
+            "Add browser E2E coverage if UI workflows become safety-significant."
+          ]
+        }
+      },
+      "files": [
+        "web/react-console/Dockerfile",
+        "web/react-console/index.html",
+        "web/react-console/package.json",
+        "web/react-console/pnpm-lock.yaml",
+        "web/react-console/pnpm-workspace.yaml",
+        "web/react-console/src/App.tsx",
+        "web/react-console/src/api/client.ts",
+        "web/react-console/src/main.tsx",
+        "web/react-console/src/styles/app.css",
+        "web/react-console/tests/App.test.tsx",
+        "web/react-console/tests/client.test.ts",
+        "web/react-console/tests/setup.ts",
+        "web/react-console/tsconfig.json",
+        "web/react-console/vite.config.ts"
+      ]
+    },
+    {
+      "id": "compose_runtime_and_smoke",
+      "title": "Docker Compose Runtime and Smoke Gates",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "formal_scope": "none",
+      "file_count": 6,
+      "line_count": 291,
+      "rust_file_count": 0,
+      "test_function_count_static": 0,
+      "required_axes": [
+        "source_inventory",
+        "static_validation",
+        "runtime_or_smoke",
+        "ci_gate",
+        "documentation"
+      ],
+      "present_axes": [
+        "source_inventory",
+        "static_validation",
+        "runtime_or_smoke",
+        "ci_gate",
+        "documentation"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "hardening_frontier": [
+        "Add chaos-style smoke variants for transient LocalStack and database restarts."
+      ],
+      "evidence": {
+        "static_validation": {
+          "commands": [
+            "docker compose config --quiet"
+          ],
+          "paths": [
+            "docker-compose.yml"
+          ]
+        },
+        "runtime_or_smoke": {
+          "commands": [
+            "make dev-up",
+            "make smoke",
+            "make smoke-failure-paths"
+          ],
+          "paths": [
+            "scripts/smoke-create-sweep.sh",
+            "scripts/smoke-failure-paths.sh"
+          ]
+        },
+        "ci_gate": {
+          "paths": [
+            ".github/workflows/ci.yml"
+          ]
+        },
+        "documentation": {
+          "paths": [
+            "docs/local-development.md",
+            "docs/testing.md"
+          ]
+        }
+      },
+      "proof_ladder": {
+        "S0_objective": "Specify, enforce, and validate the Docker Compose Runtime and Smoke Gates surface as part of the integrated yield control plane.",
+        "S1_contract_or_spec": {
+          "status": "not_required",
+          "evidence_paths": []
+        },
+        "S2_executable_reference_or_validation_model": {
+          "status": "closed",
+          "commands": [
+            "docker compose config --quiet",
+            "make dev-up",
+            "make smoke",
+            "make smoke-failure-paths"
+          ]
+        },
+        "S3_implementation_mapping": {
+          "status": "closed",
+          "file_count": 6,
+          "representative_files": [
+            "docker-compose.yml",
+            "scripts/dev-down.sh",
+            "scripts/dev-reset.sh",
+            "scripts/dev-up.sh",
+            "scripts/smoke-create-sweep.sh",
+            "scripts/smoke-failure-paths.sh"
+          ],
+          "formal_scope": "none",
+          "evidence_paths": [
+            "docker-compose.yml",
+            "scripts/smoke-create-sweep.sh",
+            "scripts/smoke-failure-paths.sh",
+            ".github/workflows/ci.yml",
+            "docs/local-development.md",
+            "docs/testing.md"
+          ]
+        },
+        "S4_proof_obligations": [
+          {
+            "id": "compose_runtime_and_smoke.source_inventory",
+            "axis": "source_inventory",
+            "status": "closed",
+            "closure_action": "Assign all files in this surface and keep unmapped files at zero."
+          },
+          {
+            "id": "compose_runtime_and_smoke.static_validation",
+            "axis": "static_validation",
+            "status": "closed",
+            "closure_action": "Add a deterministic local validator for this surface."
+          },
+          {
+            "id": "compose_runtime_and_smoke.runtime_or_smoke",
+            "axis": "runtime_or_smoke",
+            "status": "closed",
+            "closure_action": "Add Docker, LocalStack, kind, or smoke evidence for this surface."
+          },
+          {
+            "id": "compose_runtime_and_smoke.ci_gate",
+            "axis": "ci_gate",
+            "status": "closed",
+            "closure_action": "Invoke the surface validator from make validate or GitHub Actions."
+          },
+          {
+            "id": "compose_runtime_and_smoke.documentation",
+            "axis": "documentation",
+            "status": "closed",
+            "closure_action": "Document the surface and its validation commands."
+          }
+        ],
+        "S5_machine_check": {
+          "status": "closed",
+          "commands": [
+            "docker compose config --quiet",
+            "make dev-up",
+            "make smoke",
+            "make smoke-failure-paths",
+            "make validate"
+          ]
+        },
+        "S6_assumptions_and_limits": {
+          "limits": [
+            "This surface is specified and enforced by contracts, validators, tests, runtime gates, or documentation, not by a dedicated theorem-prover model.",
+            "Runtime evidence is local/CI LocalStack, Docker Compose, or kind-shaped evidence, not a production deployment proof."
+          ],
+          "hardening_frontier": [
+            "Add chaos-style smoke variants for transient LocalStack and database restarts."
+          ]
+        }
+      },
+      "files": [
+        "docker-compose.yml",
+        "scripts/dev-down.sh",
+        "scripts/dev-reset.sh",
+        "scripts/dev-up.sh",
+        "scripts/smoke-create-sweep.sh",
+        "scripts/smoke-failure-paths.sh"
+      ]
+    },
+    {
+      "id": "kubernetes_bootstrap",
+      "title": "Kubernetes Local Bootstrap",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "formal_scope": "none",
+      "file_count": 17,
+      "line_count": 1091,
+      "rust_file_count": 0,
+      "test_function_count_static": 0,
+      "required_axes": [
+        "source_inventory",
+        "static_validation",
+        "runtime_or_smoke",
+        "ci_gate",
+        "documentation"
+      ],
+      "present_axes": [
+        "source_inventory",
+        "static_validation",
+        "runtime_or_smoke",
+        "ci_gate",
+        "documentation"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "hardening_frontier": [
+        "Run kind smoke in CI when runner capacity and nested container behavior are acceptable."
+      ],
+      "evidence": {
+        "static_validation": {
+          "commands": [
+            "make validate-k8s"
+          ],
+          "paths": [
+            "scripts/validate-k8s.sh"
+          ]
+        },
+        "runtime_or_smoke": {
+          "commands": [
+            "make k8s-up",
+            "make k8s-smoke",
+            "make k8s-down"
+          ],
+          "paths": [
+            "scripts/smoke-k8s.sh"
+          ]
+        },
+        "ci_gate": {
+          "commands": [
+            "make validate-k8s",
+            "make validate"
+          ],
+          "paths": [
+            "scripts/validate-all.sh"
+          ]
+        },
+        "documentation": {
+          "paths": [
+            "docs/runbooks/kubernetes-kind.md"
+          ]
+        }
+      },
+      "proof_ladder": {
+        "S0_objective": "Specify, enforce, and validate the Kubernetes Local Bootstrap surface as part of the integrated yield control plane.",
+        "S1_contract_or_spec": {
+          "status": "not_required",
+          "evidence_paths": []
+        },
+        "S2_executable_reference_or_validation_model": {
+          "status": "closed",
+          "commands": [
+            "make validate-k8s",
+            "make k8s-up",
+            "make k8s-smoke",
+            "make k8s-down",
+            "make validate"
+          ]
+        },
+        "S3_implementation_mapping": {
+          "status": "closed",
+          "file_count": 17,
+          "representative_files": [
+            "infra/k8s/base/api.yaml",
+            "infra/k8s/base/configmap.yaml",
+            "infra/k8s/base/kustomization.yaml",
+            "infra/k8s/base/localstack-init-job.yaml",
+            "infra/k8s/base/localstack.yaml",
+            "infra/k8s/base/mock-transfer-agent.yaml",
+            "infra/k8s/base/namespace.yaml",
+            "infra/k8s/base/postgres.yaml",
+            "infra/k8s/base/react-console.yaml",
+            "infra/k8s/base/secrets.yaml",
+            "infra/k8s/base/workers.yaml",
+            "infra/k8s/kind/cluster.yaml"
+          ],
+          "formal_scope": "none",
+          "evidence_paths": [
+            "scripts/validate-k8s.sh",
+            "scripts/smoke-k8s.sh",
+            "scripts/validate-all.sh",
+            "docs/runbooks/kubernetes-kind.md"
+          ]
+        },
+        "S4_proof_obligations": [
+          {
+            "id": "kubernetes_bootstrap.source_inventory",
+            "axis": "source_inventory",
+            "status": "closed",
+            "closure_action": "Assign all files in this surface and keep unmapped files at zero."
+          },
+          {
+            "id": "kubernetes_bootstrap.static_validation",
+            "axis": "static_validation",
+            "status": "closed",
+            "closure_action": "Add a deterministic local validator for this surface."
+          },
+          {
+            "id": "kubernetes_bootstrap.runtime_or_smoke",
+            "axis": "runtime_or_smoke",
+            "status": "closed",
+            "closure_action": "Add Docker, LocalStack, kind, or smoke evidence for this surface."
+          },
+          {
+            "id": "kubernetes_bootstrap.ci_gate",
+            "axis": "ci_gate",
+            "status": "closed",
+            "closure_action": "Invoke the surface validator from make validate or GitHub Actions."
+          },
+          {
+            "id": "kubernetes_bootstrap.documentation",
+            "axis": "documentation",
+            "status": "closed",
+            "closure_action": "Document the surface and its validation commands."
+          }
+        ],
+        "S5_machine_check": {
+          "status": "closed",
+          "commands": [
+            "make validate-k8s",
+            "make k8s-up",
+            "make k8s-smoke",
+            "make k8s-down",
+            "make validate"
+          ]
+        },
+        "S6_assumptions_and_limits": {
+          "limits": [
+            "This surface is specified and enforced by contracts, validators, tests, runtime gates, or documentation, not by a dedicated theorem-prover model.",
+            "Runtime evidence is local/CI LocalStack, Docker Compose, or kind-shaped evidence, not a production deployment proof."
+          ],
+          "hardening_frontier": [
+            "Run kind smoke in CI when runner capacity and nested container behavior are acceptable."
+          ]
+        }
+      },
+      "files": [
+        "infra/k8s/base/api.yaml",
+        "infra/k8s/base/configmap.yaml",
+        "infra/k8s/base/kustomization.yaml",
+        "infra/k8s/base/localstack-init-job.yaml",
+        "infra/k8s/base/localstack.yaml",
+        "infra/k8s/base/mock-transfer-agent.yaml",
+        "infra/k8s/base/namespace.yaml",
+        "infra/k8s/base/postgres.yaml",
+        "infra/k8s/base/react-console.yaml",
+        "infra/k8s/base/secrets.yaml",
+        "infra/k8s/base/workers.yaml",
+        "infra/k8s/kind/cluster.yaml",
+        "infra/k8s/overlays/aws-shaped/kustomization.yaml",
+        "infra/k8s/overlays/local/kustomization.yaml",
+        "scripts/install-kind-tooling.sh",
+        "scripts/smoke-k8s.sh",
+        "scripts/validate-k8s.sh"
+      ]
+    },
+    {
+      "id": "docs_runbooks_adrs",
+      "title": "Documentation, Runbooks, and ADRs",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "formal_scope": "none",
+      "file_count": 43,
+      "line_count": 1645,
+      "rust_file_count": 0,
+      "test_function_count_static": 0,
+      "required_axes": [
+        "source_inventory",
+        "static_validation",
+        "ci_gate",
+        "documentation"
+      ],
+      "present_axes": [
+        "source_inventory",
+        "static_validation",
+        "ci_gate",
+        "documentation"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "hardening_frontier": [
+        "Add docs coverage checks for new runbooks as operational surfaces expand."
+      ],
+      "evidence": {
+        "static_validation": {
+          "commands": [
+            "make validate-docs"
+          ],
+          "paths": [
+            "scripts/validate-docs.sh"
+          ]
+        },
+        "ci_gate": {
+          "commands": [
+            "make validate-docs",
+            "make validate"
+          ],
+          "paths": [
+            "scripts/validate-all.sh"
+          ]
+        },
+        "documentation": {
+          "paths": [
+            "docs/index.md",
+            "docs/adr/README.md",
+            "docs/runbooks/index.md"
+          ]
+        }
+      },
+      "proof_ladder": {
+        "S0_objective": "Specify, enforce, and validate the Documentation, Runbooks, and ADRs surface as part of the integrated yield control plane.",
+        "S1_contract_or_spec": {
+          "status": "not_required",
+          "evidence_paths": []
+        },
+        "S2_executable_reference_or_validation_model": {
+          "status": "closed",
+          "commands": [
+            "make validate-docs",
+            "make validate"
+          ]
+        },
+        "S3_implementation_mapping": {
+          "status": "closed",
+          "file_count": 43,
+          "representative_files": [
+            "docs/adr/0001-use-rust-workspace-and-shared-domain-crates.md",
+            "docs/adr/0002-use-localstack-for-local-sns-sqs.md",
+            "docs/adr/0003-use-postgres-sqlx-and-append-only-ledger.md",
+            "docs/adr/0004-enforce-state-machine-in-domain-layer.md",
+            "docs/adr/0005-use-outbox-inbox-for-resilient-messaging.md",
+            "docs/adr/0006-use-react-typescript-generated-api-client.md",
+            "docs/adr/0007-use-docker-compose-for-primary-local-runtime.md",
+            "docs/adr/0008-provide-kind-kubernetes-bootstrap.md",
+            "docs/adr/0009-use-mock-transfer-agent-and-chain-observer-locally.md",
+            "docs/adr/0010-no-real-aws-calls-in-local-mode.md",
+            "docs/adr/0011-production-aws-differs-from-local-simulation.md",
+            "docs/adr/0012-enforce-financial-safety-invariants.md"
+          ],
+          "formal_scope": "none",
+          "evidence_paths": [
+            "scripts/validate-docs.sh",
+            "scripts/validate-all.sh",
+            "docs/index.md",
+            "docs/adr/README.md",
+            "docs/runbooks/index.md"
+          ]
+        },
+        "S4_proof_obligations": [
+          {
+            "id": "docs_runbooks_adrs.source_inventory",
+            "axis": "source_inventory",
+            "status": "closed",
+            "closure_action": "Assign all files in this surface and keep unmapped files at zero."
+          },
+          {
+            "id": "docs_runbooks_adrs.static_validation",
+            "axis": "static_validation",
+            "status": "closed",
+            "closure_action": "Add a deterministic local validator for this surface."
+          },
+          {
+            "id": "docs_runbooks_adrs.ci_gate",
+            "axis": "ci_gate",
+            "status": "closed",
+            "closure_action": "Invoke the surface validator from make validate or GitHub Actions."
+          },
+          {
+            "id": "docs_runbooks_adrs.documentation",
+            "axis": "documentation",
+            "status": "closed",
+            "closure_action": "Document the surface and its validation commands."
+          }
+        ],
+        "S5_machine_check": {
+          "status": "closed",
+          "commands": [
+            "make validate-docs",
+            "make validate"
+          ]
+        },
+        "S6_assumptions_and_limits": {
+          "limits": [
+            "This surface is specified and enforced by contracts, validators, tests, runtime gates, or documentation, not by a dedicated theorem-prover model."
+          ],
+          "hardening_frontier": [
+            "Add docs coverage checks for new runbooks as operational surfaces expand."
+          ]
+        }
+      },
+      "files": [
+        "docs/adr/0001-use-rust-workspace-and-shared-domain-crates.md",
+        "docs/adr/0002-use-localstack-for-local-sns-sqs.md",
+        "docs/adr/0003-use-postgres-sqlx-and-append-only-ledger.md",
+        "docs/adr/0004-enforce-state-machine-in-domain-layer.md",
+        "docs/adr/0005-use-outbox-inbox-for-resilient-messaging.md",
+        "docs/adr/0006-use-react-typescript-generated-api-client.md",
+        "docs/adr/0007-use-docker-compose-for-primary-local-runtime.md",
+        "docs/adr/0008-provide-kind-kubernetes-bootstrap.md",
+        "docs/adr/0009-use-mock-transfer-agent-and-chain-observer-locally.md",
+        "docs/adr/0010-no-real-aws-calls-in-local-mode.md",
+        "docs/adr/0011-production-aws-differs-from-local-simulation.md",
+        "docs/adr/0012-enforce-financial-safety-invariants.md",
+        "docs/adr/README.md",
+        "docs/agentic/docs-generation.md",
+        "docs/agentic/gate-history.md",
+        "docs/agentic/implementation-log.md",
+        "docs/agentic/index.md",
+        "docs/agentic/working-agreement.md",
+        "docs/architecture.md",
+        "docs/bootstrap.md",
+        "docs/index.md",
+        "docs/local-development.md",
+        "docs/operations.md",
+        "docs/production-readiness.md",
+        "docs/runbooks/failure-injection.md",
+        "docs/runbooks/index.md",
+        "docs/runbooks/kubernetes-kind.md",
+        "docs/runbooks/localstack-sns-sqs.md",
+        "docs/runbooks/postgres-ledger-integrity.md",
+        "docs/runbooks/reconciliation-breaks.md",
+        "docs/security.md",
+        "docs/testing.md",
+        "docs/traceability.md",
+        "docs/trackers/formal-liveness-implementation.md",
+        "docs/trackers/formal-liveness-planning.md",
+        "docs/trackers/formal-liveness-tracking.md",
+        "docs/trackers/formal-refinement-implementation.md",
+        "docs/trackers/formal-refinement-planning.md",
+        "docs/trackers/formal-refinement-tracking.md",
+        "docs/trackers/formal-verification-implementation.md",
+        "docs/trackers/formal-verification-planning.md",
+        "docs/trackers/formal-verification-tracking.md",
+        "scripts/validate-docs.sh"
+      ]
+    }
+  ]
+}

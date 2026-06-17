@@ -1,4 +1,4 @@
-.PHONY: check-tools bootstrap validate-tla validate-refinement validate-formal-coverage validate-liveness validate-specs validate-k8s validate-docs validate fmt lint test dev-up dev-down dev-reset smoke smoke-failure-paths docker-build k8s-up k8s-smoke k8s-down
+.PHONY: check-tools bootstrap generate-formal-coverage-map generate-repo-surface-coverage-map validate-tla validate-refinement validate-formal-coverage validate-formal-coverage-map validate-repo-surface-coverage-map validate-liveness validate-specs validate-k8s validate-docs validate fmt lint test dev-up dev-down dev-reset smoke smoke-failure-paths docker-build k8s-up k8s-smoke k8s-down
 
 check-tools:
 	./scripts/check-tools.sh
@@ -17,6 +17,18 @@ validate-refinement:
 
 validate-formal-coverage:
 	./scripts/validate-formal-coverage.sh
+
+generate-formal-coverage-map:
+	./scripts/generate-formal-coverage-map.py
+
+generate-repo-surface-coverage-map:
+	./scripts/generate-repo-surface-coverage-map.py
+
+validate-formal-coverage-map:
+	./scripts/validate-formal-coverage-map.sh
+
+validate-repo-surface-coverage-map:
+	./scripts/validate-repo-surface-coverage-map.sh
 
 validate-liveness:
 	./scripts/validate-liveness-coverage.sh
