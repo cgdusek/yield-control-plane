@@ -1,11 +1,11 @@
 # AWS Certification Simulation Tracking
 
 Status: in-progress
-Last Updated: 2026-06-17T17:54:03Z
+Last Updated: 2026-06-17T18:03:59Z
 
 ## Current Phase
 
-C7/C8 live AWS remediation: dirty stack destroyed; formal admission proof and Kani source-proof remedy completed before any rebuild; `$750` next-run budget guardrail created and scoped-role preflight passed.
+C7/C8 live AWS remediation: dirty stack destroyed; formal admission proof and Kani source-proof remedy completed before any rebuild; `$750` next-run budget guardrail created and scoped-role preflight passed; CI static job ripgrep fix in progress.
 
 ## Live Checklist
 
@@ -83,6 +83,7 @@ C7/C8 live AWS remediation: dirty stack destroyed; formal admission proof and Ka
 | `AWS_PROFILE=root ... make aws-cert-teardown-iam` | passed | Removed the previous bootstrap IAM material from the root boundary. |
 | `AWS_PROFILE=root AWS_CERT_BUDGET_LIMIT_USD=750 AWS_CERT_BUDGET_NAME=yield-control-plane-cert-750-usd ... make aws-cert-bootstrap-iam` | passed | Created or verified the explicit `$750` guardrail and minted fresh temporary scoped role credentials. |
 | `source artifacts/aws-certification/aws-cert-temp-role.env && make aws-cert-preflight` | passed | Preflight recorded non-root assumed-role identity, `us-west-2`, budget `yield-control-plane-cert-750-usd`, limit `$750`, actual `$650.121`, forecast `$1179.916`, and 24-hour TTL. |
+| `gh run watch 27708999746`; `gh run view 27708999746 --job 81964884829 --log` | failed then diagnosed | Integration CI passed; static CI failed because `ripgrep` was not installed before `make validate` ran `validate-aws-certification.sh`. |
 
 ## Files Changed
 
@@ -102,4 +103,4 @@ Open. AWS campaign execution remains in progress and must not be marked internal
 
 ## Known Follow-Ups
 
-Commit and push the workstream before cloud deploy so image tags and evidence reference a committed git SHA, then run deploy, workload, collect, destroy, root teardown, and final validation.
+Commit and push the CI `ripgrep` fix, monitor replacement CI until green, then run deploy, workload, collect, destroy, root teardown, and final validation.

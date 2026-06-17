@@ -25,7 +25,7 @@ jobs:
       - name: Install OS tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y jq curl openjdk-17-jre-headless
+          sudo apt-get install -y jq curl ripgrep openjdk-17-jre-headless
           python3 -m pip install --user pyyaml
 
       - name: Install kubectl
