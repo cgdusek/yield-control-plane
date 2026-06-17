@@ -11,6 +11,7 @@ Start here for the local institutional yield control plane.
 - [Formal verification](formal-verification.md)
 - [Liveness verification](liveness-verification.md)
 - [AWS simulation and internal certification](aws-certification.md)
+- [AWS simulation internal certification report - 2026-06-17](certification/aws-simulation-internal-certification-report-2026-06-17.md)
 - [Production readiness](production-readiness.md)
 - [Runbooks](runbooks/index.md)
 - [Traceability](traceability.md)

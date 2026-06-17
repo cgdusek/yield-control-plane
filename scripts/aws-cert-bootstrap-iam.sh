@@ -87,6 +87,25 @@ else
   budget_created=true
 fi
 
+fis_slr_role_name="AWSServiceRoleForFIS"
+fis_slr_status="existing"
+if aws iam get-role \
+  --role-name "$fis_slr_role_name" \
+  --output json > "$ARTIFACT_DIR/bootstrap-fis-service-linked-role.json" 2>/dev/null
+then
+  :
+else
+  aws iam create-service-linked-role \
+    --aws-service-name fis.amazonaws.com \
+    --description "Service-linked role for yield-control-plane AWS certification FIS experiments" \
+    --output json > "$ARTIFACT_DIR/bootstrap-fis-service-linked-role-create.json"
+  fis_slr_status="created"
+  sleep "${AWS_CERT_IAM_PROPAGATION_SECONDS:-10}"
+  aws iam get-role \
+    --role-name "$fis_slr_role_name" \
+    --output json > "$ARTIFACT_DIR/bootstrap-fis-service-linked-role.json"
+fi
+
 trust_path="$ARTIFACT_DIR/bootstrap-role-trust.json"
 policy_path="$ARTIFACT_DIR/bootstrap-role-policy.json"
 user_policy_path="$ARTIFACT_DIR/bootstrap-user-policy.json"
@@ -183,6 +202,12 @@ jq -n \
           "iam:UntagRole"
         ],
         Resource: ("arn:aws:iam::" + $account_id + ":role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS*")
+      },
+      {
+        Sid: "FisServiceLinkedRoleRead",
+        Effect: "Allow",
+        Action: "iam:GetRole",
+        Resource: ("arn:aws:iam::" + $account_id + ":role/aws-service-role/fis.amazonaws.com/AWSServiceRoleForFIS")
       },
       {
         Sid: "ServiceLinkedRoleDeletionStatus",
@@ -351,6 +376,8 @@ jq -n \
   --arg user_name "$user_name" \
   --arg access_key_id "$bootstrap_access_key_id" \
   --arg budget "$budget_name" \
+  --arg fis_slr_role_name "$fis_slr_role_name" \
+  --arg fis_slr_status "$fis_slr_status" \
   --argjson budget_limit_usd "$budget_limit_usd" \
   --argjson budget_created "$budget_created" \
   --argjson role_created "$role_created" \
@@ -366,6 +393,8 @@ jq -n \
     bootstrap_user_access_key_id: $access_key_id,
     budget: $budget,
     budget_limit_usd: $budget_limit_usd,
+    fis_service_linked_role_name: $fis_slr_role_name,
+    fis_service_linked_role_status: $fis_slr_status,
     budget_created_by_bootstrap: $budget_created,
     role_created_by_bootstrap: $role_created,
     user_created_by_bootstrap: $user_created,

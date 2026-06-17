@@ -282,6 +282,12 @@ async fn append_only_check(pool: &PgPool) -> anyhow::Result<CertificationCheck> 
 }
 
 fn git_sha() -> String {
+    if let Ok(value) = std::env::var("GIT_SHA") {
+        if !value.trim().is_empty() {
+            return value;
+        }
+    }
+
     Command::new("git")
         .args(["rev-parse", "HEAD"])
         .output()

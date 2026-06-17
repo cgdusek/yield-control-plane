@@ -300,8 +300,9 @@ resource "aws_db_instance" "postgres" {
 }
 
 resource "aws_secretsmanager_secret" "database_url" {
-  name       = "${var.workload_name}/database-url"
-  kms_key_id = aws_kms_key.certification.arn
+  name                    = "${var.workload_name}/database-url"
+  kms_key_id              = aws_kms_key.certification.arn
+  recovery_window_in_days = 0
 }
 
 resource "aws_secretsmanager_secret_version" "database_url" {
@@ -634,6 +635,9 @@ resource "aws_ecs_service" "api" {
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.api.arn
   desired_count   = var.api_desired_count
+  propagate_tags  = "SERVICE"
+
+  enable_ecs_managed_tags = true
 
   capacity_provider_strategy {
     capacity_provider = "FARGATE"
@@ -664,6 +668,9 @@ resource "aws_ecs_service" "mock_transfer_agent" {
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.mock_transfer_agent.arn
   desired_count   = 1
+  propagate_tags  = "SERVICE"
+
+  enable_ecs_managed_tags = true
 
   capacity_provider_strategy {
     capacity_provider = "FARGATE"
@@ -689,6 +696,9 @@ resource "aws_ecs_service" "worker" {
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.worker[each.value].arn
   desired_count   = var.worker_desired_count
+  propagate_tags  = "SERVICE"
+
+  enable_ecs_managed_tags = true
 
   capacity_provider_strategy {
     capacity_provider = "FARGATE_SPOT"

@@ -78,6 +78,16 @@ then
   exit 1
 fi
 
+fis_slr_role_name="AWSServiceRoleForFIS"
+if ! aws iam get-role \
+  --role-name "$fis_slr_role_name" \
+  --output json >/tmp/ycp-aws-cert-fis-service-linked-role.json
+then
+  echo "required FIS service-linked role is missing: $fis_slr_role_name; rerun root bootstrap before certification run" >&2
+  exit 1
+fi
+fis_slr_arn="$(jq -r '.Role.Arn' /tmp/ycp-aws-cert-fis-service-linked-role.json)"
+
 jq -n \
   --arg account_id "$account_id" \
   --arg arn "$arn" \
@@ -85,6 +95,7 @@ jq -n \
   --arg budget "$budget_name" \
   --arg ttl_hours "$AWS_CERT_TTL_HOURS" \
   --arg budget_spend_mode "$budget_spend_mode" \
+  --arg fis_service_linked_role_arn "$fis_slr_arn" \
   --argjson budget_limit "$limit" \
   --argjson budget_actual_spend "$actual_spend" \
   --argjson budget_forecasted_spend "$forecasted_spend" \
@@ -97,6 +108,7 @@ jq -n \
     budget_actual_spend_usd: $budget_actual_spend,
     budget_forecasted_spend_usd: $budget_forecasted_spend,
     budget_spend_mode: $budget_spend_mode,
+    fis_service_linked_role_arn: $fis_service_linked_role_arn,
     teardown_ttl_hours: ($ttl_hours | tonumber),
     root_identity: false,
     opt_in: true

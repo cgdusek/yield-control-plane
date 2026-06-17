@@ -91,7 +91,11 @@ if [[ "$run_cloud_certifier" == "true" ]]; then
     --argjson security_groups "$security_groups_json" \
     '{awsvpcConfiguration:{subnets:$subnets,securityGroups:$security_groups,assignPublicIp:"ENABLED"}}')"
   overrides="$(jq -cn \
-    '{containerOverrides:[{name:"certifier",environment:[{name:"AWS_CERT_PROBE_COMPACT",value:"1"}]}]}')"
+    --arg git_sha "$git_sha" \
+    '{containerOverrides:[{name:"certifier",environment:[
+      {name:"AWS_CERT_PROBE_COMPACT",value:"1"},
+      {name:"GIT_SHA",value:$git_sha}
+    ]}]}')"
 
   aws ecs run-task \
     --cluster "$cluster" \
@@ -129,6 +133,9 @@ if [[ "$run_cloud_certifier" == "true" ]]; then
   done
   jq -r '.events[].message' "$ARTIFACT_DIR/certifier-log-events.json" > "$ARTIFACT_DIR/db-invariant-report.raw"
   jq -r '.events[].message | select(startswith("{"))' "$ARTIFACT_DIR/certifier-log-events.json" | tail -n 1 > "$ARTIFACT_DIR/db-invariant-report.json"
+  jq --arg git_sha "$git_sha" '.git_sha = $git_sha' \
+    "$ARTIFACT_DIR/db-invariant-report.json" > "$ARTIFACT_DIR/db-invariant-report.json.tmp"
+  mv "$ARTIFACT_DIR/db-invariant-report.json.tmp" "$ARTIFACT_DIR/db-invariant-report.json"
   if ! jq -e '.checks_failed == 0' "$ARTIFACT_DIR/db-invariant-report.json" >/dev/null; then
     echo "DB invariant certifier failed or produced invalid output; see $ARTIFACT_DIR/db-invariant-report.json" >&2
     exit 1

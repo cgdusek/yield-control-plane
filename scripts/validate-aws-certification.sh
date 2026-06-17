@@ -26,9 +26,11 @@ required_files=(
   "scripts/aws-cert-deploy.sh"
   "scripts/aws-cert-run.sh"
   "scripts/aws-cert-collect.sh"
+  "scripts/smoke-create-sweep.sh"
   "scripts/aws-cert-admission-check.sh"
   "scripts/aws-cert-wait-queues-drained.sh"
   "scripts/aws-cert-wait-ecs-services-stable.sh"
+  "scripts/aws-cert-check-fis-targets.sh"
   "scripts/aws-cert-destroy.sh"
   "scripts/aws-cert-teardown-iam.sh"
   "services/certifier/Cargo.toml"
@@ -70,6 +72,7 @@ for script in \
   scripts/aws-cert-admission-check.sh \
   scripts/aws-cert-wait-queues-drained.sh \
   scripts/aws-cert-wait-ecs-services-stable.sh \
+  scripts/aws-cert-check-fis-targets.sh \
   scripts/aws-cert-destroy.sh \
   scripts/aws-cert-teardown-iam.sh
 do
@@ -124,8 +127,11 @@ rg -q 'cpu_architecture        = var.runtime_cpu_architecture' infra/aws-simulat
 rg -q 'aws_iam_service_linked_role" "ecs"' infra/aws-simulation/main.tf
 rg -q 'aws_ecs_cluster_capacity_providers.main' infra/aws-simulation/main.tf
 rg -q 'aws_fis_experiment_template' infra/aws-simulation/main.tf
+rg -q 'propagate_tags  = "SERVICE"' infra/aws-simulation/main.tf
+rg -q 'enable_ecs_managed_tags = true' infra/aws-simulation/main.tf
 rg -q 'aws_budgets_budget' infra/aws-simulation/main.tf
 rg -q 'aws_sqs_queue" "dlq"' infra/aws-simulation/main.tf
+rg -q 'recovery_window_in_days = 0' infra/aws-simulation/main.tf
 rg -q 'AllowCloudWatchLogsEncryption' infra/aws-simulation/main.tf
 rg -q 'AllowSnsToSendToEncryptedSqs' infra/aws-simulation/main.tf
 rg -q 'raw_message_delivery = true' infra/aws-simulation/main.tf
@@ -147,12 +153,18 @@ rg -q 'delete-access-key' scripts/aws-cert-bootstrap-iam.sh
 rg -q 'budgets:ModifyBudget' scripts/aws-cert-bootstrap-iam.sh
 rg -q 'iam:CreateServiceLinkedRole' scripts/aws-cert-bootstrap-iam.sh
 rg -q 'AWSServiceRoleForECS' scripts/aws-cert-bootstrap-iam.sh
+rg -q 'create-service-linked-role' scripts/aws-cert-bootstrap-iam.sh
+rg -q 'fis.amazonaws.com' scripts/aws-cert-bootstrap-iam.sh
+rg -q 'AWSServiceRoleForFIS' scripts/aws-cert-bootstrap-iam.sh
+rg -q 'FisServiceLinkedRoleRead' scripts/aws-cert-bootstrap-iam.sh
 rg -q 'iam:TagRole' scripts/aws-cert-bootstrap-iam.sh
 rg -q 'iam:DeleteServiceLinkedRole' scripts/aws-cert-bootstrap-iam.sh
 rg -q 'ServiceLinkedRoleDeletionStatus' scripts/aws-cert-bootstrap-iam.sh
 rg -q 'iam:ListInstanceProfilesForRole' scripts/aws-cert-bootstrap-iam.sh
 rg -q 'iam:ListAttachedRolePolicies' scripts/aws-cert-bootstrap-iam.sh
 rg -q 'route53:CreateHostedZone' scripts/aws-cert-bootstrap-iam.sh
+rg -q 'required FIS service-linked role is missing' scripts/aws-cert-preflight.sh
+rg -q 'fis_service_linked_role_arn' scripts/aws-cert-preflight.sh
 rg -q 'delete-access-key' scripts/aws-cert-teardown-iam.sh
 rg -q 'state rm aws_budgets_budget.campaign' scripts/aws-cert-destroy.sh
 rg -q 'aws_budgets_budget.campaign' scripts/aws-cert-deploy.sh
@@ -161,9 +173,20 @@ rg -Fq 'budget_limit_usd="${AWS_CERT_BUDGET_LIMIT_USD:-50}"' scripts/aws-cert-de
 rg -q 'AWS_CERT_IMAGE_PLATFORM:-linux/arm64' scripts/aws-cert-deploy.sh
 rg -q 'AWS_CERT_SKIP_IMAGE_BUILD' scripts/aws-cert-deploy.sh
 rg -q 'describe-images' scripts/aws-cert-deploy.sh
+rg -q 'AWS_CERT_FORCE_ECS_DEPLOYMENT' scripts/aws-cert-deploy.sh
+rg -q 'force-new-deployment' scripts/aws-cert-deploy.sh
 rg -q 'validate-aws-certification.sh' scripts/aws-cert-deploy.sh
 rg -q 'aws-cert-preflight.sh.*preflight-run.json' scripts/aws-cert-run.sh
 rg -q 'aws-cert-admission-check.sh' scripts/aws-cert-run.sh
+rg -q 'AWS_CERT_FIS_TARGET_STAGE="pre-run"' scripts/aws-cert-run.sh
+rg -q 'AWS_CERT_FIS_TARGET_STAGE="pre-fis"' scripts/aws-cert-run.sh
+rg -q 'aws-cert-check-fis-targets.sh' scripts/aws-cert-run.sh
+rg -q 'describe-tasks' scripts/aws-cert-check-fis-targets.sh
+rg -q -- '--include TAGS' scripts/aws-cert-check-fis-targets.sh
+rg -q 'CertificationWorkstream' scripts/aws-cert-check-fis-targets.sh
+rg -q 'WorkerKind' scripts/aws-cert-check-fis-targets.sh
+rg -q 'POLICY_KEY=.*smoke-policy' scripts/smoke-create-sweep.sh
+rg -Fq '[.[] | select(.order_id == $order)] | length' scripts/smoke-create-sweep.sh
 rg -q 'aws-cert-preflight.sh.*preflight-collect.json' scripts/aws-cert-collect.sh
 rg -q 'AWS_CERT_QUEUE_DRAIN_STAGE="pre-run"' scripts/aws-cert-run.sh
 rg -q 'AWS_CERT_QUEUE_DRAIN_STAGE="post-smoke"' scripts/aws-cert-run.sh
@@ -174,6 +197,8 @@ rg -q 'AWS_CERT_FIS_TIMEOUT_SECONDS' scripts/aws-cert-run.sh
 rg -q 'queue-drain-final.json' scripts/aws-cert-collect.sh
 rg -q 'ecs run-task' scripts/aws-cert-collect.sh
 rg -q 'certifier_task_definition_arn' scripts/aws-cert-collect.sh
+rg -q 'GIT_SHA' scripts/aws-cert-collect.sh
+rg -q 'GIT_SHA' services/certifier/src/main.rs
 rg -q 'db-invariant-report.json' scripts/aws-cert-collect.sh
 ! rg -q 'status:"skipped"|status:"skipped"' scripts/aws-cert-collect.sh || {
   echo "AWS certification collection must not skip DB invariant certifier evidence" >&2

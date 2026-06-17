@@ -100,4 +100,18 @@ fi
   "$TOFU_BIN" output -json > "../../$ARTIFACT_DIR/tofu-outputs.json"
 )
 
+if [[ "${AWS_CERT_FORCE_ECS_DEPLOYMENT:-1}" == "1" ]]; then
+  cluster="$(jq -r '.ecs_cluster_name.value // empty' "$ARTIFACT_DIR/tofu-outputs.json")"
+  if [[ -n "$cluster" ]]; then
+    for service in api mock-transfer-agent outbox-publisher transfer-agent reconciliation chain-watcher notification; do
+      aws ecs update-service \
+        --cluster "$cluster" \
+        --service "$service" \
+        --force-new-deployment \
+        --output json > "$ARTIFACT_DIR/ecs-force-deploy-${service}.json"
+    done
+    AWS_CERT_ECS_STABILITY_STAGE="post-deploy" ./scripts/aws-cert-wait-ecs-services-stable.sh
+  fi
+fi
+
 echo "AWS certification deployment complete. Outputs: $ARTIFACT_DIR/tofu-outputs.json"

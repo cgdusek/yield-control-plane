@@ -37,6 +37,8 @@ export AWS_CERT_QUEUE_DRAIN_STAGE="pre-run"
 ./scripts/aws-cert-wait-queues-drained.sh
 export AWS_CERT_ECS_STABILITY_STAGE="pre-run"
 ./scripts/aws-cert-wait-ecs-services-stable.sh
+export AWS_CERT_FIS_TARGET_STAGE="pre-run"
+./scripts/aws-cert-check-fis-targets.sh
 
 ./scripts/smoke-create-sweep.sh
 ./scripts/smoke-failure-paths.sh
@@ -54,6 +56,8 @@ k6 run \
 
 export AWS_CERT_QUEUE_DRAIN_STAGE="post-k6"
 ./scripts/aws-cert-wait-queues-drained.sh
+export AWS_CERT_FIS_TARGET_STAGE="pre-fis"
+./scripts/aws-cert-check-fis-targets.sh
 
 fis_template_id="${FIS_EXPERIMENT_TEMPLATE_ID:-}"
 if [[ -z "$fis_template_id" && -f "$outputs_path" ]]; then

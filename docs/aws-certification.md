@@ -21,6 +21,8 @@ The evidence pack maps controls to these public references:
 - [NIST CSF 2.0](https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.29.pdf)
 - [NIST SP 800-53 Rev. 5](https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final)
 
+The completed campaign report is [AWS simulation internal certification report - 2026-06-17](certification/aws-simulation-internal-certification-report-2026-06-17.md).
+
 ## Control Rationale
 
 | Control Area | Implementation Evidence |
@@ -30,9 +32,9 @@ The evidence pack maps controls to these public references:
 | Cost boundary | Bootstrap creates or verifies the configured budget, preflight rejects deploy/run work when the budget's actual spend exceeds the configured limit, destroy detaches the imported budget before workload teardown, and `AWS_CERT_TTL_HOURS` is required so resources carry teardown tags. The default is `$50`; `AWS_CERT_BUDGET_LIMIT_USD` is an explicit override for a bounded rerun when prior account-month spend already exceeds the default. Collect/destroy use cleanup mode so an over-budget state cannot strand resources. Root teardown deletes the budget only if bootstrap created it. |
 | Fargate Spot resilience | Worker services use `FARGATE_SPOT` plus `FARGATE`; API and mock control surfaces keep an On-Demand floor. The stack avoids ECS placement strategies because they are not supported by the Fargate launch type used here. |
 | Queue safety | SQS queues have DLQs, visibility timeout, KMS encryption, SNS queue policies, raw message delivery, CloudWatch DLQ alarms, and KMS key policy access for the SNS service principal to deliver into encrypted queues. |
-| First-use AWS services | The temporary runner role can create the service-linked roles and private DNS resources required by ECS, ELB, RDS, and Cloud Map in the sandbox; the ECS service-linked role is explicitly modeled in OpenTofu, and tag permissions are scoped to that service-linked role ARN for provider reconciliation. |
+| First-use AWS services | Bootstrap verifies the FIS service-linked role before run time so fault injection cannot fail after the k6 campaign. The temporary runner role can create the service-linked roles and private DNS resources required by ECS, ELB, RDS, and Cloud Map in the sandbox; the ECS service-linked role is explicitly modeled in OpenTofu, and tag permissions are scoped to that service-linked role ARN for provider reconciliation. |
 | Log encryption | The simulation KMS key policy grants the regional CloudWatch Logs service encryption rights only for `/ecs/<workload>/*` log groups. |
-| Fault injection | The FIS template stops one ECS worker task to exercise at-least-once delivery, inbox dedupe, outbox retry, and task replacement. |
+| Fault injection | The FIS template stops one ECS worker task to exercise at-least-once delivery, inbox dedupe, outbox retry, and task replacement. ECS services propagate service tags to tasks, and `scripts/aws-cert-check-fis-targets.sh` proves that tagged worker task targets exist before load and before the FIS experiment starts. |
 | Financial invariants | `institutional-yield-certifier` verifies idempotency, confirmation uniqueness, one position per order, reconciled history, ledger balance, append-only ledger, inbox dedupe, outbox duplication, and stale unpublished events. |
 | Async completion evidence | `scripts/aws-cert-wait-queues-drained.sh` checks source queues and DLQs before the campaign, after smoke, after k6, after FIS, and during collection if needed. Certification fails if visible, in-flight, delayed, or DLQ messages remain at the drain gate. |
 | ECS replacement evidence | `scripts/aws-cert-wait-ecs-services-stable.sh` waits for ECS services to stabilize before smoke and after FIS stop-task experiments. |
