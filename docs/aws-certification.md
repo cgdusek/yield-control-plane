@@ -2,6 +2,8 @@
 
 This workstream adds an opt-in AWS sandbox simulation and an internal evidence pack. It does not claim SOC, ISO, regulatory, legal, investment, accounting, tax, production-deployment, or transfer-agent certification.
 
+Broader SOC, ISO, PCI, CSA, NIST, CIS, AWS, US regulatory, EU regulatory, UK regulatory, and production-adjacent readiness mapping is tracked in [Standards and certification readiness](compliance-readiness.md) and [standards_readiness_map.json](../spec/certification/standards_readiness_map.json).
+
 The local runtime remains LocalStack-only. Real AWS execution is isolated behind `AWS_CERTIFICATION_ENABLED=1`, `APP_ENV=cert`, `AWS_REGION=us-west-2`, and a preflight that rejects root identity, wrong region, missing budget guardrails, exceeded budget spend, and missing teardown TTL tags. Root is used only for one-time sandbox bootstrap or break-glass recovery; deployment, workload, collection, and teardown run through a temporary scoped role.
 
 ## Standards Basis

@@ -37,3 +37,7 @@ Then create a new ADR describing the production infrastructure boundary. Do not 
 ## AWS Sandbox Certification Boundary
 
 The AWS simulation workstream in [AWS simulation and internal certification](aws-certification.md) is a non-production evidence workflow. Passing that workflow can support internal engineering confidence, but it does not remove the production changes listed above and does not create a regulatory, legal, financial, or deployment certification claim.
+
+## Standards Readiness Boundary
+
+[Standards and certification readiness](compliance-readiness.md) maps SOC, ISO, PCI, CSA, NIST, CIS, AWS, US regulatory, EU regulatory, and UK regulatory surfaces to repo evidence and gaps. It is a readiness matrix for deciding what to close next. It does not alter the production gate above and does not create an external audit, legal/regulatory, or production deployment claim.

@@ -21,22 +21,22 @@
     "non_claim": "This map does not claim full source-level theorem-prover verification of every Rust, TypeScript, YAML, shell, or Markdown line."
   },
   "summary": {
-    "surface_count": 16,
-    "closed_surface_count": 16,
+    "surface_count": 17,
+    "closed_surface_count": 17,
     "needs_work_surface_count": 0,
     "surface_closure_ratio": 1.0,
-    "mapped_file_count": 231,
+    "mapped_file_count": 238,
     "unmapped_file_count": 0,
     "conflicting_file_count": 0,
-    "all_mappable_file_count": 231,
+    "all_mappable_file_count": 238,
     "file_mapping_ratio": 1.0,
-    "line_count": 32974,
-    "formalized_surface_count": 7,
-    "formalized_surface_ratio": 0.4375,
-    "formalized_file_count": 94,
-    "formalized_file_ratio": 0.4069,
-    "formalized_line_count": 15054,
-    "formalized_line_ratio": 0.4565,
+    "line_count": 34600,
+    "formalized_surface_count": 8,
+    "formalized_surface_ratio": 0.4706,
+    "formalized_file_count": 101,
+    "formalized_file_ratio": 0.4244,
+    "formalized_line_count": 16662,
+    "formalized_line_ratio": 0.4816,
     "rust_file_count": 42,
     "rust_line_count": 6231,
     "rust_test_function_count_static": 51,
@@ -280,7 +280,7 @@
       "coverage_score": 1.0,
       "formal_scope": "none",
       "file_count": 13,
-      "line_count": 7139,
+      "line_count": 7145,
       "rust_file_count": 0,
       "test_function_count_static": 0,
       "required_axes": [
@@ -430,7 +430,7 @@
       "coverage_score": 1.0,
       "formal_scope": "none",
       "file_count": 4,
-      "line_count": 208,
+      "line_count": 209,
       "rust_file_count": 0,
       "test_function_count_static": 0,
       "required_axes": [
@@ -763,7 +763,7 @@
       "coverage_score": 1.0,
       "formal_scope": "meta_coverage_for_formal_artifacts",
       "file_count": 11,
-      "line_count": 3912,
+      "line_count": 3940,
       "rust_file_count": 0,
       "test_function_count_static": 0,
       "required_axes": [
@@ -3035,13 +3035,179 @@
       ]
     },
     {
+      "id": "standards_certification_readiness",
+      "title": "Standards and Certification Readiness",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "formal_scope": "standards_traceability_not_formal_protocol_semantics",
+      "file_count": 7,
+      "line_count": 1580,
+      "rust_file_count": 0,
+      "test_function_count_static": 0,
+      "required_axes": [
+        "source_inventory",
+        "specification_or_contract",
+        "static_validation",
+        "drift_validator",
+        "ci_gate",
+        "documentation"
+      ],
+      "present_axes": [
+        "source_inventory",
+        "specification_or_contract",
+        "static_validation",
+        "drift_validator",
+        "ci_gate",
+        "documentation"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "hardening_frontier": [
+        "Add external evidence-room manifest references if qualified auditors or counsel create private review artifacts."
+      ],
+      "evidence": {
+        "specification_or_contract": {
+          "paths": [
+            "spec/certification/standards_readiness_map.json"
+          ]
+        },
+        "static_validation": {
+          "commands": [
+            "make validate-standards-readiness"
+          ],
+          "paths": [
+            "scripts/validate-standards-readiness.sh"
+          ]
+        },
+        "drift_validator": {
+          "commands": [
+            "make validate-standards-readiness"
+          ],
+          "paths": [
+            "scripts/validate-standards-readiness.sh"
+          ]
+        },
+        "ci_gate": {
+          "commands": [
+            "make validate"
+          ],
+          "paths": [
+            "scripts/validate-all.sh"
+          ]
+        },
+        "documentation": {
+          "paths": [
+            "docs/compliance-readiness.md",
+            "docs/runbooks/external-audit-readiness.md"
+          ]
+        }
+      },
+      "proof_ladder": {
+        "S0_objective": "Specify, enforce, and validate the Standards and Certification Readiness surface as part of the integrated yield control plane.",
+        "S1_contract_or_spec": {
+          "status": "closed",
+          "evidence_paths": [
+            "spec/certification/standards_readiness_map.json"
+          ]
+        },
+        "S2_executable_reference_or_validation_model": {
+          "status": "closed",
+          "commands": [
+            "make validate-standards-readiness",
+            "make validate"
+          ]
+        },
+        "S3_implementation_mapping": {
+          "status": "closed",
+          "file_count": 7,
+          "representative_files": [
+            "docs/compliance-readiness.md",
+            "docs/runbooks/external-audit-readiness.md",
+            "docs/trackers/standards-readiness-implementation.md",
+            "docs/trackers/standards-readiness-planning.md",
+            "docs/trackers/standards-readiness-tracking.md",
+            "scripts/validate-standards-readiness.sh",
+            "spec/certification/standards_readiness_map.json"
+          ],
+          "formal_scope": "standards_traceability_not_formal_protocol_semantics",
+          "evidence_paths": [
+            "spec/certification/standards_readiness_map.json",
+            "scripts/validate-standards-readiness.sh",
+            "scripts/validate-all.sh",
+            "docs/compliance-readiness.md",
+            "docs/runbooks/external-audit-readiness.md"
+          ]
+        },
+        "S4_proof_obligations": [
+          {
+            "id": "standards_certification_readiness.source_inventory",
+            "axis": "source_inventory",
+            "status": "closed",
+            "closure_action": "Assign all files in this surface and keep unmapped files at zero."
+          },
+          {
+            "id": "standards_certification_readiness.specification_or_contract",
+            "axis": "specification_or_contract",
+            "status": "closed",
+            "closure_action": "Add or bind this surface to an OpenAPI, AsyncAPI, state-machine, TLA+, schema, or documented contract."
+          },
+          {
+            "id": "standards_certification_readiness.static_validation",
+            "axis": "static_validation",
+            "status": "closed",
+            "closure_action": "Add a deterministic local validator for this surface."
+          },
+          {
+            "id": "standards_certification_readiness.drift_validator",
+            "axis": "drift_validator",
+            "status": "closed",
+            "closure_action": "Add a script that fails when this surface drifts from its source of truth."
+          },
+          {
+            "id": "standards_certification_readiness.ci_gate",
+            "axis": "ci_gate",
+            "status": "closed",
+            "closure_action": "Invoke the surface validator from make validate or GitHub Actions."
+          },
+          {
+            "id": "standards_certification_readiness.documentation",
+            "axis": "documentation",
+            "status": "closed",
+            "closure_action": "Document the surface and its validation commands."
+          }
+        ],
+        "S5_machine_check": {
+          "status": "closed",
+          "commands": [
+            "make validate-standards-readiness",
+            "make validate"
+          ]
+        },
+        "S6_assumptions_and_limits": {
+          "limits": [],
+          "hardening_frontier": [
+            "Add external evidence-room manifest references if qualified auditors or counsel create private review artifacts."
+          ]
+        }
+      },
+      "files": [
+        "docs/compliance-readiness.md",
+        "docs/runbooks/external-audit-readiness.md",
+        "docs/trackers/standards-readiness-implementation.md",
+        "docs/trackers/standards-readiness-planning.md",
+        "docs/trackers/standards-readiness-tracking.md",
+        "scripts/validate-standards-readiness.sh",
+        "spec/certification/standards_readiness_map.json"
+      ]
+    },
+    {
       "id": "docs_runbooks_adrs",
       "title": "Documentation, Runbooks, and ADRs",
       "closure_status": "closed",
       "coverage_score": 1.0,
       "formal_scope": "none",
       "file_count": 56,
-      "line_count": 2747,
+      "line_count": 2758,
       "rust_file_count": 0,
       "test_function_count_static": 0,
       "required_axes": [

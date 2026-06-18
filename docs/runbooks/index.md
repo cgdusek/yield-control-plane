@@ -8,3 +8,4 @@ Runbooks cover local procedures for Docker Compose and kind, plus explicitly opt
 - [Kubernetes kind](kubernetes-kind.md)
 - [Failure injection](failure-injection.md)
 - [AWS simulation](aws-simulation.md)
+- [External audit readiness](external-audit-readiness.md)

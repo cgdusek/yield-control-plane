@@ -10,6 +10,7 @@ Start here for the local institutional yield control plane.
 - [Security](security.md)
 - [Formal verification](formal-verification.md)
 - [Liveness verification](liveness-verification.md)
+- [Standards and certification readiness](compliance-readiness.md)
 - [AWS simulation and internal certification](aws-certification.md)
 - [AWS simulation internal certification report - 2026-06-17](certification/aws-simulation-internal-certification-report-2026-06-17.md)
 - [Production readiness](production-readiness.md)
@@ -31,3 +32,4 @@ Primary specs:
 - [Invariant coverage matrix](../spec/refinement/invariant_coverage.yaml)
 - [Liveness coverage matrix](../spec/refinement/liveness_coverage.yaml)
 - [AWS certification coverage map](../spec/certification/aws_certification_coverage_map.json)
+- [Standards readiness map](../spec/certification/standards_readiness_map.json)

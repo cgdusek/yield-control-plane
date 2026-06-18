@@ -447,6 +447,7 @@ SURFACES: tuple[Surface, ...] = (
             "scripts/validate-aws-certification.sh",
             "services/certifier/**",
         ),
+        exclude=("spec/certification/standards_readiness_map.json",),
         required_axes=(
             "source_inventory",
             "specification_or_contract",
@@ -474,10 +475,37 @@ SURFACES: tuple[Surface, ...] = (
         hardening_frontier=("Run the opt-in AWS campaign in a sandbox account and attach collected evidence to the tracker before claiming certification success.",),
     ),
     Surface(
+        id="standards_certification_readiness",
+        title="Standards and Certification Readiness",
+        patterns=(
+            "docs/compliance-readiness.md",
+            "docs/runbooks/external-audit-readiness.md",
+            "docs/trackers/standards-readiness-*.md",
+            "spec/certification/standards_readiness_map.json",
+            "scripts/validate-standards-readiness.sh",
+        ),
+        required_axes=("source_inventory", "specification_or_contract", "static_validation", "drift_validator", "ci_gate", "documentation"),
+        evidence={
+            "specification_or_contract": {"paths": ["spec/certification/standards_readiness_map.json"]},
+            "static_validation": {"commands": ["make validate-standards-readiness"], "paths": ["scripts/validate-standards-readiness.sh"]},
+            "drift_validator": {"commands": ["make validate-standards-readiness"], "paths": ["scripts/validate-standards-readiness.sh"]},
+            "ci_gate": {"commands": ["make validate"], "paths": ["scripts/validate-all.sh"]},
+            "documentation": {"paths": ["docs/compliance-readiness.md", "docs/runbooks/external-audit-readiness.md"]},
+        },
+        formal_scope="standards_traceability_not_formal_protocol_semantics",
+        hardening_frontier=("Add external evidence-room manifest references if qualified auditors or counsel create private review artifacts.",),
+    ),
+    Surface(
         id="docs_runbooks_adrs",
         title="Documentation, Runbooks, and ADRs",
         patterns=("docs/**", "scripts/validate-docs.sh"),
-        exclude=("docs/formal-verification.md", "docs/liveness-verification.md"),
+        exclude=(
+            "docs/formal-verification.md",
+            "docs/liveness-verification.md",
+            "docs/compliance-readiness.md",
+            "docs/runbooks/external-audit-readiness.md",
+            "docs/trackers/standards-readiness-*.md",
+        ),
         required_axes=("source_inventory", "static_validation", "ci_gate", "documentation"),
         evidence={
             "static_validation": {"commands": ["make validate-docs"], "paths": ["scripts/validate-docs.sh"]},

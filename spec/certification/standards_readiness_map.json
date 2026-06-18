@@ -1,0 +1,1025 @@
+{
+  "schema_version": "1.0.0",
+  "workstream": "standards-and-certification-readiness",
+  "status": "implemented-gated",
+  "research_date_utc": "2026-06-18T02:53:48Z",
+  "scope": {
+    "jurisdictions": [
+      "US",
+      "EU",
+      "UK",
+      "global"
+    ],
+    "artifact_shape": "readiness_matrix",
+    "source_policy": "official_or_primary_sources_first"
+  },
+  "allowed_applicability": [
+    "applicable",
+    "conditional",
+    "not_applicable",
+    "future_external"
+  ],
+  "allowed_categories": [
+    "external_attestation",
+    "external_certification",
+    "regulatory_legal",
+    "control_framework",
+    "cloud_assurance",
+    "production_readiness"
+  ],
+  "non_claims": [
+    "internal_readiness_only",
+    "no_legal_or_regulatory_advice",
+    "no_soc_or_iso_attestation",
+    "no_pci_validation",
+    "no_external_audit_completion",
+    "no_production_authorization",
+    "no_customer_data_authorization",
+    "no_transfer_agent_authorization"
+  ],
+  "rows": [
+    {
+      "id": "soc1-icfr-readiness",
+      "framework": "SOC 1",
+      "category": "external_attestation",
+      "jurisdiction": [
+        "US",
+        "global"
+      ],
+      "applicability": "future_external",
+      "version_or_status": "AICPA SOC 1 service organization examination focused on controls relevant to user entities' internal control over financial reporting.",
+      "official_sources": [
+        {
+          "id": "aicpa-soc-suite",
+          "url": "https://www.aicpa-cima.com/resources/landing/system-and-organization-controls-soc-suite-of-services"
+        },
+        {
+          "id": "aicpa-soc1",
+          "url": "https://www.aicpa-cima.com/topic/audit-assurance/audit-and-assurance-greater-than-soc-1"
+        }
+      ],
+      "repo_evidence": [
+        "crates/persistence/migrations/20260616150400_initial.sql",
+        "docs/traceability.md",
+        "docs/aws-certification.md",
+        "make validate"
+      ],
+      "missing_evidence": [
+        "Define whether this service affects customer financial reporting controls.",
+        "Create auditor-scoped system description and control objectives.",
+        "Establish control period, management assertion, sampling method, and external auditor engagement."
+      ],
+      "external_owner_required": true,
+      "claim_boundary": "Internal readiness only; no SOC 1 attestation or ICFR assurance claim.",
+      "next_actions": [
+        "Have finance control owner and external auditor decide whether SOC 1 is in scope.",
+        "Map ledger, reconciliation, idempotency, access, change, and incident controls to auditor-selected control objectives."
+      ]
+    },
+    {
+      "id": "soc2-trust-services-readiness",
+      "framework": "SOC 2",
+      "category": "external_attestation",
+      "jurisdiction": [
+        "US",
+        "global"
+      ],
+      "applicability": "future_external",
+      "version_or_status": "AICPA SOC 2 service organization examination over security, availability, processing integrity, confidentiality, or privacy categories selected for scope.",
+      "official_sources": [
+        {
+          "id": "aicpa-soc-suite",
+          "url": "https://www.aicpa-cima.com/resources/landing/system-and-organization-controls-soc-suite-of-services"
+        },
+        {
+          "id": "aicpa-trust-services-criteria",
+          "url": "https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022"
+        },
+        {
+          "id": "aicpa-soc2-description-criteria",
+          "url": "https://www.aicpa-cima.com/resources/download/get-description-criteria-for-your-organizations-soc-2-r-report"
+        }
+      ],
+      "repo_evidence": [
+        "docs/security.md",
+        "docs/formal-verification.md",
+        "docs/liveness-verification.md",
+        "docs/aws-certification.md",
+        "spec/refinement/repo_surface_coverage_map.json",
+        "make validate"
+      ],
+      "missing_evidence": [
+        "Define SOC 2 system boundary, trust services categories, control period, owners, and evidence cadence.",
+        "Add production identity, access review, vulnerability management, vendor risk, incident response, backup, and change management evidence.",
+        "Engage qualified auditor for readiness review and examination."
+      ],
+      "external_owner_required": true,
+      "claim_boundary": "Internal readiness only; no SOC 2 attestation or trust services assurance claim.",
+      "next_actions": [
+        "Use Security, Availability, Confidentiality, and Processing Integrity as default candidate categories; keep Privacy conditional on personal data scope.",
+        "Build a control owner matrix and evidence calendar before any external auditor review."
+      ]
+    },
+    {
+      "id": "soc3-general-use-readiness",
+      "framework": "SOC 3",
+      "category": "external_attestation",
+      "jurisdiction": [
+        "US",
+        "global"
+      ],
+      "applicability": "future_external",
+      "version_or_status": "General-use SOC report path for controls relevant to selected trust services categories.",
+      "official_sources": [
+        {
+          "id": "aicpa-soc-suite",
+          "url": "https://www.aicpa-cima.com/resources/landing/system-and-organization-controls-soc-suite-of-services"
+        },
+        {
+          "id": "aicpa-soc3",
+          "url": "https://www.aicpa-cima.com/topic/audit-assurance/audit-and-assurance-greater-than-soc-3"
+        }
+      ],
+      "repo_evidence": [
+        "docs/compliance-readiness.md",
+        "docs/aws-certification.md",
+        "make validate-standards-readiness"
+      ],
+      "missing_evidence": [
+        "Complete SOC 2-style control scope first.",
+        "Obtain auditor determination that a general-use report is appropriate.",
+        "Prepare public distribution review and legal review process."
+      ],
+      "external_owner_required": true,
+      "claim_boundary": "Internal readiness only; no SOC 3 report or public assurance claim.",
+      "next_actions": [
+        "Defer until SOC 2 scope and external auditor path are selected."
+      ]
+    },
+    {
+      "id": "iso27001-isms-readiness",
+      "framework": "ISO/IEC 27001",
+      "category": "external_certification",
+      "jurisdiction": [
+        "global"
+      ],
+      "applicability": "future_external",
+      "version_or_status": "ISO/IEC 27001:2022 information security management system requirements.",
+      "official_sources": [
+        {
+          "id": "iso27001",
+          "url": "https://www.iso.org/standard/27001"
+        },
+        {
+          "id": "iso27000-family",
+          "url": "https://www.iso.org/standard/iso-iec-27000-family"
+        }
+      ],
+      "repo_evidence": [
+        "docs/security.md",
+        "docs/operations.md",
+        "docs/testing.md",
+        "docs/production-readiness.md",
+        "scripts/validate-all.sh",
+        "make validate"
+      ],
+      "missing_evidence": [
+        "Define ISMS scope, risk assessment method, statement of applicability, control owners, internal audit cadence, and management review cadence.",
+        "Add policies for asset management, human resources, supplier risk, incident management, vulnerability management, access reviews, and business continuity.",
+        "Engage accredited certification body if external certification is pursued."
+      ],
+      "external_owner_required": true,
+      "claim_boundary": "Internal readiness only; no ISO/IEC 27001 certification or ISMS conformance claim.",
+      "next_actions": [
+        "Create ISMS scope and risk register outside this demo repo.",
+        "Map repo evidence to ISO 27001 Annex A controls after a control owner chooses the scope."
+      ]
+    },
+    {
+      "id": "iso27017-cloud-controls-readiness",
+      "framework": "ISO/IEC 27017",
+      "category": "external_certification",
+      "jurisdiction": [
+        "global"
+      ],
+      "applicability": "future_external",
+      "version_or_status": "ISO/IEC 27017:2015 cloud security guidance confirmed current in 2024; replacement version under publication as of research date.",
+      "official_sources": [
+        {
+          "id": "iso27017-2015",
+          "url": "https://www.iso.org/standard/43757.html"
+        },
+        {
+          "id": "iso27017-under-publication",
+          "url": "https://www.iso.org/standard/82878.html"
+        }
+      ],
+      "repo_evidence": [
+        "docs/aws-certification.md",
+        "infra/aws-simulation/main.tf",
+        "scripts/validate-aws-certification.sh",
+        "make validate-aws-certification"
+      ],
+      "missing_evidence": [
+        "Define cloud service provider versus cloud service customer role.",
+        "Map shared responsibility, tenant isolation, IAM, logging, encryption, and customer responsibilities to selected ISO 27017 controls.",
+        "Update the row when ISO publishes the replacement edition."
+      ],
+      "external_owner_required": true,
+      "claim_boundary": "Internal readiness only; no ISO/IEC 27017 certification, extension, or cloud-control assurance claim.",
+      "next_actions": [
+        "Monitor the ISO 27017 replacement publication and update version metadata.",
+        "Tie AWS shared responsibility and ECS task-role evidence to the chosen cloud-control scope."
+      ]
+    },
+    {
+      "id": "iso27018-cloud-pii-readiness",
+      "framework": "ISO/IEC 27018",
+      "category": "external_certification",
+      "jurisdiction": [
+        "global"
+      ],
+      "applicability": "conditional",
+      "version_or_status": "ISO/IEC 27018:2025 guidance for protection of PII in public clouds acting as PII processors.",
+      "official_sources": [
+        {
+          "id": "iso27018-2025",
+          "url": "https://www.iso.org/standard/27018"
+        }
+      ],
+      "repo_evidence": [
+        "docs/security.md",
+        "docs/production-readiness.md",
+        "docs/compliance-readiness.md"
+      ],
+      "missing_evidence": [
+        "Determine whether production scope processes PII in a public cloud processor role.",
+        "Add data inventory, processing instructions, deletion workflow, subprocessors, breach workflow, and privacy contract evidence.",
+        "Engage privacy owner and auditor if PII cloud assurance is pursued."
+      ],
+      "external_owner_required": true,
+      "claim_boundary": "Internal readiness only; no ISO/IEC 27018 certification, PII processor, or privacy assurance claim.",
+      "next_actions": [
+        "Keep conditional until production data inventory confirms PII processing."
+      ]
+    },
+    {
+      "id": "iso27701-pims-readiness",
+      "framework": "ISO/IEC 27701",
+      "category": "external_certification",
+      "jurisdiction": [
+        "global"
+      ],
+      "applicability": "conditional",
+      "version_or_status": "ISO/IEC 27701:2025 privacy information management system requirements and guidance for PII controllers and processors.",
+      "official_sources": [
+        {
+          "id": "iso27701-2025",
+          "url": "https://www.iso.org/standard/27701"
+        },
+        {
+          "id": "iso27706-2025",
+          "url": "https://www.iso.org/standard/27706"
+        }
+      ],
+      "repo_evidence": [
+        "docs/security.md",
+        "docs/production-readiness.md",
+        "docs/runbooks/external-audit-readiness.md"
+      ],
+      "missing_evidence": [
+        "Define PII controller and processor roles.",
+        "Add privacy governance, lawful basis, data subject request, retention, transfer, DPIA, and incident notification workflows.",
+        "Select certification body requirements if PIMS certification is pursued."
+      ],
+      "external_owner_required": true,
+      "claim_boundary": "Internal readiness only; no ISO/IEC 27701 certification or PIMS claim.",
+      "next_actions": [
+        "Require privacy counsel and privacy owner scope decision before treating this row as applicable."
+      ]
+    },
+    {
+      "id": "iso22301-bcms-readiness",
+      "framework": "ISO 22301",
+      "category": "external_certification",
+      "jurisdiction": [
+        "global"
+      ],
+      "applicability": "future_external",
+      "version_or_status": "ISO 22301:2019 business continuity management system requirements with 2024 amendment.",
+      "official_sources": [
+        {
+          "id": "iso22301-2019",
+          "url": "https://www.iso.org/standard/75106.html"
+        },
+        {
+          "id": "iso22301-2024-amendment",
+          "url": "https://www.iso.org/standard/88412.html"
+        }
+      ],
+      "repo_evidence": [
+        "docs/liveness-verification.md",
+        "docs/runbooks/failure-injection.md",
+        "docs/aws-certification.md",
+        "scripts/aws-cert-run.sh"
+      ],
+      "missing_evidence": [
+        "Define business impact analysis, recovery objectives, crisis roles, continuity plan, exercise calendar, and supplier continuity evidence.",
+        "Add production backup/restore and disaster recovery runbooks.",
+        "Run severe-but-plausible scenario exercises with owner signoff."
+      ],
+      "external_owner_required": true,
+      "claim_boundary": "Internal readiness only; no ISO 22301 certification or BCMS claim.",
+      "next_actions": [
+        "Map existing FIS and smoke evidence to future continuity exercises after production services are defined."
+      ]
+    },
+    {
+      "id": "iso20000-1-service-management-readiness",
+      "framework": "ISO/IEC 20000-1",
+      "category": "external_certification",
+      "jurisdiction": [
+        "global"
+      ],
+      "applicability": "future_external",
+      "version_or_status": "ISO/IEC 20000-1:2018 service management system requirements with 2024 amendment.",
+      "official_sources": [
+        {
+          "id": "iso20000-1-2018",
+          "url": "https://www.iso.org/standard/70636.html"
+        },
+        {
+          "id": "iso20000-1-2024-amendment",
+          "url": "https://www.iso.org/standard/88434.html"
+        }
+      ],
+      "repo_evidence": [
+        "docs/operations.md",
+        "docs/testing.md",
+        "docs/runbooks/index.md",
+        "AGENT_TRACKER.md"
+      ],
+      "missing_evidence": [
+        "Define live service catalog, service-level objectives, incident, problem, change, release, configuration, supplier, and continual improvement processes.",
+        "Add production support ownership and service reporting evidence.",
+        "Engage service management owner if external certification is pursued."
+      ],
+      "external_owner_required": true,
+      "claim_boundary": "Internal readiness only; no ISO/IEC 20000-1 certification or service-management-system claim.",
+      "next_actions": [
+        "Keep as future external readiness until a production service management scope exists."
+      ]
+    },
+    {
+      "id": "pci-dss-cardholder-data-scope",
+      "framework": "PCI DSS",
+      "category": "external_certification",
+      "jurisdiction": [
+        "global"
+      ],
+      "applicability": "not_applicable",
+      "version_or_status": "PCI DSS v4.0.1 current PCI SSC document family for cardholder data environments.",
+      "official_sources": [
+        {
+          "id": "pci-dss",
+          "url": "https://www.pcisecuritystandards.org/standards/pci-dss/"
+        },
+        {
+          "id": "pci-document-library",
+          "url": "https://www.pcisecuritystandards.org/document_library/"
+        }
+      ],
+      "repo_evidence": [
+        "docs/production-readiness.md",
+        "spec/source/fidelity_defi_yield_platform_spec.md"
+      ],
+      "missing_evidence": [
+        "Current repo has no cardholder data environment, payment account data flow, merchant role, acquirer requirement, or card processing integration.",
+        "If cardholder data enters scope, create a PCI scope inventory, network segmentation model, QSA/SAQ path, and evidence plan."
+      ],
+      "external_owner_required": true,
+      "claim_boundary": "Internal readiness only; no PCI DSS validation or cardholder-data-environment claim.",
+      "next_actions": [
+        "Keep not applicable unless product scope changes to process, store, or transmit payment account data."
+      ]
+    },
+    {
+      "id": "csa-ccm-caiq-cloud-control-map",
+      "framework": "CSA CCM and CAIQ",
+      "category": "control_framework",
+      "jurisdiction": [
+        "global"
+      ],
+      "applicability": "applicable",
+      "version_or_status": "CSA Cloud Controls Matrix and CAIQ v4.1 released 2026-01-27 with 207 controls across 17 domains.",
+      "official_sources": [
+        {
+          "id": "csa-ccm-research",
+          "url": "https://cloudsecurityalliance.org/research/cloud-controls-matrix"
+        },
+        {
+          "id": "csa-ccm-caiq-v4-1",
+          "url": "https://cloudsecurityalliance.org/artifacts/cloud-controls-matrix-v4-1"
+        }
+      ],
+      "repo_evidence": [
+        "docs/aws-certification.md",
+        "spec/certification/aws_certification_coverage_map.json",
+        "scripts/validate-aws-certification.sh"
+      ],
+      "missing_evidence": [
+        "Create a CAIQ answer set and evidence references if customer cloud assurance questionnaires become in scope.",
+        "Map repo controls to CCM domains after production cloud service boundary is defined."
+      ],
+      "external_owner_required": false,
+      "claim_boundary": "Internal readiness only; no CSA CCM assessment or CAIQ submission claim.",
+      "next_actions": [
+        "Use CCM domains as a crosswalk for cloud control gaps."
+      ]
+    },
+    {
+      "id": "csa-star-readiness",
+      "framework": "CSA STAR",
+      "category": "cloud_assurance",
+      "jurisdiction": [
+        "global"
+      ],
+      "applicability": "future_external",
+      "version_or_status": "CSA Security, Trust, Assurance, and Risk program and registry for cloud security assurance.",
+      "official_sources": [
+        {
+          "id": "csa-star",
+          "url": "https://cloudsecurityalliance.org/star"
+        },
+        {
+          "id": "csa-star-registry",
+          "url": "https://cloudsecurityalliance.org/star/registry"
+        }
+      ],
+      "repo_evidence": [
+        "docs/compliance-readiness.md",
+        "spec/certification/standards_readiness_map.json"
+      ],
+      "missing_evidence": [
+        "Decide whether this project is a cloud provider offering that should publish STAR evidence.",
+        "Prepare CAIQ/CCM evidence and select Level 1 self-assessment or Level 2 third-party path if applicable."
+      ],
+      "external_owner_required": true,
+      "claim_boundary": "Internal readiness only; no CSA STAR registry, self-assessment, or third-party audit claim.",
+      "next_actions": [
+        "Defer until a customer-facing cloud service and assurance strategy exist."
+      ]
+    },
+    {
+      "id": "ftc-glba-safeguards-rule",
+      "framework": "FTC GLBA Safeguards Rule",
+      "category": "regulatory_legal",
+      "jurisdiction": [
+        "US"
+      ],
+      "applicability": "conditional",
+      "version_or_status": "FTC Safeguards Rule for financial institutions under FTC jurisdiction handling customer information.",
+      "official_sources": [
+        {
+          "id": "ftc-safeguards-rule",
+          "url": "https://www.ftc.gov/legal-library/browse/rules/safeguards-rule"
+        },
+        {
+          "id": "ecfr-16-cfr-314",
+          "url": "https://www.ecfr.gov/current/title-16/chapter-I/subchapter-C/part-314"
+        },
+        {
+          "id": "ftc-business-guidance",
+          "url": "https://www.ftc.gov/business-guidance/resources/ftc-safeguards-rule-what-your-business-needs-know"
+        }
+      ],
+      "repo_evidence": [
+        "docs/security.md",
+        "docs/production-readiness.md",
+        "docs/compliance-readiness.md"
+      ],
+      "missing_evidence": [
+        "Determine whether the operator is a financial institution under FTC jurisdiction.",
+        "Define customer information classes, written security program, qualified individual, risk assessment, safeguards, monitoring, service provider oversight, incident response, and reporting workflow.",
+        "Add production evidence for access control, encryption, vulnerability management, logging, training, and board/senior officer reporting."
+      ],
+      "external_owner_required": true,
+      "claim_boundary": "Internal readiness only; no GLBA or FTC Safeguards Rule legal conclusion.",
+      "next_actions": [
+        "Route applicability to counsel and compliance owner before assigning mandatory controls."
+      ]
+    },
+    {
+      "id": "sec-regulation-sp",
+      "framework": "SEC Regulation S-P",
+      "category": "regulatory_legal",
+      "jurisdiction": [
+        "US"
+      ],
+      "applicability": "conditional",
+      "version_or_status": "SEC 2024 Regulation S-P amendments include customer information safeguarding, transfer agent scope expansion, written records, and incident response requirements.",
+      "official_sources": [
+        {
+          "id": "sec-reg-sp-2024",
+          "url": "https://www.sec.gov/rules-regulations/2024/06/s7-05-23"
+        },
+        {
+          "id": "sec-reg-sp-final-rule-pdf",
+          "url": "https://www.sec.gov/files/rules/final/2024/34-100155.pdf"
+        }
+      ],
+      "repo_evidence": [
+        "docs/security.md",
+        "docs/aws-certification.md",
+        "docs/runbooks/external-audit-readiness.md"
+      ],
+      "missing_evidence": [
+        "Determine whether the operator is a covered institution or registered transfer agent.",
+        "Define sensitive customer information, incident response program, notification workflow, service provider oversight, disposal workflow, and written records.",
+        "Add production data inventory and customer notification evidence if in scope."
+      ],
+      "external_owner_required": true,
+      "claim_boundary": "Internal readiness only; no SEC Regulation S-P applicability or regulatory conclusion.",
+      "next_actions": [
+        "Route to securities counsel because transfer-agent references in the demo domain are not evidence of actual registered transfer-agent status."
+      ]
+    },
+    {
+      "id": "sec-regulation-sci",
+      "framework": "SEC Regulation SCI",
+      "category": "regulatory_legal",
+      "jurisdiction": [
+        "US"
+      ],
+      "applicability": "conditional",
+      "version_or_status": "SEC systems compliance and integrity rules for SCI entities such as certain SROs, registered clearing agencies, ATSs, plan processors, and exempt clearing agencies.",
+      "official_sources": [
+        {
+          "id": "sec-reg-sci",
+          "url": "https://www.sec.gov/rules-regulations/2015/12/regulation-systems-compliance-integrity"
+        },
+        {
+          "id": "ecfr-reg-sci",
+          "url": "https://www.ecfr.gov/current/title-17/chapter-II/part-242/subpart-ECFRe106e84e67e2bc9"
+        }
+      ],
+      "repo_evidence": [
+        "docs/liveness-verification.md",
+        "docs/aws-certification.md",
+        "docs/runbooks/failure-injection.md"
+      ],
+      "missing_evidence": [
+        "Determine whether the operator is an SCI entity.",
+        "If in scope, define SCI systems, indirect SCI systems, policies, review cadence, testing, notification, recordkeeping, and regulatory reporting evidence.",
+        "Add production resilience and market-participant communication processes."
+      ],
+      "external_owner_required": true,
+      "claim_boundary": "Internal readiness only; no SEC Regulation SCI applicability or SCI-entity claim.",
+      "next_actions": [
+        "Keep conditional unless counsel confirms SCI entity status."
+      ]
+    },
+    {
+      "id": "finra-cybersecurity-readiness",
+      "framework": "FINRA Cybersecurity Checklist",
+      "category": "regulatory_legal",
+      "jurisdiction": [
+        "US"
+      ],
+      "applicability": "conditional",
+      "version_or_status": "FINRA cybersecurity checklist derived primarily from NIST CSF and FINRA cybersecurity practices.",
+      "official_sources": [
+        {
+          "id": "finra-cybersecurity-checklist",
+          "url": "https://www.finra.org/compliance-tools/cybersecurity-checklist"
+        },
+        {
+          "id": "finra-cybersecurity-topic",
+          "url": "https://www.finra.org/rules-guidance/key-topics/cybersecurity"
+        }
+      ],
+      "repo_evidence": [
+        "docs/security.md",
+        "docs/compliance-readiness.md",
+        "spec/refinement/repo_surface_coverage_map.json"
+      ],
+      "missing_evidence": [
+        "Determine whether the operator is a FINRA member or broker-dealer affiliate.",
+        "Add production cybersecurity program, inventory, access, vendor, detection, response, training, and recovery evidence if in scope."
+      ],
+      "external_owner_required": true,
+      "claim_boundary": "Internal readiness only; no FINRA member, broker-dealer, or regulatory conclusion.",
+      "next_actions": [
+        "Use the checklist as a small-firm cybersecurity crosswalk only after membership scope is confirmed."
+      ]
+    },
+    {
+      "id": "nydfs-part-500-readiness",
+      "framework": "NYDFS Part 500",
+      "category": "regulatory_legal",
+      "jurisdiction": [
+        "US"
+      ],
+      "applicability": "conditional",
+      "version_or_status": "NYDFS cybersecurity regulation, 23 NYCRR Part 500, amended November 1, 2023 with phased requirements.",
+      "official_sources": [
+        {
+          "id": "nydfs-cybersecurity-resource-center",
+          "url": "https://www.dfs.ny.gov/industry_guidance/cybersecurity"
+        },
+        {
+          "id": "nydfs-second-amendment-pdf",
+          "url": "https://www.dfs.ny.gov/system/files/documents/2023/10/rf_fs_2amend23NYCRR500_text_20231101.pdf"
+        }
+      ],
+      "repo_evidence": [
+        "docs/security.md",
+        "docs/production-readiness.md",
+        "docs/runbooks/external-audit-readiness.md"
+      ],
+      "missing_evidence": [
+        "Determine whether the operator is a covered entity or qualifies for an exemption.",
+        "Add cybersecurity program, CISO governance, MFA, asset inventory, vulnerability management, audit trail, incident response, business continuity, third-party service provider, and annual filing evidence if in scope."
+      ],
+      "external_owner_required": true,
+      "claim_boundary": "Internal readiness only; no NYDFS Part 500 applicability or filing claim.",
+      "next_actions": [
+        "Route to NY financial-services counsel and security owner if a NYDFS-covered entity is involved."
+      ]
+    },
+    {
+      "id": "gdpr-eu-uk-privacy-readiness",
+      "framework": "GDPR and UK data protection readiness",
+      "category": "regulatory_legal",
+      "jurisdiction": [
+        "EU",
+        "UK"
+      ],
+      "applicability": "conditional",
+      "version_or_status": "EU GDPR legal text and European Commission data protection guidance; UK scope requires separate UK data protection review.",
+      "official_sources": [
+        {
+          "id": "ec-data-protection",
+          "url": "https://commission.europa.eu/law/law-topic/data-protection_en"
+        },
+        {
+          "id": "eurlex-gdpr",
+          "url": "https://eur-lex.europa.eu/eli/reg/2016/679/oj/eng"
+        },
+        {
+          "id": "ico-uk-gdpr",
+          "url": "https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/"
+        }
+      ],
+      "repo_evidence": [
+        "docs/security.md",
+        "docs/production-readiness.md",
+        "docs/compliance-readiness.md"
+      ],
+      "missing_evidence": [
+        "Determine whether EU or UK personal data is processed.",
+        "Add lawful basis, records of processing, data subject rights, retention, deletion, DPIA, international transfers, subprocessors, breach workflow, and privacy notice evidence.",
+        "Determine controller, processor, joint-controller, and representative roles."
+      ],
+      "external_owner_required": true,
+      "claim_boundary": "Internal readiness only; no GDPR, UK GDPR, or privacy-law conclusion.",
+      "next_actions": [
+        "Keep conditional until production data inventory and privacy counsel review exist."
+      ]
+    },
+    {
+      "id": "eu-dora-operational-resilience",
+      "framework": "EU DORA",
+      "category": "regulatory_legal",
+      "jurisdiction": [
+        "EU"
+      ],
+      "applicability": "conditional",
+      "version_or_status": "Regulation (EU) 2022/2554 on digital operational resilience for the financial sector, applied since 2025-01-17.",
+      "official_sources": [
+        {
+          "id": "eurlex-dora",
+          "url": "https://eur-lex.europa.eu/eli/reg/2022/2554/oj/eng"
+        },
+        {
+          "id": "eurlex-dora-summary",
+          "url": "https://eur-lex.europa.eu/EN/legal-content/summary/digital-operational-resilience-for-the-financial-sector.html"
+        },
+        {
+          "id": "eiopa-dora",
+          "url": "https://www.eiopa.europa.eu/digital-operational-resilience-act-dora_en"
+        }
+      ],
+      "repo_evidence": [
+        "docs/liveness-verification.md",
+        "docs/aws-certification.md",
+        "docs/runbooks/failure-injection.md",
+        "scripts/aws-cert-run.sh"
+      ],
+      "missing_evidence": [
+        "Determine whether the operator is an EU financial entity or ICT third-party service provider in DORA scope.",
+        "Add ICT risk management, incident classification/reporting, resilience testing, third-party risk management, exit strategy, and register of information evidence if in scope.",
+        "Define production impact tolerances and severe-but-plausible test calendar."
+      ],
+      "external_owner_required": true,
+      "claim_boundary": "Internal readiness only; no DORA applicability or digital-operational-resilience legal conclusion.",
+      "next_actions": [
+        "Use current FIS and liveness evidence as a seed for future resilience testing after scope is confirmed."
+      ]
+    },
+    {
+      "id": "uk-fca-pra-operational-resilience",
+      "framework": "UK FCA/PRA operational resilience",
+      "category": "regulatory_legal",
+      "jurisdiction": [
+        "UK"
+      ],
+      "applicability": "conditional",
+      "version_or_status": "UK operational resilience expectations for important business services, impact tolerances, testing, and disruption reporting.",
+      "official_sources": [
+        {
+          "id": "fca-operational-resilience",
+          "url": "https://www.fca.org.uk/firms/operational-resilience"
+        },
+        {
+          "id": "fca-operational-resilience-observations",
+          "url": "https://www.fca.org.uk/firms/operational-resilience/insights-observations"
+        },
+        {
+          "id": "pra-ss1-21",
+          "url": "https://www.bankofengland.co.uk/-/media/boe/files/prudential-regulation/supervisory-statement/2021/ss121-march-22.pdf"
+        }
+      ],
+      "repo_evidence": [
+        "docs/liveness-verification.md",
+        "docs/aws-certification.md",
+        "docs/runbooks/failure-injection.md",
+        "docs/runbooks/aws-simulation.md"
+      ],
+      "missing_evidence": [
+        "Determine whether a UK regulated firm, PRA-designated firm, or critical third-party context exists.",
+        "Define important business services, impact tolerances, mapping, testing plan, communications, lessons learned, and self-assessment evidence.",
+        "Add production service owner and risk owner approvals before external use."
+      ],
+      "external_owner_required": true,
+      "claim_boundary": "Internal readiness only; no FCA, PRA, or UK operational-resilience regulatory conclusion.",
+      "next_actions": [
+        "Map smoke, queue-drain, and FIS evidence to future severe-but-plausible scenario testing after scope is known."
+      ]
+    },
+    {
+      "id": "nist-csf-2-control-map",
+      "framework": "NIST Cybersecurity Framework 2.0",
+      "category": "control_framework",
+      "jurisdiction": [
+        "US",
+        "global"
+      ],
+      "applicability": "applicable",
+      "version_or_status": "NIST CSF 2.0, February 26, 2024, with Govern, Identify, Protect, Detect, Respond, and Recover functions.",
+      "official_sources": [
+        {
+          "id": "nist-csf-site",
+          "url": "https://www.nist.gov/cyberframework"
+        },
+        {
+          "id": "nist-csf-2-pdf",
+          "url": "https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.29.pdf"
+        }
+      ],
+      "repo_evidence": [
+        "docs/security.md",
+        "docs/operations.md",
+        "docs/testing.md",
+        "spec/refinement/repo_surface_coverage_map.json",
+        "make validate"
+      ],
+      "missing_evidence": [
+        "Create explicit CSF profile with target outcomes, current outcomes, owners, and maturity scoring.",
+        "Add production Detect, Respond, and Recover operational evidence."
+      ],
+      "external_owner_required": false,
+      "claim_boundary": "Internal readiness only; no NIST CSF external assurance or maturity claim.",
+      "next_actions": [
+        "Use CSF as the top-level governance taxonomy for future cross-framework mapping."
+      ]
+    },
+    {
+      "id": "nist-sp-800-53-r5-control-catalog",
+      "framework": "NIST SP 800-53 Rev. 5",
+      "category": "control_framework",
+      "jurisdiction": [
+        "US",
+        "global"
+      ],
+      "applicability": "applicable",
+      "version_or_status": "NIST SP 800-53 Rev. 5, update 1 page, with control catalog for systems and organizations.",
+      "official_sources": [
+        {
+          "id": "nist-sp-800-53-r5",
+          "url": "https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final"
+        },
+        {
+          "id": "nist-sp-800-53-pdf",
+          "url": "https://nvlpubs.nist.gov/nistpubs/specialpublications/NIST.SP.800-53r5.pdf"
+        }
+      ],
+      "repo_evidence": [
+        "spec/refinement/repo_surface_coverage_map.json",
+        "spec/certification/aws_certification_coverage_map.json",
+        "docs/aws-certification.md",
+        "make validate"
+      ],
+      "missing_evidence": [
+        "Select control baseline, tailoring assumptions, overlays, assessment procedures, and organization-defined parameters.",
+        "Add production access control, audit, configuration, contingency, risk, system communications, and system integrity evidence."
+      ],
+      "external_owner_required": false,
+      "claim_boundary": "Internal readiness only; no NIST authorization, assessment, or federal system claim.",
+      "next_actions": [
+        "Map current evidence to selected control families after a target baseline is chosen."
+      ]
+    },
+    {
+      "id": "cis-controls-v8-1-map",
+      "framework": "CIS Controls v8.1",
+      "category": "control_framework",
+      "jurisdiction": [
+        "global"
+      ],
+      "applicability": "applicable",
+      "version_or_status": "CIS Controls v8.1 prioritized safeguards with updated CSF 2.0 Govern alignment.",
+      "official_sources": [
+        {
+          "id": "cis-controls-v8-1",
+          "url": "https://www.cisecurity.org/controls/v8-1"
+        },
+        {
+          "id": "cis-controls-navigator",
+          "url": "https://www.cisecurity.org/controls/cis-controls-navigator"
+        }
+      ],
+      "repo_evidence": [
+        "docs/security.md",
+        "docs/testing.md",
+        "docs/operations.md",
+        "scripts/validate-all.sh",
+        "make validate"
+      ],
+      "missing_evidence": [
+        "Select implementation group and map asset inventory, account inventory, vulnerability management, audit log management, malware defense, data recovery, and security awareness controls.",
+        "Add production endpoint, cloud account, vulnerability scanner, and SIEM evidence."
+      ],
+      "external_owner_required": false,
+      "claim_boundary": "Internal readiness only; no CIS assessment or implementation-group maturity claim.",
+      "next_actions": [
+        "Use CIS as a practical engineering checklist after production asset inventory exists."
+      ]
+    },
+    {
+      "id": "aws-well-architected-fsi-lens",
+      "framework": "AWS Well-Architected and Financial Services Industry Lens",
+      "category": "cloud_assurance",
+      "jurisdiction": [
+        "global"
+      ],
+      "applicability": "applicable",
+      "version_or_status": "AWS Well-Architected Framework and AWS Financial Services Industry Lens for cloud workload design and review.",
+      "official_sources": [
+        {
+          "id": "aws-well-architected",
+          "url": "https://aws.amazon.com/architecture/well-architected/"
+        },
+        {
+          "id": "aws-fsi-lens",
+          "url": "https://docs.aws.amazon.com/wellarchitected/latest/financial-services-industry-lens/financial-services-industry-lens.html"
+        }
+      ],
+      "repo_evidence": [
+        "docs/aws-certification.md",
+        "docs/certification/aws-simulation-internal-certification-report-2026-06-17.md",
+        "infra/aws-simulation/main.tf",
+        "spec/certification/aws_certification_coverage_map.json",
+        "make validate-aws-certification"
+      ],
+      "missing_evidence": [
+        "Run a formal AWS Well-Architected Tool review for any future production workload.",
+        "Add production account structure, backup, monitoring, incident, access, cost, and resilience evidence."
+      ],
+      "external_owner_required": false,
+      "claim_boundary": "Internal readiness only; no AWS Well-Architected review completion or FSI regulatory alignment claim.",
+      "next_actions": [
+        "Use the completed AWS sandbox report as engineering evidence, not production cloud assurance."
+      ]
+    },
+    {
+      "id": "aws-shared-responsibility-and-service-controls",
+      "framework": "AWS shared responsibility, IAM, ECS, FIS, SNS/SQS, KMS, CloudWatch, and Artifact",
+      "category": "cloud_assurance",
+      "jurisdiction": [
+        "global"
+      ],
+      "applicability": "applicable",
+      "version_or_status": "AWS shared responsibility and service-specific guidance for cloud security and evidence collection.",
+      "official_sources": [
+        {
+          "id": "aws-shared-responsibility",
+          "url": "https://aws.amazon.com/compliance/shared-responsibility-model/"
+        },
+        {
+          "id": "aws-artifact-docs",
+          "url": "https://docs.aws.amazon.com/artifact/latest/ug/what-is-aws-artifact.html"
+        },
+        {
+          "id": "aws-iam-best-practices",
+          "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html"
+        },
+        {
+          "id": "aws-ecs-task-roles",
+          "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/security-iam-roles.html"
+        },
+        {
+          "id": "aws-fargate-capacity-providers",
+          "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/fargate-capacity-providers.html"
+        },
+        {
+          "id": "aws-fis-planning",
+          "url": "https://docs.aws.amazon.com/fis/latest/userguide/getting-started-planning.html"
+        },
+        {
+          "id": "aws-sqs-dlq",
+          "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html"
+        },
+        {
+          "id": "aws-sqs-least-privilege-kms",
+          "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-least-privilege-policy.html"
+        }
+      ],
+      "repo_evidence": [
+        "docs/aws-certification.md",
+        "docs/runbooks/aws-simulation.md",
+        "infra/aws-simulation/main.tf",
+        "scripts/aws-cert-preflight.sh",
+        "scripts/aws-cert-run.sh",
+        "scripts/aws-cert-collect.sh",
+        "make validate-aws-certification"
+      ],
+      "missing_evidence": [
+        "For production, collect AWS Artifact reports in an access-controlled evidence room outside the repo.",
+        "Add production IAM Access Analyzer review, CloudTrail, GuardDuty, Security Hub, Config, backup, and account baseline evidence.",
+        "Define customer-versus-AWS responsibility matrix for each managed service in production."
+      ],
+      "external_owner_required": false,
+      "claim_boundary": "Internal readiness only; no AWS provider-report inheritance or production cloud-control assurance claim.",
+      "next_actions": [
+        "Keep AWS Artifact downloads out of this repo and reference them by evidence-room identifier if used."
+      ]
+    },
+    {
+      "id": "production-readiness-boundary",
+      "framework": "Production readiness and release governance",
+      "category": "production_readiness",
+      "jurisdiction": [
+        "global"
+      ],
+      "applicability": "future_external",
+      "version_or_status": "Internal production-readiness boundary informed by AWS Well-Architected, ISO 22301, ISO/IEC 20000-1, NIST CSF, and repo rules.",
+      "official_sources": [
+        {
+          "id": "aws-well-architected",
+          "url": "https://aws.amazon.com/architecture/well-architected/"
+        },
+        {
+          "id": "iso22301-2019",
+          "url": "https://www.iso.org/standard/75106.html"
+        },
+        {
+          "id": "iso20000-1-2018",
+          "url": "https://www.iso.org/standard/70636.html"
+        },
+        {
+          "id": "nist-csf-2-pdf",
+          "url": "https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.29.pdf"
+        }
+      ],
+      "repo_evidence": [
+        "docs/production-readiness.md",
+        "docs/security.md",
+        "docs/compliance-readiness.md",
+        "AGENTS.md",
+        "AGENT_TRACKER.md"
+      ],
+      "missing_evidence": [
+        "Add production identity, authorization, TLS, secrets, data classification, data retention, backup, disaster recovery, monitoring, alerting, incident response, change approval, vendor risk, and rollout controls.",
+        "Define production account, network, data, operator, support, and escalation ownership.",
+        "Create production ADRs and deployment gates before any production use."
+      ],
+      "external_owner_required": true,
+      "claim_boundary": "Internal readiness only; not production ready and no production deployment authorization.",
+      "next_actions": [
+        "Keep local and AWS sandbox evidence separate from production authorization.",
+        "Open a separate production control-plane workstream if production adaptation is requested."
+      ]
+    }
+  ]
+}
