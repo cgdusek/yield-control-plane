@@ -30,6 +30,7 @@ Local URLs:
 - Liveness verification: [docs/liveness-verification.md](docs/liveness-verification.md)
 - AWS simulation and internal certification: [docs/aws-certification.md](docs/aws-certification.md)
 - Data-flow diagrams and control map: [docs/security/dfd/README.md](docs/security/dfd/README.md)
+- C4 architecture model and evidence map: [docs/architecture/c4/README.md](docs/architecture/c4/README.md)
 - Source request: [spec/source/fidelity_defi_yield_platform_spec.md](spec/source/fidelity_defi_yield_platform_spec.md)
 
 ## Validation
@@ -47,6 +48,7 @@ make validate-k8s
 make validate-docs
 make validate-aws-certification
 make validate-dfd
+make validate-c4
 make test
 make validate
 ```

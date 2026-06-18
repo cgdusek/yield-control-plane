@@ -2,7 +2,8 @@
 
 The system is a local institutional yield control plane built from independently runnable services. Local AWS dependencies are simulated with LocalStack SNS/SQS; the application refuses real AWS endpoints when `APP_ENV` is `local` or `dev`.
 
-The audit-oriented data-flow view is maintained in the [DFD evidence pack](security/dfd/README.md).
+The audit-oriented data-flow view is maintained in the [DFD evidence pack](../security/dfd/README.md).
+The audit-oriented C4 architecture view is maintained in the [C4 evidence pack](c4/README.md).
 
 ```mermaid
 flowchart LR
@@ -47,4 +48,5 @@ RUN_DATABASE_TESTS=1 DATABASE_URL=postgres://yield:yield@127.0.0.1:15432/yield_c
 make smoke
 make k8s-smoke
 make validate-dfd
+make validate-c4
 ```

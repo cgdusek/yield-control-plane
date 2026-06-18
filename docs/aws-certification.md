@@ -5,6 +5,7 @@ This workstream adds an opt-in AWS sandbox simulation and an internal evidence p
 Broader SOC, ISO, PCI, CSA, NIST, CIS, AWS, US regulatory, EU regulatory, UK regulatory, and production-adjacent readiness mapping is tracked in [Standards and certification readiness](compliance-readiness.md) and [standards_readiness_map.json](../spec/certification/standards_readiness_map.json).
 
 AWS sandbox data flows, trust boundaries, data classifications, and control mappings are tracked in the [DFD evidence pack](security/dfd/README.md).
+AWS sandbox C4 containers, relationships, and source evidence are tracked in the [C4 evidence pack](architecture/c4/README.md).
 
 The local runtime remains LocalStack-only. Real AWS execution is isolated behind `AWS_CERTIFICATION_ENABLED=1`, `APP_ENV=cert`, `AWS_REGION=us-west-2`, and a preflight that rejects root identity, wrong region, missing budget guardrails, exceeded budget spend, and missing teardown TTL tags. Root is used only for one-time sandbox bootstrap or break-glass recovery; deployment, workload, collection, and teardown run through a temporary scoped role.
 
@@ -72,6 +73,7 @@ The local static acceptance gate is:
 ```bash
 make validate-aws-certification
 make validate-dfd
+make validate-c4
 ```
 
 Formal admission evidence for the cloud campaign is recorded in [AWS certification formal diagnosis](trackers/aws-certification-formal-diagnosis.md).

@@ -23,7 +23,7 @@ This work does not create SOC attestation, AWS assurance, regulatory approval, l
 - `AGENTS.md`
 - `AGENT_TRACKER.md`
 - `docs/index.md`
-- `docs/architecture.md`
+- `docs/architecture/README.md`
 - `docs/security.md`
 - `docs/aws-certification.md`
 - `docs/runbooks/aws-simulation.md`

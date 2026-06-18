@@ -1,4 +1,4 @@
-.PHONY: check-tools bootstrap generate-formal-coverage-map generate-repo-surface-coverage-map validate-tla validate-source-proofs validate-refinement validate-formal-coverage validate-formal-coverage-map validate-repo-surface-coverage-map validate-liveness validate-specs validate-k8s validate-docs validate-aws-certification validate-standards-readiness validate-dfd validate fmt lint test dev-up dev-down dev-reset smoke smoke-failure-paths docker-build k8s-up k8s-smoke k8s-down aws-cert-bootstrap-iam aws-cert-preflight aws-cert-deploy aws-cert-run aws-cert-collect aws-cert-destroy aws-cert-teardown-iam aws-cert-admission-check aws-cert-wait-queues-drained aws-cert-wait-ecs-services-stable
+.PHONY: check-tools bootstrap generate-formal-coverage-map generate-repo-surface-coverage-map validate-tla validate-source-proofs validate-refinement validate-formal-coverage validate-formal-coverage-map validate-repo-surface-coverage-map validate-liveness validate-specs validate-k8s validate-docs validate-aws-certification validate-standards-readiness validate-dfd validate-c4 validate fmt lint test dev-up dev-down dev-reset smoke smoke-failure-paths docker-build k8s-up k8s-smoke k8s-down aws-cert-bootstrap-iam aws-cert-preflight aws-cert-deploy aws-cert-run aws-cert-collect aws-cert-destroy aws-cert-teardown-iam aws-cert-admission-check aws-cert-wait-queues-drained aws-cert-wait-ecs-services-stable
 
 check-tools:
 	./scripts/check-tools.sh
@@ -50,6 +50,9 @@ validate-standards-readiness:
 
 validate-dfd:
 	./scripts/validate-dfd.sh
+
+validate-c4:
+	./scripts/validate-c4.sh
 
 validate:
 	./scripts/validate-all.sh

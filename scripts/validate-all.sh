@@ -13,6 +13,7 @@ set -euo pipefail
 ./scripts/validate-aws-certification.sh
 ./scripts/validate-standards-readiness.sh
 ./scripts/validate-dfd.sh
+./scripts/validate-c4.sh
 ./scripts/validate-docs.sh
 cargo fmt --all --check
 cargo clippy --workspace --all-targets --all-features -- -D warnings

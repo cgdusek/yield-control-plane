@@ -9,6 +9,7 @@ Run the static readiness and documentation gates first:
 ```bash
 make validate-standards-readiness
 make validate-dfd
+make validate-c4
 make validate-docs
 make validate-aws-certification
 make validate
@@ -33,6 +34,7 @@ Collect these repo-local artifacts for review:
 - [AWS simulation and internal certification](../aws-certification.md)
 - [AWS simulation internal certification report](../certification/aws-simulation-internal-certification-report-2026-06-17.md)
 - [Data-flow diagrams and control map](../security/dfd/README.md)
+- [C4 architecture model and evidence map](../architecture/c4/README.md)
 - [Formal verification](../formal-verification.md)
 - [Liveness verification](../liveness-verification.md)
 - [Production readiness](../production-readiness.md)

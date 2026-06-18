@@ -3,7 +3,8 @@
 Start here for the local institutional yield control plane.
 
 - [Bootstrap](bootstrap.md)
-- [Architecture](architecture.md)
+- [Architecture](architecture/README.md)
+- [C4 architecture model and evidence map](architecture/c4/README.md)
 - [Local development](local-development.md)
 - [Testing](testing.md)
 - [Operations](operations.md)
@@ -36,3 +37,6 @@ Primary specs:
 - [Standards readiness map](../spec/certification/standards_readiness_map.json)
 - [DFD data-flow catalog](security/dfd/data-flow-catalog.yaml)
 - [DFD control map](security/dfd/control-map.yaml)
+- [C4 model elements](architecture/c4/model-elements.yaml)
+- [C4 relationships](architecture/c4/relationships.yaml)
+- [C4 evidence map](architecture/c4/evidence-map.yaml)

@@ -8,10 +8,10 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 - Preserved project copy: `spec/source/fidelity_defi_yield_platform_spec.md` (pending Gate 1)
 
 ## Current Gate
-- Gate: DFD evidence pack
+- Gate: C4 model evidence pack
 - Status: Passed
-- Start Time: 2026-06-18T16:41:44Z
-- End Time: 2026-06-18T17:00:58Z
+- Start Time: 2026-06-18T19:26:35Z
+- End Time: 2026-06-18T19:48:47Z
 
 ## Gate Status Table
 | Gate | Objective | Status | Evidence | Last Updated |
@@ -45,6 +45,7 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 | AWS certification closure CI remediation | Keep the post-campaign closure commit green after documentation and coverage-map closure updates | Passed | GitHub Actions run `27719275199` passed integration/smoke but failed static while installing TLAPS on Ubuntu 24.04; workflow remediation pinned the TLAPS-heavy static lane to Ubuntu 22.04 while preserving `make validate`; replacement run `27720066191` passed both jobs on commit `3c5280b` | 2026-06-17T21:20:24Z |
 | Standards and certification readiness matrix | Add US + EU/UK legal, regulatory, SOC, ISO, production, cloud, and security readiness mapping with a static no-claim validation gate | Passed | `spec/certification/standards_readiness_map.json` has 26 validated rows; `make validate-standards-readiness`, `make validate-docs`, `make validate-aws-certification`, `make validate-repo-surface-coverage-map`, `make validate`, and `git diff --check` passed | 2026-06-18T03:06:06Z |
 | DFD evidence pack | Add docs-as-code Mermaid and YAML DFD evidence for SOC 2 / AWS / financial-control readiness without certification or production claims | Passed | `docs/security/dfd/` Mermaid and YAML pack, `scripts/validate-dfd.sh`, `make validate-dfd`, `make validate-docs`, `make validate-aws-certification`, `make validate-repo-surface-coverage-map`, `make validate`, and `git diff --check` passed | 2026-06-18T17:00:58Z |
+| C4 model evidence pack | Add docs-as-code Mermaid and YAML C4 model evidence for architecture readiness without certification or production claims | Passed | `docs/architecture/c4/` Mermaid and YAML pack, `scripts/validate-c4.sh`, `make validate-c4`, `make validate-docs`, `make validate-dfd`, `make validate-repo-surface-coverage-map`, `make validate`, and `git diff --check` passed | 2026-06-18T19:48:47Z |
 
 ## Requirements Traceability Summary
 - Domain model and state machine: `spec/domain/sweep_order.machine.yaml`, `crates/domain`, domain tests.
@@ -60,6 +61,10 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 ## Commands Run
 | Timestamp | Command | Working Directory | Result | Notes |
 | --- | --- | --- | --- | --- |
+| 2026-06-18T19:26:35Z | C4 model evidence pack gate opened; `git switch -c codex/docs-c4-evidence-pack` | `/Users/charlesdusek/Code/yield-control-plane` | In Progress | Started docs-as-code C4 evidence pack on top of the DFD evidence-pack branch so relationships can reference existing `DF-###` flows and controls. Scope is architecture evidence only; no SOC, AWS, regulatory, legal, investment, tax, accounting, transfer-agent, production deployment, or production certification claim. |
+| 2026-06-18T19:42:20Z | `bash -n scripts/validate-c4.sh`; `make validate-c4`; `make validate-docs`; `make generate-repo-surface-coverage-map`; `make validate-repo-surface-coverage-map`; `make validate-dfd` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | C4 evidence pack implementation passed with 49 elements, 82 relationships, 11 boundaries, 7 evidence items, docs link validation, regenerated repo surface coverage, current coverage map, and existing DFD pack still green. |
+| 2026-06-18T19:45:17Z | `make validate` | `/Users/charlesdusek/Code/yield-control-plane` | Failed | Full validation reached `validate-repo-surface-coverage-map` and reported stale `spec/refinement/repo_surface_coverage_map.json` because tracker edits followed map generation; remediation is to regenerate the map and rerun `make validate`. |
+| 2026-06-18T19:48:47Z | `make generate-repo-surface-coverage-map`; `make validate`; `git diff --check`; `test ! -d .tlacache && test ! -d states` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Regenerated the repo surface map after tracker edits; full validation passed with the new C4 gate included; whitespace and generated TLA state cleanup checks passed. |
 | 2026-06-18T16:41:44Z | DFD evidence pack gate opened; `git checkout -b docs/dfd-evidence-pack main` | `/Users/charlesdusek/Code/yield-control-plane` | In Progress | Started docs-as-code DFD evidence pack. Scope is audit readiness evidence only; no SOC, AWS, regulatory, legal, investment, tax, accounting, transfer-agent, production deployment, or production certification claim. |
 | 2026-06-18T16:41:44Z | DFD source inspection and tracker creation | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Inspected README, docs, OpenAPI, AsyncAPI, state machine, AWS simulation IaC/scripts, API, workers, certifier, mock transfer agent, persistence, messaging, config, Makefile, and validators; created `docs/trackers/dfd-evidence-pack.md` before diagram authoring. |
 | 2026-06-18T17:00:58Z | `bash -n scripts/validate-dfd.sh`; `make validate-dfd`; `make validate-docs`; `make validate-aws-certification`; `make generate-repo-surface-coverage-map`; `make validate-repo-surface-coverage-map`; `make validate`; `git diff --check`; `test ! -d .tlacache`; `test ! -d states` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | DFD evidence pack closed with 25 flows, 14 controls, 9 trust boundaries, docs links, AWS static validation, regenerated repo surface map, full validation, whitespace check, and generated-state cleanup check. |

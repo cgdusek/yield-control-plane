@@ -21,22 +21,22 @@
     "non_claim": "This map does not claim full source-level theorem-prover verification of every Rust, TypeScript, YAML, shell, or Markdown line."
   },
   "summary": {
-    "surface_count": 18,
-    "closed_surface_count": 18,
+    "surface_count": 19,
+    "closed_surface_count": 19,
     "needs_work_surface_count": 0,
     "surface_closure_ratio": 1.0,
-    "mapped_file_count": 251,
+    "mapped_file_count": 265,
     "unmapped_file_count": 0,
     "conflicting_file_count": 0,
-    "all_mappable_file_count": 251,
+    "all_mappable_file_count": 265,
     "file_mapping_ratio": 1.0,
-    "line_count": 37385,
-    "formalized_surface_count": 9,
-    "formalized_surface_ratio": 0.5,
-    "formalized_file_count": 114,
-    "formalized_file_ratio": 0.4542,
-    "formalized_line_count": 19426,
-    "formalized_line_ratio": 0.5196,
+    "line_count": 40743,
+    "formalized_surface_count": 10,
+    "formalized_surface_ratio": 0.5263,
+    "formalized_file_count": 128,
+    "formalized_file_ratio": 0.483,
+    "formalized_line_count": 22763,
+    "formalized_line_ratio": 0.5587,
     "rust_file_count": 42,
     "rust_line_count": 6231,
     "rust_test_function_count_static": 51,
@@ -280,7 +280,7 @@
       "coverage_score": 1.0,
       "formal_scope": "none",
       "file_count": 13,
-      "line_count": 7154,
+      "line_count": 7164,
       "rust_file_count": 0,
       "test_function_count_static": 0,
       "required_axes": [
@@ -430,7 +430,7 @@
       "coverage_score": 1.0,
       "formal_scope": "none",
       "file_count": 4,
-      "line_count": 210,
+      "line_count": 211,
       "rust_file_count": 0,
       "test_function_count_static": 0,
       "required_axes": [
@@ -763,7 +763,7 @@
       "coverage_score": 1.0,
       "formal_scope": "meta_coverage_for_formal_artifacts",
       "file_count": 11,
-      "line_count": 3968,
+      "line_count": 3996,
       "rust_file_count": 0,
       "test_function_count_static": 0,
       "required_axes": [
@@ -1007,7 +1007,7 @@
         "documentation": {
           "paths": [
             "docs/traceability.md",
-            "docs/architecture.md"
+            "docs/architecture/README.md"
           ]
         }
       },
@@ -1053,7 +1053,7 @@
             "scripts/validate-specs.sh",
             "scripts/validate-all.sh",
             "docs/traceability.md",
-            "docs/architecture.md"
+            "docs/architecture/README.md"
           ]
         },
         "S4_proof_obligations": [
@@ -3041,7 +3041,7 @@
       "coverage_score": 1.0,
       "formal_scope": "standards_traceability_not_formal_protocol_semantics",
       "file_count": 7,
-      "line_count": 1582,
+      "line_count": 1584,
       "rust_file_count": 0,
       "test_function_count_static": 0,
       "required_axes": [
@@ -3387,13 +3387,200 @@
       ]
     },
     {
+      "id": "c4_evidence_pack",
+      "title": "C4 Model Evidence Pack",
+      "closure_status": "closed",
+      "coverage_score": 1.0,
+      "formal_scope": "docs_as_code_c4_architecture_and_relationship_traceability",
+      "file_count": 14,
+      "line_count": 3307,
+      "rust_file_count": 0,
+      "test_function_count_static": 0,
+      "required_axes": [
+        "source_inventory",
+        "specification_or_contract",
+        "static_validation",
+        "drift_validator",
+        "ci_gate",
+        "documentation"
+      ],
+      "present_axes": [
+        "source_inventory",
+        "specification_or_contract",
+        "static_validation",
+        "drift_validator",
+        "ci_gate",
+        "documentation"
+      ],
+      "missing_axes": [],
+      "closure_actions": [],
+      "hardening_frontier": [
+        "Add C4 Level 4 code diagrams or export SVG/PDF packet views if a review owner requests them."
+      ],
+      "evidence": {
+        "specification_or_contract": {
+          "paths": [
+            "docs/architecture/c4/model-elements.yaml",
+            "docs/architecture/c4/relationships.yaml",
+            "docs/architecture/c4/deployment-map.yaml",
+            "docs/architecture/c4/evidence-map.yaml"
+          ]
+        },
+        "static_validation": {
+          "commands": [
+            "make validate-c4"
+          ],
+          "paths": [
+            "scripts/validate-c4.sh"
+          ]
+        },
+        "drift_validator": {
+          "commands": [
+            "make validate-c4"
+          ],
+          "paths": [
+            "scripts/validate-c4.sh"
+          ]
+        },
+        "ci_gate": {
+          "commands": [
+            "make validate"
+          ],
+          "paths": [
+            "scripts/validate-all.sh"
+          ]
+        },
+        "documentation": {
+          "paths": [
+            "docs/architecture/c4/README.md",
+            "docs/trackers/c4-evidence-pack.md"
+          ]
+        }
+      },
+      "proof_ladder": {
+        "S0_objective": "Specify, enforce, and validate the C4 Model Evidence Pack surface as part of the integrated yield control plane.",
+        "S1_contract_or_spec": {
+          "status": "closed",
+          "evidence_paths": [
+            "docs/architecture/c4/model-elements.yaml",
+            "docs/architecture/c4/relationships.yaml",
+            "docs/architecture/c4/deployment-map.yaml",
+            "docs/architecture/c4/evidence-map.yaml"
+          ]
+        },
+        "S2_executable_reference_or_validation_model": {
+          "status": "closed",
+          "commands": [
+            "make validate-c4",
+            "make validate"
+          ]
+        },
+        "S3_implementation_mapping": {
+          "status": "closed",
+          "file_count": 14,
+          "representative_files": [
+            "docs/architecture/c4/README.md",
+            "docs/architecture/c4/c4-00-system-context.md",
+            "docs/architecture/c4/c4-01-local-runtime-containers.md",
+            "docs/architecture/c4/c4-02-aws-sandbox-containers.md",
+            "docs/architecture/c4/c4-03-api-components.md",
+            "docs/architecture/c4/c4-04-worker-components.md",
+            "docs/architecture/c4/c4-05-persistence-domain-components.md",
+            "docs/architecture/c4/c4-06-ci-evidence-operations.md",
+            "docs/architecture/c4/deployment-map.yaml",
+            "docs/architecture/c4/evidence-map.yaml",
+            "docs/architecture/c4/model-elements.yaml",
+            "docs/architecture/c4/relationships.yaml"
+          ],
+          "formal_scope": "docs_as_code_c4_architecture_and_relationship_traceability",
+          "evidence_paths": [
+            "docs/architecture/c4/model-elements.yaml",
+            "docs/architecture/c4/relationships.yaml",
+            "docs/architecture/c4/deployment-map.yaml",
+            "docs/architecture/c4/evidence-map.yaml",
+            "scripts/validate-c4.sh",
+            "scripts/validate-all.sh",
+            "docs/architecture/c4/README.md",
+            "docs/trackers/c4-evidence-pack.md"
+          ]
+        },
+        "S4_proof_obligations": [
+          {
+            "id": "c4_evidence_pack.source_inventory",
+            "axis": "source_inventory",
+            "status": "closed",
+            "closure_action": "Assign all files in this surface and keep unmapped files at zero."
+          },
+          {
+            "id": "c4_evidence_pack.specification_or_contract",
+            "axis": "specification_or_contract",
+            "status": "closed",
+            "closure_action": "Add or bind this surface to an OpenAPI, AsyncAPI, state-machine, TLA+, schema, or documented contract."
+          },
+          {
+            "id": "c4_evidence_pack.static_validation",
+            "axis": "static_validation",
+            "status": "closed",
+            "closure_action": "Add a deterministic local validator for this surface."
+          },
+          {
+            "id": "c4_evidence_pack.drift_validator",
+            "axis": "drift_validator",
+            "status": "closed",
+            "closure_action": "Add a script that fails when this surface drifts from its source of truth."
+          },
+          {
+            "id": "c4_evidence_pack.ci_gate",
+            "axis": "ci_gate",
+            "status": "closed",
+            "closure_action": "Invoke the surface validator from make validate or GitHub Actions."
+          },
+          {
+            "id": "c4_evidence_pack.documentation",
+            "axis": "documentation",
+            "status": "closed",
+            "closure_action": "Document the surface and its validation commands."
+          }
+        ],
+        "S5_machine_check": {
+          "status": "closed",
+          "commands": [
+            "make validate-c4",
+            "make validate"
+          ]
+        },
+        "S6_assumptions_and_limits": {
+          "limits": [],
+          "hardening_frontier": [
+            "Add C4 Level 4 code diagrams or export SVG/PDF packet views if a review owner requests them."
+          ]
+        }
+      },
+      "files": [
+        "docs/architecture/c4/README.md",
+        "docs/architecture/c4/c4-00-system-context.md",
+        "docs/architecture/c4/c4-01-local-runtime-containers.md",
+        "docs/architecture/c4/c4-02-aws-sandbox-containers.md",
+        "docs/architecture/c4/c4-03-api-components.md",
+        "docs/architecture/c4/c4-04-worker-components.md",
+        "docs/architecture/c4/c4-05-persistence-domain-components.md",
+        "docs/architecture/c4/c4-06-ci-evidence-operations.md",
+        "docs/architecture/c4/deployment-map.yaml",
+        "docs/architecture/c4/evidence-map.yaml",
+        "docs/architecture/c4/model-elements.yaml",
+        "docs/architecture/c4/relationships.yaml",
+        "docs/trackers/c4-evidence-pack.md",
+        "scripts/validate-c4.sh"
+      ]
+    },
+    {
       "id": "docs_runbooks_adrs",
       "title": "Documentation, Runbooks, and ADRs",
       "closure_status": "closed",
       "coverage_score": 1.0,
       "formal_scope": "none",
       "file_count": 56,
-      "line_count": 2769,
+      "line_count": 2779,
       "rust_file_count": 0,
       "test_function_count_static": 0,
       "required_axes": [
@@ -3539,7 +3726,7 @@
         "docs/agentic/implementation-log.md",
         "docs/agentic/index.md",
         "docs/agentic/working-agreement.md",
-        "docs/architecture.md",
+        "docs/architecture/README.md",
         "docs/aws-certification.md",
         "docs/bootstrap.md",
         "docs/certification/aws-simulation-internal-certification-report-2026-06-17.md",

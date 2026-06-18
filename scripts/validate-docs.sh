@@ -13,7 +13,7 @@ required = [
     "AGENT_TRACKER.md",
     "docs/index.md",
     "docs/bootstrap.md",
-    "docs/architecture.md",
+    "docs/architecture/README.md",
     "docs/local-development.md",
     "docs/testing.md",
     "docs/operations.md",
@@ -43,7 +43,7 @@ if missing:
     raise SystemExit(f"missing required docs: {missing}")
 
 operational_docs = [
-    "docs/architecture.md",
+    "docs/architecture/README.md",
     "docs/local-development.md",
     "docs/testing.md",
     "docs/operations.md",

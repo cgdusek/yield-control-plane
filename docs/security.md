@@ -3,6 +3,7 @@
 The system is local-only by design. It uses dummy secrets, LocalStack, and mock external integrations. It must not be pointed at real AWS or production financial systems.
 
 Data-flow, trust-boundary, classification, and control evidence is tracked in the [DFD evidence pack](security/dfd/README.md).
+C4 architecture, container, component, and relationship evidence is tracked in the [C4 evidence pack](architecture/c4/README.md).
 
 ## Enforced Local Boundaries
 
@@ -37,4 +38,5 @@ cargo test -p institutional-yield-config
 cargo test -p institutional-yield-messaging
 make smoke-failure-paths
 make validate-dfd
+make validate-c4
 ```

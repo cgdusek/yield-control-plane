@@ -286,7 +286,7 @@ SURFACES: tuple[Surface, ...] = (
             "static_validation": {"commands": ["make validate-specs"], "paths": ["scripts/validate-specs.sh"]},
             "drift_validator": {"paths": ["scripts/validate-specs.sh"]},
             "ci_gate": {"commands": ["make validate-specs", "make validate"], "paths": ["scripts/validate-all.sh"]},
-            "documentation": {"paths": ["docs/traceability.md", "docs/architecture.md"]},
+            "documentation": {"paths": ["docs/traceability.md", "docs/architecture/README.md"]},
         },
         hardening_frontier=("Add full JSON Schema validation when the validator dependency is intentionally pinned.",),
     ),
@@ -522,6 +522,32 @@ SURFACES: tuple[Surface, ...] = (
         hardening_frontier=("Export diagrams to SVG or PDF for an external auditor packet when a review owner requests polished packet artifacts.",),
     ),
     Surface(
+        id="c4_evidence_pack",
+        title="C4 Model Evidence Pack",
+        patterns=(
+            "docs/architecture/c4/**",
+            "docs/trackers/c4-evidence-pack.md",
+            "scripts/validate-c4.sh",
+        ),
+        required_axes=("source_inventory", "specification_or_contract", "static_validation", "drift_validator", "ci_gate", "documentation"),
+        evidence={
+            "specification_or_contract": {
+                "paths": [
+                    "docs/architecture/c4/model-elements.yaml",
+                    "docs/architecture/c4/relationships.yaml",
+                    "docs/architecture/c4/deployment-map.yaml",
+                    "docs/architecture/c4/evidence-map.yaml",
+                ]
+            },
+            "static_validation": {"commands": ["make validate-c4"], "paths": ["scripts/validate-c4.sh"]},
+            "drift_validator": {"commands": ["make validate-c4"], "paths": ["scripts/validate-c4.sh"]},
+            "ci_gate": {"commands": ["make validate"], "paths": ["scripts/validate-all.sh"]},
+            "documentation": {"paths": ["docs/architecture/c4/README.md", "docs/trackers/c4-evidence-pack.md"]},
+        },
+        formal_scope="docs_as_code_c4_architecture_and_relationship_traceability",
+        hardening_frontier=("Add C4 Level 4 code diagrams or export SVG/PDF packet views if a review owner requests them.",),
+    ),
+    Surface(
         id="docs_runbooks_adrs",
         title="Documentation, Runbooks, and ADRs",
         patterns=("docs/**", "scripts/validate-docs.sh"),
@@ -533,6 +559,8 @@ SURFACES: tuple[Surface, ...] = (
             "docs/trackers/standards-readiness-*.md",
             "docs/security/dfd/**",
             "docs/trackers/dfd-evidence-pack.md",
+            "docs/architecture/c4/**",
+            "docs/trackers/c4-evidence-pack.md",
         ),
         required_axes=("source_inventory", "static_validation", "ci_gate", "documentation"),
         evidence={
@@ -555,7 +583,7 @@ def git_files() -> list[str]:
     files = []
     for line in result.stdout.splitlines():
         path = line.strip()
-        if path and path not in DERIVED_SELF_ARTIFACTS:
+        if path and path not in DERIVED_SELF_ARTIFACTS and Path(path).exists():
             files.append(path)
     return sorted(files)
 

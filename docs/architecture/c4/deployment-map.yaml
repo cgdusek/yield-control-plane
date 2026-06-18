@@ -1,0 +1,327 @@
+schema_version: "1.0.0"
+catalog: yield-control-plane-c4-deployment-map
+source_of_truth: docs/architecture/c4/deployment-map.yaml
+deployment_contexts:
+  - id: local_compose
+    name: Local Docker Compose runtime
+    description: Primary local runtime for API, workers, React console, Postgres, LocalStack, and mock transfer agent.
+    boundaries:
+      - BND-003
+      - BND-004
+      - BND-005
+    elements:
+      - PER-001
+      - SYS-001
+      - SYS-002
+      - CON-001
+      - CON-002
+      - CON-003
+      - CON-004
+      - CON-006
+      - CON-007
+      - CON-008
+      - CON-009
+      - CMP-001
+      - CMP-002
+      - CMP-004
+      - CMP-005
+      - CMP-006
+      - CMP-007
+      - CMP-008
+      - CMP-009
+      - CMP-010
+      - CMP-011
+      - CMP-012
+      - CMP-013
+      - CMP-014
+      - CMP-015
+      - CMP-016
+      - CMP-017
+      - CMP-018
+      - CMP-019
+      - CMP-020
+      - CMP-021
+      - CMP-023
+      - MOD-001
+      - MOD-002
+    source_files:
+      - docker-compose.yml
+      - scripts/dev-up.sh
+      - scripts/smoke-create-sweep.sh
+      - scripts/smoke-failure-paths.sh
+    validation_commands:
+      - make dev-up
+      - make smoke
+      - make smoke-failure-paths
+      - make dev-down
+    residual_assumptions:
+      - Local Compose uses local credentials and localhost transport only for simulation.
+  - id: local_kubernetes
+    name: Local kind Kubernetes runtime
+    description: Local Kubernetes manifests and overlays for validating deployment shape without real cloud calls.
+    boundaries:
+      - BND-003
+      - BND-004
+      - BND-005
+    elements:
+      - SYS-001
+      - CON-001
+      - CON-002
+      - CON-003
+      - CON-004
+      - CON-006
+      - CON-007
+      - CON-008
+      - CON-009
+    source_files:
+      - infra/k8s/base/api.yaml
+      - infra/k8s/base/workers.yaml
+      - infra/k8s/base/postgres.yaml
+      - infra/k8s/base/localstack.yaml
+      - infra/k8s/base/react-console.yaml
+      - infra/k8s/overlays/local/kustomization.yaml
+    validation_commands:
+      - make validate-k8s
+      - make k8s-smoke
+    residual_assumptions:
+      - kind runtime execution depends on local Docker and kind availability.
+  - id: aws_sandbox
+    name: Non-production AWS sandbox simulation
+    description: Opt-in sandbox deployment used for bounded evidence collection and fault-injection simulation.
+    boundaries:
+      - BND-001
+      - BND-006
+    elements:
+      - PER-001
+      - PER-002
+      - SYS-003
+      - CON-004
+      - CON-007
+      - CON-008
+      - CON-010
+      - CON-011
+      - CON-012
+      - CON-013
+      - CON-014
+      - CON-015
+      - CON-016
+      - CON-017
+      - CON-018
+      - CMP-022
+      - MOD-002
+    source_files:
+      - infra/aws-simulation/main.tf
+      - infra/aws-simulation/variables.tf
+      - scripts/aws-cert-preflight.sh
+      - scripts/aws-cert-run.sh
+      - scripts/aws-cert-collect.sh
+    validation_commands:
+      - make validate-aws-certification
+    residual_assumptions:
+      - This context is non-production and opt-in; production approval, organization controls, and private account evidence remain outside this repo.
+  - id: ci
+    name: CI and source-control validation
+    description: GitHub Actions and local full validation path for specs, formal checks, docs, C4, DFD, Rust, frontend, and static AWS checks.
+    boundaries:
+      - BND-010
+      - BND-011
+    elements:
+      - PER-002
+      - SYS-004
+      - CON-018
+      - CMP-003
+      - CMP-008
+      - CMP-009
+      - CMP-022
+      - MOD-001
+      - MOD-002
+    source_files:
+      - .github/workflows/ci.yml
+      - Makefile
+      - scripts/validate-all.sh
+      - scripts/validate-c4.sh
+    validation_commands:
+      - make validate-c4
+      - make validate
+    residual_assumptions:
+      - CI results are repository evidence and do not replace external review.
+  - id: evidence
+    name: Source-controlled evidence artifacts
+    description: Markdown, Mermaid, YAML, JSON, tracker, certification simulation, and generated coverage evidence.
+    boundaries:
+      - BND-002
+      - BND-011
+    elements:
+      - PER-002
+      - CON-005
+      - CON-016
+      - CON-017
+      - CON-018
+      - CMP-022
+      - MOD-001
+      - MOD-002
+    source_files:
+      - AGENT_TRACKER.md
+      - docs/trackers/c4-evidence-pack.md
+      - docs/security/dfd/README.md
+      - docs/architecture/c4/README.md
+      - spec/refinement/repo_surface_coverage_map.json
+    validation_commands:
+      - make validate-docs
+      - make validate-c4
+      - make validate-repo-surface-coverage-map
+    residual_assumptions:
+      - External evidence rooms, management assertions, and auditor sampling are outside this repo.
+boundaries:
+  - id: BND-001
+    name: External actors
+    description: Human operator and platform engineer boundary.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+      - ci
+    elements:
+      - PER-001
+      - PER-002
+    residual_assumptions:
+      - Production identity provider and access review procedures are outside this repo.
+  - id: BND-002
+    name: Yield Control Plane system boundary
+    description: Logical software-system boundary for the repository implementation and evidence artifacts.
+    deployment_contexts:
+      - local_compose
+      - evidence
+    elements:
+      - SYS-001
+      - CON-018
+    residual_assumptions:
+      - External auditor packet publication is outside this change.
+  - id: BND-003
+    name: Operator workstation
+    description: Browser, direct local scripts, and operator interactions.
+    deployment_contexts:
+      - local_compose
+      - local_kubernetes
+    elements:
+      - PER-001
+      - CON-001
+    residual_assumptions:
+      - Local workstation hardening is not modeled as a production control.
+  - id: BND-004
+    name: Docker Compose application runtime
+    description: Local application service boundary for API, workers, mock service, and certifier.
+    deployment_contexts:
+      - local_compose
+      - local_kubernetes
+    elements:
+      - CON-002
+      - CON-003
+      - CON-004
+      - CON-005
+    residual_assumptions:
+      - Local runtime secrets and network paths are simulation-only.
+  - id: BND-005
+    name: Local data and messaging runtime
+    description: Local Postgres, LocalStack, SNS topic, SQS queues, and DLQs.
+    deployment_contexts:
+      - local_compose
+      - local_kubernetes
+    elements:
+      - CON-006
+      - CON-007
+      - CON-008
+      - CON-009
+    residual_assumptions:
+      - LocalStack is not a production AWS service.
+  - id: BND-006
+    name: Non-production AWS sandbox account
+    description: AWS sandbox infrastructure for ECS, ALB, RDS, SNS, SQS, KMS, Secrets Manager, CloudWatch Logs, and FIS.
+    deployment_contexts:
+      - aws_sandbox
+    elements:
+      - SYS-003
+      - CON-004
+      - CON-007
+      - CON-008
+      - CON-010
+      - CON-011
+      - CON-012
+      - CON-013
+      - CON-014
+      - CON-015
+      - CON-016
+      - CON-017
+    residual_assumptions:
+      - This is not production infrastructure and does not create AWS assurance.
+  - id: BND-007
+    name: Rust API process
+    description: In-process API component boundary.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+    elements:
+      - CMP-001
+      - CMP-002
+      - CMP-003
+      - CMP-004
+      - CMP-005
+      - CMP-006
+    residual_assumptions:
+      - Production authn and authz are outside this repo.
+  - id: BND-008
+    name: Shared domain and persistence crates
+    description: Shared code boundary used by API, workers, tests, and certifier.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+      - ci
+    elements:
+      - CMP-007
+      - CMP-008
+      - CMP-009
+      - CMP-010
+      - CMP-011
+      - CMP-012
+      - CMP-013
+      - CMP-014
+      - MOD-001
+      - MOD-002
+    residual_assumptions:
+      - C4 Level 4 code diagrams are outside this evidence pack.
+  - id: BND-009
+    name: Rust worker process
+    description: Worker component boundary selected by `WORKER_KIND`.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+    elements:
+      - CMP-015
+      - CMP-016
+      - CMP-017
+      - CMP-018
+      - CMP-019
+      - CMP-020
+      - CMP-021
+    residual_assumptions:
+      - Worker count, scaling policy, and on-call procedures are production-owner decisions.
+  - id: BND-010
+    name: CI and source-control boundary
+    description: GitHub source-control and GitHub Actions validation boundary.
+    deployment_contexts:
+      - ci
+    elements:
+      - SYS-004
+    residual_assumptions:
+      - Repository CI status is internal evidence, not external attestation.
+  - id: BND-011
+    name: Evidence and validation boundary
+    description: Source-controlled docs, generated maps, trackers, certifier reports, and validation output references.
+    deployment_contexts:
+      - ci
+      - evidence
+      - aws_sandbox
+    elements:
+      - CON-018
+      - CMP-022
+    residual_assumptions:
+      - External packet exports and private evidence-room controls are outside this repo.

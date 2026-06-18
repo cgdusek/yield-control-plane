@@ -1,0 +1,1184 @@
+schema_version: "1.0.0"
+catalog: yield-control-plane-c4-elements
+source_of_truth: docs/architecture/c4/model-elements.yaml
+elements:
+  - id: PER-001
+    c4_level: 1
+    element_type: person
+    name: Institutional Operator
+    description: Human operator who uses the console or API scripts to configure policies, create orders, request redemptions, and inspect breaks.
+    responsibilities:
+      - Initiate local and sandbox workflow requests.
+      - Review order, position, reconciliation, and health output.
+    technology: Human user through browser, curl, or smoke scripts.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-001
+      - DF-002
+      - DF-016
+      - DF-018
+    related_controls:
+      - CTL-SEC-001
+      - CTL-PI-001
+    source_files:
+      - README.md
+      - scripts/smoke-create-sweep.sh
+      - scripts/smoke-failure-paths.sh
+  - id: PER-002
+    c4_level: 1
+    element_type: person
+    name: Platform Engineer
+    description: Repository operator who runs validation, local runtime, CI, AWS sandbox scripts, and evidence collection.
+    responsibilities:
+      - Maintain source-controlled evidence and validation gates.
+      - Run opt-in sandbox commands with guardrails.
+    technology: Git, make, shell scripts, GitHub Actions, OpenTofu when explicitly opted in.
+    deployment_contexts:
+      - ci
+      - aws_sandbox
+      - evidence
+    related_dfd_flows:
+      - DF-020
+      - DF-021
+      - DF-022
+      - DF-023
+    related_controls:
+      - CTL-CHANGE-001
+      - CTL-AUDIT-002
+      - CTL-SEC-002
+    source_files:
+      - AGENTS.md
+      - Makefile
+      - scripts/validate-all.sh
+  - id: SYS-001
+    c4_level: 1
+    element_type: software_system
+    name: Yield Control Plane
+    description: Local, production-shaped institutional yield control-plane implementation with API, workers, persistence, messaging, frontend, specs, and validation gates.
+    responsibilities:
+      - Enforce sweep order state transitions and financial-record integrity.
+      - Provide local and sandbox evidence for architecture and control readiness review.
+    technology: Rust, Postgres, LocalStack SNS/SQS, React, TypeScript, Docker Compose, Kubernetes manifests, AWS sandbox IaC.
+    deployment_contexts:
+      - local_compose
+      - local_kubernetes
+      - aws_sandbox
+      - ci
+    related_dfd_flows:
+      - DF-001
+      - DF-002
+      - DF-003
+      - DF-004
+      - DF-005
+      - DF-006
+      - DF-007
+      - DF-008
+      - DF-009
+      - DF-010
+      - DF-011
+      - DF-012
+      - DF-013
+      - DF-014
+      - DF-015
+      - DF-016
+      - DF-017
+      - DF-018
+      - DF-019
+      - DF-020
+      - DF-021
+      - DF-022
+      - DF-023
+      - DF-024
+      - DF-025
+    related_controls:
+      - CTL-SEC-001
+      - CTL-PI-001
+      - CTL-PI-002
+      - CTL-PI-003
+      - CTL-AUDIT-001
+    source_files:
+      - README.md
+      - docs/architecture/README.md
+      - docker-compose.yml
+  - id: SYS-002
+    c4_level: 1
+    element_type: software_system
+    name: External Transfer Agent or Custodian
+    description: External system boundary represented locally by the deterministic mock transfer-agent service.
+    responsibilities:
+      - Return deterministic subscription confirmation in local and sandbox simulation.
+      - Represent the external transfer-agent or custodian integration boundary without asserting production authorization.
+    technology: Mock Axum service in this repository; external production technology is outside scope.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-011
+      - DF-012
+    related_controls:
+      - CTL-AUDIT-001
+      - CTL-PI-002
+    source_files:
+      - services/mock-transfer-agent/src/main.rs
+      - docs/security/dfd/trust-boundaries.yaml
+  - id: SYS-003
+    c4_level: 1
+    element_type: software_system
+    name: AWS Control Plane Sandbox
+    description: Opt-in, non-production AWS sandbox used by certification simulation scripts and OpenTofu infrastructure.
+    responsibilities:
+      - Provision and exercise sandbox infrastructure with budget, region, and identity guardrails.
+      - Produce bounded evidence artifacts for internal review.
+    technology: AWS ECS Fargate, ALB, RDS, SNS, SQS, KMS, Secrets Manager, CloudWatch Logs, FIS, OpenTofu.
+    deployment_contexts:
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-020
+      - DF-022
+      - DF-023
+      - DF-024
+      - DF-025
+    related_controls:
+      - CTL-SEC-002
+      - CTL-SEC-003
+      - CTL-AVAIL-002
+    source_files:
+      - infra/aws-simulation/main.tf
+      - scripts/aws-cert-preflight.sh
+      - scripts/aws-cert-run.sh
+      - scripts/aws-cert-collect.sh
+  - id: SYS-004
+    c4_level: 1
+    element_type: software_system
+    name: GitHub Source Control and CI
+    description: Source-control and CI boundary for validating specs, docs, formal checks, Rust, frontend, AWS static checks, DFD, and C4 gates.
+    responsibilities:
+      - Run repository validation gates on pull requests and main branch pushes.
+      - Preserve source-controlled evidence history.
+    technology: GitHub Actions and repository source control.
+    deployment_contexts:
+      - ci
+    related_dfd_flows:
+      - DF-021
+    related_controls:
+      - CTL-CHANGE-001
+      - CTL-AUDIT-002
+    source_files:
+      - .github/workflows/ci.yml
+      - scripts/validate-all.sh
+  - id: CON-001
+    c4_level: 2
+    element_type: container
+    name: React Operator Console
+    description: Browser-based operator console for creating policies and orders, viewing order state, positions, breaks, readiness, and local development controls.
+    responsibilities:
+      - Provide operator UI workflows.
+      - Call API routes through the typed frontend client.
+    technology: React, TypeScript, Vite, TanStack Query, lucide-react.
+    deployment_contexts:
+      - local_compose
+      - local_kubernetes
+    related_dfd_flows:
+      - DF-001
+      - DF-002
+      - DF-016
+      - DF-018
+    related_controls:
+      - CTL-SEC-001
+      - CTL-PI-001
+    source_files:
+      - web/react-console/src/App.tsx
+      - web/react-console/src/api/client.ts
+      - web/react-console/package.json
+  - id: CON-002
+    c4_level: 2
+    element_type: container
+    name: Rust API Service
+    description: Axum API service exposing health, readiness, metrics, OpenAPI, policies, orders, redemptions, positions, reconciliation breaks, audit events, and local failure controls.
+    responsibilities:
+      - Validate write metadata and input.
+      - Execute persistence and domain commands.
+      - Serve read models and audit evidence.
+    technology: Rust, Axum, SQLx, tower-http, OpenAPI YAML.
+    deployment_contexts:
+      - local_compose
+      - local_kubernetes
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-001
+      - DF-002
+      - DF-003
+      - DF-004
+      - DF-005
+      - DF-016
+      - DF-017
+      - DF-018
+      - DF-025
+    related_controls:
+      - CTL-SEC-001
+      - CTL-PI-001
+      - CTL-PI-002
+      - CTL-AUDIT-001
+    source_files:
+      - services/api/src/lib.rs
+      - services/api/src/routes/mod.rs
+      - services/api/src/middleware/mod.rs
+      - spec/openapi.yaml
+  - id: CON-003
+    c4_level: 2
+    element_type: container
+    name: Rust Worker Runtime
+    description: Worker binary selected by `WORKER_KIND` for outbox publishing, transfer-agent, reconciliation, chain-watcher, and notification behavior.
+    responsibilities:
+      - Publish outbox events.
+      - Consume queues with inbox deduplication.
+      - Execute transfer-agent and reconciliation transitions.
+    technology: Rust, Tokio, SQLx, SNS/SQS clients.
+    deployment_contexts:
+      - local_compose
+      - local_kubernetes
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-006
+      - DF-007
+      - DF-009
+      - DF-010
+      - DF-011
+      - DF-012
+      - DF-013
+      - DF-014
+      - DF-015
+      - DF-022
+      - DF-023
+      - DF-025
+    related_controls:
+      - CTL-AVAIL-001
+      - CTL-AVAIL-002
+      - CTL-PI-002
+      - CTL-AUDIT-001
+    source_files:
+      - services/worker/src/main.rs
+      - services/worker/src/workers/mod.rs
+  - id: CON-004
+    c4_level: 2
+    element_type: container
+    name: Mock Transfer Agent
+    description: Deterministic local stand-in for an external transfer-agent or custodian integration.
+    responsibilities:
+      - Return confirmation references for simulation.
+      - Keep external integration behavior local and deterministic.
+    technology: Rust Axum service.
+    deployment_contexts:
+      - local_compose
+      - local_kubernetes
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-011
+      - DF-012
+    related_controls:
+      - CTL-PI-002
+      - CTL-AUDIT-001
+    source_files:
+      - services/mock-transfer-agent/src/main.rs
+      - services/mock-transfer-agent/Cargo.toml
+  - id: CON-005
+    c4_level: 2
+    element_type: container
+    name: Certifier Probe
+    description: Rust binary that reads Postgres and emits a DB invariant report for sandbox evidence.
+    responsibilities:
+      - Query duplicate, ledger, state, inbox, and outbox invariants.
+      - Emit JSON evidence.
+    technology: Rust, SQLx, serde_json.
+    deployment_contexts:
+      - aws_sandbox
+      - evidence
+    related_dfd_flows:
+      - DF-019
+      - DF-020
+    related_controls:
+      - CTL-AUDIT-002
+      - CTL-PI-003
+    source_files:
+      - services/certifier/src/main.rs
+      - services/certifier/Cargo.toml
+  - id: CON-006
+    c4_level: 2
+    element_type: container
+    name: Postgres Financial Store
+    description: Relational data store for policies, orders, state transitions, idempotency, outbox, inbox, ledger entries, positions, audit events, reconciliation breaks, and failure injection flags.
+    responsibilities:
+      - Persist restricted financial records and audit evidence.
+      - Enforce uniqueness and append-only ledger constraints.
+    technology: Postgres, SQLx migrations.
+    deployment_contexts:
+      - local_compose
+      - local_kubernetes
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-003
+      - DF-004
+      - DF-005
+      - DF-006
+      - DF-010
+      - DF-012
+      - DF-013
+      - DF-014
+      - DF-015
+      - DF-017
+      - DF-018
+      - DF-019
+    related_controls:
+      - CTL-PI-001
+      - CTL-PI-003
+      - CTL-CONF-001
+      - CTL-AUDIT-001
+    source_files:
+      - crates/persistence/migrations/20260616150400_initial.sql
+      - crates/persistence/src/repositories.rs
+      - crates/persistence/src/models.rs
+  - id: CON-007
+    c4_level: 2
+    element_type: container
+    name: Domain Events Topic
+    description: SNS topic or LocalStack SNS topic used for domain-event publication.
+    responsibilities:
+      - Receive event envelopes from the outbox publisher.
+      - Fan out events to worker queues.
+    technology: AWS SNS or LocalStack SNS.
+    deployment_contexts:
+      - local_compose
+      - local_kubernetes
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-007
+      - DF-008
+    related_controls:
+      - CTL-AVAIL-001
+      - CTL-SEC-002
+    source_files:
+      - crates/messaging/src/sns.rs
+      - scripts/localstack-init.sh
+      - infra/aws-simulation/main.tf
+  - id: CON-008
+    c4_level: 2
+    element_type: container
+    name: Worker Queues and DLQs
+    description: SQS source queues and DLQs for transfer-agent, reconciliation, chain-watcher, and notification workers.
+    responsibilities:
+      - Deliver asynchronous worker messages.
+      - Preserve retry and drain evidence.
+    technology: AWS SQS or LocalStack SQS.
+    deployment_contexts:
+      - local_compose
+      - local_kubernetes
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-008
+      - DF-009
+      - DF-010
+      - DF-023
+    related_controls:
+      - CTL-AVAIL-001
+      - CTL-SEC-002
+    source_files:
+      - crates/messaging/src/sqs.rs
+      - scripts/aws-cert-wait-queues-drained.sh
+      - infra/aws-simulation/main.tf
+  - id: CON-009
+    c4_level: 2
+    element_type: container
+    name: LocalStack SNS/SQS Emulator
+    description: Local AWS-compatible SNS/SQS emulator used in Docker Compose and Kubernetes local workflows.
+    responsibilities:
+      - Provide local-only messaging endpoints.
+      - Avoid real AWS calls in local and dev mode.
+    technology: LocalStack.
+    deployment_contexts:
+      - local_compose
+      - local_kubernetes
+    related_dfd_flows:
+      - DF-007
+      - DF-008
+      - DF-009
+    related_controls:
+      - CTL-SEC-002
+    source_files:
+      - docker-compose.yml
+      - crates/messaging/src/localstack.rs
+      - scripts/localstack-init.sh
+  - id: CON-010
+    c4_level: 2
+    element_type: container
+    name: Application Load Balancer
+    description: AWS sandbox ALB that routes HTTP test ingress to the API task.
+    responsibilities:
+      - Route sandbox API requests.
+      - Represent non-production ingress for the sandbox.
+    technology: AWS Application Load Balancer.
+    deployment_contexts:
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-001
+      - DF-002
+      - DF-016
+      - DF-018
+    related_controls:
+      - CTL-SEC-001
+      - CTL-SEC-002
+    source_files:
+      - infra/aws-simulation/main.tf
+  - id: CON-011
+    c4_level: 2
+    element_type: container
+    name: ECS Fargate API Task
+    description: AWS sandbox deployment of the Rust API service.
+    responsibilities:
+      - Serve API routes in the sandbox.
+      - Use sandbox RDS, Secrets Manager, and CloudWatch Logs.
+    technology: AWS ECS Fargate Spot task running the API image.
+    deployment_contexts:
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-001
+      - DF-002
+      - DF-003
+      - DF-004
+      - DF-005
+      - DF-016
+      - DF-017
+      - DF-024
+      - DF-025
+    related_controls:
+      - CTL-SEC-003
+      - CTL-PI-001
+      - CTL-AUDIT-001
+    source_files:
+      - infra/aws-simulation/main.tf
+      - services/api/Dockerfile
+  - id: CON-012
+    c4_level: 2
+    element_type: container
+    name: ECS Fargate Worker Tasks
+    description: AWS sandbox deployment of the worker runtime for outbox, transfer-agent, reconciliation, chain-watcher, and notification workers.
+    responsibilities:
+      - Process asynchronous event workflows in the sandbox.
+      - Produce queue, log, FIS, and recovery evidence.
+    technology: AWS ECS Fargate Spot tasks running the worker image.
+    deployment_contexts:
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-006
+      - DF-007
+      - DF-009
+      - DF-010
+      - DF-011
+      - DF-012
+      - DF-013
+      - DF-014
+      - DF-015
+      - DF-022
+      - DF-023
+      - DF-024
+      - DF-025
+    related_controls:
+      - CTL-SEC-003
+      - CTL-AVAIL-001
+      - CTL-AVAIL-002
+    source_files:
+      - infra/aws-simulation/main.tf
+      - services/worker/Dockerfile
+  - id: CON-013
+    c4_level: 2
+    element_type: container
+    name: RDS Postgres
+    description: AWS sandbox managed Postgres data store.
+    responsibilities:
+      - Persist sandbox financial records and invariant evidence.
+      - Use KMS-backed storage encryption in the sandbox.
+    technology: AWS RDS PostgreSQL.
+    deployment_contexts:
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-003
+      - DF-004
+      - DF-005
+      - DF-012
+      - DF-014
+      - DF-015
+      - DF-019
+    related_controls:
+      - CTL-SEC-003
+      - CTL-CONF-001
+      - CTL-PI-003
+    source_files:
+      - infra/aws-simulation/main.tf
+  - id: CON-014
+    c4_level: 2
+    element_type: container
+    name: Secrets Manager
+    description: AWS sandbox secret store for the database URL consumed by ECS tasks.
+    responsibilities:
+      - Provide database URL secret material to sandbox tasks.
+      - Keep secret handling inside the sandbox boundary.
+    technology: AWS Secrets Manager.
+    deployment_contexts:
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-024
+    related_controls:
+      - CTL-SEC-003
+      - CTL-CONF-001
+    source_files:
+      - infra/aws-simulation/main.tf
+  - id: CON-015
+    c4_level: 2
+    element_type: container
+    name: KMS Key
+    description: AWS sandbox KMS key used by RDS, SNS, SQS, Secrets Manager, and CloudWatch Logs resources.
+    responsibilities:
+      - Provide sandbox encryption key material and key policy.
+      - Limit service use through resource-scoped policy conditions where modeled.
+    technology: AWS KMS.
+    deployment_contexts:
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-024
+      - DF-025
+    related_controls:
+      - CTL-SEC-003
+      - CTL-CONF-001
+    source_files:
+      - infra/aws-simulation/main.tf
+  - id: CON-016
+    c4_level: 2
+    element_type: container
+    name: CloudWatch Logs
+    description: AWS sandbox logging destination for API and worker task logs.
+    responsibilities:
+      - Capture service logs.
+      - Provide evidence for sandbox review.
+    technology: AWS CloudWatch Logs.
+    deployment_contexts:
+      - aws_sandbox
+      - evidence
+    related_dfd_flows:
+      - DF-025
+    related_controls:
+      - CTL-SEC-003
+      - CTL-AUDIT-002
+    source_files:
+      - infra/aws-simulation/main.tf
+      - scripts/aws-cert-collect.sh
+  - id: CON-017
+    c4_level: 2
+    element_type: container
+    name: FIS Experiment
+    description: AWS sandbox fault-injection experiment that stops one ECS worker task during the campaign.
+    responsibilities:
+      - Exercise worker replacement behavior in the sandbox.
+      - Emit bounded availability evidence.
+    technology: AWS Fault Injection Service.
+    deployment_contexts:
+      - aws_sandbox
+      - evidence
+    related_dfd_flows:
+      - DF-022
+    related_controls:
+      - CTL-AVAIL-002
+      - CTL-IR-001
+    source_files:
+      - infra/aws-simulation/main.tf
+      - scripts/aws-cert-run.sh
+      - scripts/aws-cert-check-fis-targets.sh
+  - id: CON-018
+    c4_level: 2
+    element_type: container
+    name: Evidence Artifacts
+    description: Source-controlled docs, generated reports, certification simulation artifacts, coverage maps, and validation command output references.
+    responsibilities:
+      - Preserve machine-checkable evidence references.
+      - Support internal readiness review without external claims.
+    technology: Markdown, YAML, JSON, shell validation, generated artifacts.
+    deployment_contexts:
+      - evidence
+      - ci
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-020
+      - DF-021
+      - DF-023
+      - DF-025
+    related_controls:
+      - CTL-AUDIT-002
+      - CTL-CHANGE-001
+    source_files:
+      - docs/security/dfd/README.md
+      - docs/architecture/c4/README.md
+      - spec/refinement/repo_surface_coverage_map.json
+  - id: CMP-001
+    c4_level: 3
+    element_type: component
+    name: Axum Router
+    description: API router that composes health, readiness, metrics, OpenAPI, write, read, audit, and dev routes.
+    responsibilities:
+      - Dispatch API requests.
+      - Attach shared app state and HTTP layers.
+    technology: Rust Axum and tower-http.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-001
+      - DF-002
+      - DF-016
+      - DF-018
+    related_controls:
+      - CTL-SEC-001
+    source_files:
+      - services/api/src/lib.rs
+      - services/api/src/routes/mod.rs
+  - id: CMP-002
+    c4_level: 3
+    element_type: component
+    name: Write Header Middleware
+    description: Header validation for idempotency and correlation metadata on write routes.
+    responsibilities:
+      - Require write request metadata.
+      - Feed idempotency and audit traceability.
+    technology: Rust Axum header parsing.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-001
+      - DF-002
+      - DF-016
+      - DF-018
+    related_controls:
+      - CTL-SEC-001
+      - CTL-PI-001
+    source_files:
+      - services/api/src/middleware/mod.rs
+      - spec/openapi.yaml
+  - id: CMP-003
+    c4_level: 3
+    element_type: component
+    name: OpenAPI Handler
+    description: API route that serves the repository OpenAPI contract.
+    responsibilities:
+      - Expose API contract for local inspection.
+      - Bind runtime and specification evidence.
+    technology: Rust include_str and YAML response.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-021
+    related_controls:
+      - CTL-CHANGE-001
+    source_files:
+      - services/api/src/openapi.rs
+      - spec/openapi.yaml
+  - id: CMP-004
+    c4_level: 3
+    element_type: component
+    name: Policy and Order Routes
+    description: API handlers for sweep policies and sweep order creation and retrieval.
+    responsibilities:
+      - Accept policy and order requests.
+      - Call persistence write paths and response mappers.
+    technology: Rust Axum handlers.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-001
+      - DF-002
+      - DF-003
+      - DF-004
+      - DF-005
+    related_controls:
+      - CTL-PI-001
+      - CTL-AUDIT-001
+    source_files:
+      - services/api/src/routes/mod.rs
+      - crates/persistence/src/repositories.rs
+  - id: CMP-005
+    c4_level: 3
+    element_type: component
+    name: Command and Redemption Routes
+    description: API handlers for approval, cancellation, redemption request, and command application flows.
+    responsibilities:
+      - Execute domain commands through persistence.
+      - Preserve idempotency for write commands.
+    technology: Rust Axum handlers and domain commands.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-015
+      - DF-016
+      - DF-017
+    related_controls:
+      - CTL-PI-001
+      - CTL-PI-002
+    source_files:
+      - services/api/src/routes/mod.rs
+      - crates/domain/src/sweep.rs
+  - id: CMP-006
+    c4_level: 3
+    element_type: component
+    name: Read, Audit, and Dev Routes
+    description: API handlers for positions, income, reconciliation breaks, audit events, readiness, metrics, and local failure controls.
+    responsibilities:
+      - Serve operational views.
+      - Enable bounded local failure injection.
+    technology: Rust Axum handlers and SQLx reads.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-018
+      - DF-019
+      - DF-025
+    related_controls:
+      - CTL-AUDIT-001
+      - CTL-IR-001
+    source_files:
+      - services/api/src/routes/mod.rs
+      - crates/persistence/src/repositories.rs
+  - id: CMP-007
+    c4_level: 3
+    element_type: component
+    name: Persistence Repository Facade
+    description: SQLx repository layer that owns transactional policy, order, command, ledger, reconciliation, audit, idempotency, outbox, and inbox operations.
+    responsibilities:
+      - Coordinate database writes with domain events.
+      - Call the domain transition kernel rather than mutating order status directly.
+    technology: Rust SQLx repositories.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-003
+      - DF-004
+      - DF-005
+      - DF-006
+      - DF-010
+      - DF-012
+      - DF-013
+      - DF-014
+      - DF-015
+      - DF-017
+      - DF-018
+    related_controls:
+      - CTL-PI-001
+      - CTL-PI-002
+      - CTL-PI-003
+      - CTL-AUDIT-001
+    source_files:
+      - crates/persistence/src/repositories.rs
+      - crates/persistence/src/models.rs
+  - id: CMP-008
+    c4_level: 3
+    element_type: component
+    name: Domain Transition Kernel
+    description: Rust domain state machine for sweep order commands and transitions.
+    responsibilities:
+      - Enforce valid status transitions.
+      - Emit expected domain event kinds and guard results.
+    technology: Rust domain crate.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+      - ci
+    related_dfd_flows:
+      - DF-012
+      - DF-013
+      - DF-015
+      - DF-017
+    related_controls:
+      - CTL-PI-002
+      - CTL-AUDIT-001
+    source_files:
+      - crates/domain/src/sweep.rs
+      - crates/domain/tests/sweep_state_machine_tests.rs
+      - spec/domain/sweep_order.machine.yaml
+  - id: CMP-009
+    c4_level: 3
+    element_type: component
+    name: Domain Asset and Guard Checks
+    description: Domain invariants for asset eligibility, FIDD cash-rail handling, transfer-agent confirmation checks, and financial guard conditions.
+    responsibilities:
+      - Reject unsupported yield source behavior.
+      - Validate guard preconditions for state transitions.
+    technology: Rust domain crate.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+      - ci
+    related_dfd_flows:
+      - DF-002
+      - DF-011
+      - DF-012
+      - DF-015
+    related_controls:
+      - CTL-PI-002
+      - CTL-PI-003
+    source_files:
+      - crates/domain/src/asset.rs
+      - crates/domain/src/invariants.rs
+      - crates/domain/src/ledger.rs
+  - id: CMP-010
+    c4_level: 3
+    element_type: component
+    name: Idempotency Store
+    description: Persistence component for request key hashes, request hashes, resource IDs, and replay-safe responses.
+    responsibilities:
+      - Enforce duplicate request handling.
+      - Detect conflicting replays.
+    technology: Rust SQLx and Postgres constraints.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-003
+      - DF-010
+      - DF-017
+    related_controls:
+      - CTL-PI-001
+    source_files:
+      - crates/persistence/src/idempotency.rs
+      - crates/persistence/migrations/20260616150400_initial.sql
+  - id: CMP-011
+    c4_level: 3
+    element_type: component
+    name: Outbox Store
+    description: Persistence component for transactional event records and lease/publish status.
+    responsibilities:
+      - Store events in the database transaction.
+      - Lease, mark published, and mark failed outbox rows.
+    technology: Rust SQLx and Postgres.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-005
+      - DF-006
+      - DF-007
+    related_controls:
+      - CTL-AVAIL-001
+      - CTL-AUDIT-001
+    source_files:
+      - crates/persistence/src/outbox.rs
+      - crates/persistence/migrations/20260616150400_initial.sql
+  - id: CMP-012
+    c4_level: 3
+    element_type: component
+    name: Inbox Store
+    description: Persistence component for worker message deduplication.
+    responsibilities:
+      - Record consumer and message IDs.
+      - Prevent duplicate worker side effects.
+    technology: Rust SQLx and Postgres constraints.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-009
+      - DF-010
+    related_controls:
+      - CTL-AVAIL-001
+      - CTL-PI-001
+    source_files:
+      - crates/persistence/src/inbox.rs
+      - crates/persistence/migrations/20260616150400_initial.sql
+  - id: CMP-013
+    c4_level: 3
+    element_type: component
+    name: Ledger and Position Store
+    description: Persistence component for financial ledger entries and positions.
+    responsibilities:
+      - Write balanced ledger entries.
+      - Enforce one position per order and append-only ledger behavior.
+    technology: Rust SQLx and Postgres triggers/constraints.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-012
+      - DF-014
+      - DF-017
+    related_controls:
+      - CTL-PI-003
+      - CTL-CONF-001
+    source_files:
+      - crates/domain/src/ledger.rs
+      - crates/persistence/src/repositories.rs
+      - crates/persistence/migrations/20260616150400_initial.sql
+  - id: CMP-014
+    c4_level: 3
+    element_type: component
+    name: Audit and Transition Store
+    description: Persistence component for state transitions and audit events.
+    responsibilities:
+      - Record transition history.
+      - Persist domain audit event envelopes.
+    technology: Rust SQLx and Postgres.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-005
+      - DF-015
+      - DF-018
+    related_controls:
+      - CTL-AUDIT-001
+      - CTL-AUDIT-002
+    source_files:
+      - crates/persistence/src/repositories.rs
+      - crates/domain/src/events.rs
+  - id: CMP-015
+    c4_level: 3
+    element_type: component
+    name: SNS Publisher Adapter
+    description: Messaging adapter that publishes event envelopes to SNS or LocalStack SNS.
+    responsibilities:
+      - Serialize event envelopes.
+      - Publish to the configured domain-events topic.
+    technology: Rust AWS SDK SNS client.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-007
+    related_controls:
+      - CTL-AVAIL-001
+      - CTL-SEC-002
+    source_files:
+      - crates/messaging/src/sns.rs
+      - crates/messaging/src/envelope.rs
+  - id: CMP-016
+    c4_level: 3
+    element_type: component
+    name: SQS Consumer Adapter
+    description: Messaging adapter that receives and deletes SQS messages.
+    responsibilities:
+      - Poll worker queues.
+      - Support retry/delete disposition after processing.
+    technology: Rust AWS SDK SQS client.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-009
+      - DF-010
+      - DF-023
+    related_controls:
+      - CTL-AVAIL-001
+    source_files:
+      - crates/messaging/src/sqs.rs
+      - services/worker/src/workers/mod.rs
+  - id: CMP-017
+    c4_level: 3
+    element_type: component
+    name: Outbox Publisher Worker
+    description: Worker component that leases pending outbox rows, publishes valid envelopes, and marks rows published or failed.
+    responsibilities:
+      - Bridge database outbox records to the messaging topic.
+      - Preserve retry evidence.
+    technology: Rust worker runtime.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-006
+      - DF-007
+    related_controls:
+      - CTL-AVAIL-001
+      - CTL-AUDIT-001
+    source_files:
+      - services/worker/src/workers/mod.rs
+      - crates/persistence/src/outbox.rs
+  - id: CMP-018
+    c4_level: 3
+    element_type: component
+    name: Transfer-Agent Worker
+    description: Worker component that processes created orders through eligibility, approval, cash lock, subscription submission, transfer-agent confirmation, and position booking.
+    responsibilities:
+      - Process transfer-agent queue messages.
+      - Call mock transfer agent and write position/ledger results.
+    technology: Rust worker runtime and reqwest.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-009
+      - DF-010
+      - DF-011
+      - DF-012
+      - DF-014
+      - DF-015
+    related_controls:
+      - CTL-PI-002
+      - CTL-PI-003
+    source_files:
+      - services/worker/src/workers/mod.rs
+  - id: CMP-019
+    c4_level: 3
+    element_type: component
+    name: Reconciliation Worker
+    description: Worker component that reconciles booked positions, opens exceptions during injected mismatch mode, and activates reconciled orders.
+    responsibilities:
+      - Process reconciliation queue messages.
+      - Apply reconciliation, activation, or exception commands.
+    technology: Rust worker runtime.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-009
+      - DF-010
+      - DF-013
+      - DF-018
+    related_controls:
+      - CTL-PI-002
+      - CTL-IR-001
+    source_files:
+      - services/worker/src/workers/mod.rs
+      - scripts/smoke-failure-paths.sh
+  - id: CMP-020
+    c4_level: 3
+    element_type: component
+    name: Chain-Watcher Worker
+    description: Worker component that consumes chain-watcher messages and records that local FYOXX flow does not require chain mirror behavior.
+    responsibilities:
+      - Consume chain-watcher queue messages.
+      - Keep local chain watcher behavior bounded.
+    technology: Rust worker runtime.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-009
+      - DF-010
+    related_controls:
+      - CTL-AVAIL-001
+    source_files:
+      - services/worker/src/workers/mod.rs
+  - id: CMP-021
+    c4_level: 3
+    element_type: component
+    name: Notification Worker
+    description: Worker component that consumes notification queue messages and records projection log output.
+    responsibilities:
+      - Consume notification queue messages.
+      - Produce notification projection trace output.
+    technology: Rust worker runtime.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+    related_dfd_flows:
+      - DF-009
+      - DF-010
+      - DF-025
+    related_controls:
+      - CTL-AVAIL-001
+      - CTL-AUDIT-002
+    source_files:
+      - services/worker/src/workers/mod.rs
+  - id: CMP-022
+    c4_level: 3
+    element_type: component
+    name: Certifier DB Invariant Probe
+    description: Component view of the certifier binary that queries Postgres invariant checks and emits JSON evidence.
+    responsibilities:
+      - Check idempotency, positions, ledger, inbox, outbox, and state-transition invariants.
+      - Fail when DB invariant checks fail.
+    technology: Rust SQLx and serde_json.
+    deployment_contexts:
+      - aws_sandbox
+      - ci
+      - evidence
+    related_dfd_flows:
+      - DF-019
+      - DF-020
+    related_controls:
+      - CTL-AUDIT-002
+      - CTL-PI-003
+    source_files:
+      - services/certifier/src/main.rs
+  - id: CMP-023
+    c4_level: 3
+    element_type: component
+    name: React Query Client
+    description: Frontend API client and query layer for console read and write operations.
+    responsibilities:
+      - Send API requests with required metadata.
+      - Poll health, readiness, orders, positions, and breaks.
+    technology: TypeScript, fetch, TanStack Query.
+    deployment_contexts:
+      - local_compose
+      - local_kubernetes
+    related_dfd_flows:
+      - DF-001
+      - DF-002
+      - DF-016
+      - DF-018
+    related_controls:
+      - CTL-SEC-001
+      - CTL-PI-001
+    source_files:
+      - web/react-console/src/api/client.ts
+      - web/react-console/src/App.tsx
+  - id: MOD-001
+    c4_level: source_evidence
+    element_type: module
+    name: Sweep State Machine Spec
+    description: YAML state-machine contract for domain transitions.
+    responsibilities:
+      - Document allowed states and transition evidence.
+      - Support drift validation between specification and implementation.
+    technology: YAML specification.
+    deployment_contexts:
+      - ci
+      - evidence
+    related_dfd_flows:
+      - DF-015
+      - DF-017
+    related_controls:
+      - CTL-PI-002
+      - CTL-CHANGE-001
+    source_files:
+      - spec/domain/sweep_order.machine.yaml
+  - id: MOD-002
+    c4_level: source_evidence
+    element_type: module
+    name: Initial SQL Migration
+    description: SQL migration that defines financial tables, uniqueness constraints, outbox/inbox storage, audit records, and ledger append-only enforcement.
+    responsibilities:
+      - Define database structure.
+      - Enforce persistence invariants that are available at the database layer.
+    technology: SQL migration.
+    deployment_contexts:
+      - local_compose
+      - aws_sandbox
+      - ci
+      - evidence
+    related_dfd_flows:
+      - DF-003
+      - DF-004
+      - DF-005
+      - DF-010
+      - DF-012
+      - DF-014
+      - DF-015
+    related_controls:
+      - CTL-PI-001
+      - CTL-PI-003
+      - CTL-AUDIT-001
+    source_files:
+      - crates/persistence/migrations/20260616150400_initial.sql

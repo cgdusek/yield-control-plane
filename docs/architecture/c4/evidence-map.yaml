@@ -1,0 +1,296 @@
+schema_version: "1.0.0"
+catalog: yield-control-plane-c4-evidence-map
+source_of_truth: docs/architecture/c4/evidence-map.yaml
+evidence_items:
+  - id: EVD-C4-001
+    name: System context traceability
+    description: C4 Level 1 actors, external systems, and evidence boundary are linked to DFD flows and source files.
+    related_elements:
+      - PER-001
+      - PER-002
+      - SYS-001
+      - SYS-002
+      - SYS-003
+      - SYS-004
+      - CON-018
+    related_relationships:
+      - REL-001
+      - REL-002
+      - REL-003
+      - REL-004
+      - REL-005
+      - REL-006
+    related_dfd_controls:
+      - CTL-SEC-001
+      - CTL-SEC-002
+      - CTL-AUDIT-002
+      - CTL-CHANGE-001
+    validation_commands:
+      - make validate-c4
+    source_files:
+      - docs/architecture/c4/c4-00-system-context.md
+      - docs/architecture/c4/model-elements.yaml
+      - docs/architecture/c4/relationships.yaml
+    residual_gaps:
+      - External packet polish exports are outside this repo.
+  - id: EVD-C4-002
+    name: Local runtime container traceability
+    description: Local runtime containers are mapped to Compose, API, worker, persistence, messaging, and mock transfer-agent source files.
+    related_elements:
+      - CON-001
+      - CON-002
+      - CON-003
+      - CON-004
+      - CON-005
+      - CON-006
+      - CON-007
+      - CON-008
+      - CON-009
+    related_relationships:
+      - REL-007
+      - REL-008
+      - REL-009
+      - REL-010
+      - REL-011
+      - REL-012
+      - REL-013
+      - REL-014
+      - REL-015
+      - REL-016
+      - REL-017
+    related_dfd_controls:
+      - CTL-PI-001
+      - CTL-PI-002
+      - CTL-PI-003
+      - CTL-AVAIL-001
+      - CTL-AUDIT-001
+    validation_commands:
+      - make validate-c4
+      - make smoke
+      - make smoke-failure-paths
+    source_files:
+      - docs/architecture/c4/c4-01-local-runtime-containers.md
+      - docker-compose.yml
+      - scripts/smoke-create-sweep.sh
+      - scripts/smoke-failure-paths.sh
+    residual_gaps:
+      - Local runtime evidence is simulation evidence only.
+  - id: EVD-C4-003
+    name: AWS sandbox container traceability
+    description: AWS sandbox C4 containers are mapped to the non-production OpenTofu and sandbox script surface.
+    related_elements:
+      - SYS-003
+      - CON-010
+      - CON-011
+      - CON-012
+      - CON-013
+      - CON-014
+      - CON-015
+      - CON-016
+      - CON-017
+      - CON-018
+    related_relationships:
+      - REL-018
+      - REL-019
+      - REL-020
+      - REL-021
+      - REL-022
+      - REL-023
+      - REL-024
+      - REL-025
+      - REL-026
+      - REL-027
+      - REL-028
+      - REL-029
+      - REL-030
+      - REL-031
+      - REL-032
+      - REL-033
+      - REL-034
+    related_dfd_controls:
+      - CTL-SEC-002
+      - CTL-SEC-003
+      - CTL-AVAIL-002
+      - CTL-AUDIT-002
+    validation_commands:
+      - make validate-aws-certification
+      - make validate-c4
+    source_files:
+      - docs/architecture/c4/c4-02-aws-sandbox-containers.md
+      - infra/aws-simulation/main.tf
+      - scripts/aws-cert-run.sh
+      - scripts/aws-cert-collect.sh
+    residual_gaps:
+      - Production account architecture and organization-level controls are outside this repo.
+  - id: EVD-C4-004
+    name: API component traceability
+    description: API components are mapped to routes, middleware, OpenAPI, domain, and persistence source files.
+    related_elements:
+      - CMP-001
+      - CMP-002
+      - CMP-003
+      - CMP-004
+      - CMP-005
+      - CMP-006
+      - CMP-007
+      - CMP-008
+      - CMP-009
+      - CON-006
+    related_relationships:
+      - REL-035
+      - REL-036
+      - REL-037
+      - REL-038
+      - REL-039
+      - REL-040
+      - REL-041
+      - REL-042
+      - REL-043
+      - REL-044
+      - REL-045
+    related_dfd_controls:
+      - CTL-SEC-001
+      - CTL-PI-001
+      - CTL-PI-002
+      - CTL-AUDIT-001
+    validation_commands:
+      - make validate-c4
+      - make validate-specs
+    source_files:
+      - docs/architecture/c4/c4-03-api-components.md
+      - services/api/src/routes/mod.rs
+      - services/api/src/middleware/mod.rs
+      - spec/openapi.yaml
+    residual_gaps:
+      - Production authentication and authorization modules are outside this repo.
+  - id: EVD-C4-005
+    name: Worker component traceability
+    description: Worker components are mapped to outbox, SNS/SQS, inbox, transfer-agent, reconciliation, and SQL effects.
+    related_elements:
+      - CMP-015
+      - CMP-016
+      - CMP-017
+      - CMP-018
+      - CMP-019
+      - CMP-020
+      - CMP-021
+      - CMP-007
+      - CON-004
+      - CON-006
+      - CON-007
+      - CON-008
+    related_relationships:
+      - REL-046
+      - REL-047
+      - REL-048
+      - REL-049
+      - REL-050
+      - REL-051
+      - REL-052
+      - REL-053
+      - REL-054
+      - REL-055
+      - REL-056
+      - REL-057
+      - REL-058
+    related_dfd_controls:
+      - CTL-AVAIL-001
+      - CTL-PI-002
+      - CTL-PI-003
+      - CTL-AUDIT-001
+    validation_commands:
+      - make validate-c4
+      - make test
+    source_files:
+      - docs/architecture/c4/c4-04-worker-components.md
+      - services/worker/src/workers/mod.rs
+      - crates/messaging/src/sns.rs
+      - crates/messaging/src/sqs.rs
+    residual_gaps:
+      - Production scaling and on-call response procedures are outside this repo.
+  - id: EVD-C4-006
+    name: Persistence and domain traceability
+    description: Domain and persistence components are mapped to state-machine, SQL migration, repositories, idempotency, outbox, inbox, ledger, and audit code.
+    related_elements:
+      - CMP-007
+      - CMP-008
+      - CMP-009
+      - CMP-010
+      - CMP-011
+      - CMP-012
+      - CMP-013
+      - CMP-014
+      - MOD-001
+      - MOD-002
+      - CON-006
+    related_relationships:
+      - REL-059
+      - REL-060
+      - REL-061
+      - REL-062
+      - REL-063
+      - REL-064
+      - REL-065
+      - REL-066
+      - REL-067
+      - REL-068
+      - REL-069
+      - REL-070
+      - REL-071
+      - REL-072
+    related_dfd_controls:
+      - CTL-PI-001
+      - CTL-PI-002
+      - CTL-PI-003
+      - CTL-AUDIT-001
+      - CTL-CONF-001
+    validation_commands:
+      - make validate-c4
+      - make validate-specs
+      - make test
+    source_files:
+      - docs/architecture/c4/c4-05-persistence-domain-components.md
+      - spec/domain/sweep_order.machine.yaml
+      - crates/persistence/migrations/20260616150400_initial.sql
+      - crates/domain/src/sweep.rs
+    residual_gaps:
+      - C4 Level 4 code diagrams are deferred in favor of source-file evidence references.
+  - id: EVD-C4-007
+    name: CI and evidence operations traceability
+    description: CI, certifier, AWS sandbox, queue drain, FIS, log, and evidence-review relationships are mapped to validation commands and source files.
+    related_elements:
+      - PER-002
+      - SYS-003
+      - SYS-004
+      - CON-006
+      - CON-008
+      - CON-016
+      - CON-017
+      - CON-018
+      - CMP-022
+    related_relationships:
+      - REL-073
+      - REL-074
+      - REL-075
+      - REL-076
+      - REL-077
+      - REL-078
+      - REL-079
+      - REL-080
+      - REL-081
+      - REL-082
+    related_dfd_controls:
+      - CTL-CHANGE-001
+      - CTL-AUDIT-002
+      - CTL-AVAIL-002
+      - CTL-SEC-002
+    validation_commands:
+      - make validate-c4
+      - make validate
+    source_files:
+      - docs/architecture/c4/c4-06-ci-evidence-operations.md
+      - .github/workflows/ci.yml
+      - services/certifier/src/main.rs
+      - scripts/aws-cert-collect.sh
+    residual_gaps:
+      - External management assertion and private evidence-room processes are outside this repo.

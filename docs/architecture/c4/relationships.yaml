@@ -1,0 +1,742 @@
+schema_version: "1.0.0"
+catalog: yield-control-plane-c4-relationships
+source_of_truth: docs/architecture/c4/relationships.yaml
+relationships:
+  - id: REL-001
+    source: PER-001
+    destination: SYS-001
+    description: Operator uses the system for policy, order, redemption, and exception workflows.
+    protocol_or_mechanism: Browser or HTTP client workflow.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-001, DF-002, DF-016, DF-018]
+    related_diagrams: [c4-00-system-context.md]
+    source_files: [README.md, scripts/smoke-create-sweep.sh, scripts/smoke-failure-paths.sh]
+  - id: REL-002
+    source: PER-002
+    destination: SYS-001
+    description: Platform engineer maintains source, validates gates, and reviews generated evidence.
+    protocol_or_mechanism: Git, Makefile, shell validators, and documentation review.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-020, DF-021]
+    related_diagrams: [c4-00-system-context.md]
+    source_files: [AGENTS.md, Makefile, scripts/validate-all.sh]
+  - id: REL-003
+    source: SYS-001
+    destination: SYS-002
+    description: System calls a transfer-agent style interface represented by the mock service.
+    protocol_or_mechanism: HTTP JSON request from worker to mock service.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-011, DF-012]
+    related_diagrams: [c4-00-system-context.md]
+    source_files: [services/worker/src/workers/mod.rs, services/mock-transfer-agent/src/main.rs]
+  - id: REL-004
+    source: SYS-001
+    destination: SYS-003
+    description: System is deployed into the opt-in non-production AWS sandbox for bounded evidence collection.
+    protocol_or_mechanism: AWS sandbox scripts and OpenTofu-managed resources.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-020, DF-022, DF-023, DF-024, DF-025]
+    related_diagrams: [c4-00-system-context.md]
+    source_files: [infra/aws-simulation/main.tf, scripts/aws-cert-run.sh, scripts/aws-cert-collect.sh]
+  - id: REL-005
+    source: SYS-004
+    destination: SYS-001
+    description: CI validates the repository source and docs-as-code evidence.
+    protocol_or_mechanism: GitHub Actions running make validate.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-021]
+    related_diagrams: [c4-00-system-context.md]
+    source_files: [.github/workflows/ci.yml, scripts/validate-all.sh]
+  - id: REL-006
+    source: SYS-001
+    destination: CON-018
+    description: System emits architecture, validation, and control evidence artifacts.
+    protocol_or_mechanism: Markdown, YAML, JSON, shell command output, and generated reports.
+    interaction_mode: asynchronous
+    related_dfd_flows: [DF-020, DF-021]
+    related_diagrams: [c4-00-system-context.md]
+    source_files: [docs/security/dfd/README.md, docs/architecture/c4/README.md, spec/refinement/repo_surface_coverage_map.json]
+  - id: REL-007
+    source: PER-001
+    destination: CON-001
+    description: Operator uses the React console UI.
+    protocol_or_mechanism: Browser session against local console.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-001, DF-002, DF-016, DF-018]
+    related_diagrams: [c4-01-local-runtime-containers.md]
+    source_files: [web/react-console/src/App.tsx]
+  - id: REL-008
+    source: CON-001
+    destination: CON-002
+    description: React console calls API JSON routes.
+    protocol_or_mechanism: HTTP JSON through Vite proxy or local API URL.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-001, DF-002, DF-016, DF-018]
+    related_diagrams: [c4-01-local-runtime-containers.md]
+    source_files: [web/react-console/src/api/client.ts, services/api/src/routes/mod.rs]
+  - id: REL-009
+    source: PER-001
+    destination: CON-002
+    description: Operator or smoke scripts call API endpoints directly.
+    protocol_or_mechanism: HTTP JSON and shell scripts.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-001, DF-002, DF-016, DF-018]
+    related_diagrams: [c4-01-local-runtime-containers.md]
+    source_files: [scripts/smoke-create-sweep.sh, scripts/smoke-failure-paths.sh, spec/openapi.yaml]
+  - id: REL-010
+    source: CON-002
+    destination: CON-006
+    description: API persists policies, orders, outbox events, commands, ledger entries, and audit records.
+    protocol_or_mechanism: SQLx transaction over Postgres connection.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-003, DF-004, DF-005, DF-015, DF-017]
+    related_diagrams: [c4-01-local-runtime-containers.md]
+    source_files: [crates/persistence/src/repositories.rs, crates/persistence/migrations/20260616150400_initial.sql]
+  - id: REL-011
+    source: CON-003
+    destination: CON-006
+    description: Workers lease outbox rows, record inbox rows, and write workflow state.
+    protocol_or_mechanism: SQLx queries and transactions.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-006, DF-010, DF-012, DF-013, DF-014, DF-015, DF-018]
+    related_diagrams: [c4-01-local-runtime-containers.md]
+    source_files: [services/worker/src/workers/mod.rs, crates/persistence/src/repositories.rs]
+  - id: REL-012
+    source: CON-003
+    destination: CON-007
+    description: Outbox publisher publishes domain event envelopes.
+    protocol_or_mechanism: SNS Publish.
+    interaction_mode: asynchronous
+    related_dfd_flows: [DF-007]
+    related_diagrams: [c4-01-local-runtime-containers.md]
+    source_files: [services/worker/src/workers/mod.rs, crates/messaging/src/sns.rs]
+  - id: REL-013
+    source: CON-007
+    destination: CON-008
+    description: Domain events topic fans events out to worker queues.
+    protocol_or_mechanism: SNS subscription to SQS queues.
+    interaction_mode: asynchronous
+    related_dfd_flows: [DF-008]
+    related_diagrams: [c4-01-local-runtime-containers.md]
+    source_files: [scripts/localstack-init.sh, infra/aws-simulation/main.tf]
+  - id: REL-014
+    source: CON-003
+    destination: CON-008
+    description: Worker runtime polls source queues and deletes processed messages.
+    protocol_or_mechanism: SQS ReceiveMessage and DeleteMessage.
+    interaction_mode: asynchronous
+    related_dfd_flows: [DF-009, DF-010, DF-023]
+    related_diagrams: [c4-01-local-runtime-containers.md]
+    source_files: [services/worker/src/workers/mod.rs, crates/messaging/src/sqs.rs]
+  - id: REL-015
+    source: CON-003
+    destination: CON-004
+    description: Transfer-agent worker requests deterministic confirmation.
+    protocol_or_mechanism: HTTP JSON request.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-011]
+    related_diagrams: [c4-01-local-runtime-containers.md]
+    source_files: [services/worker/src/workers/mod.rs, services/mock-transfer-agent/src/main.rs]
+  - id: REL-016
+    source: CON-004
+    destination: CON-003
+    description: Mock transfer agent returns confirmation reference to the worker.
+    protocol_or_mechanism: HTTP JSON response.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-011, DF-012]
+    related_diagrams: [c4-01-local-runtime-containers.md]
+    source_files: [services/mock-transfer-agent/src/main.rs, services/worker/src/workers/mod.rs]
+  - id: REL-017
+    source: CON-005
+    destination: CON-006
+    description: Certifier reads database invariant evidence.
+    protocol_or_mechanism: SQLx read queries.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-019]
+    related_diagrams: [c4-01-local-runtime-containers.md]
+    source_files: [services/certifier/src/main.rs]
+  - id: REL-018
+    source: PER-001
+    destination: CON-010
+    description: Operator or sandbox smoke script sends API request through ALB.
+    protocol_or_mechanism: HTTP request in non-production sandbox.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-001, DF-002, DF-016, DF-018]
+    related_diagrams: [c4-02-aws-sandbox-containers.md]
+    source_files: [scripts/aws-cert-run.sh, infra/aws-simulation/main.tf]
+  - id: REL-019
+    source: CON-010
+    destination: CON-011
+    description: ALB routes HTTP test ingress to the API task.
+    protocol_or_mechanism: ALB target group routing.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-001, DF-002, DF-016, DF-018]
+    related_diagrams: [c4-02-aws-sandbox-containers.md]
+    source_files: [infra/aws-simulation/main.tf]
+  - id: REL-020
+    source: CON-011
+    destination: CON-013
+    description: API task uses RDS for financial records.
+    protocol_or_mechanism: PostgreSQL connection from ECS task security group.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-003, DF-004, DF-005, DF-015, DF-017]
+    related_diagrams: [c4-02-aws-sandbox-containers.md]
+    source_files: [infra/aws-simulation/main.tf, crates/persistence/src/db.rs]
+  - id: REL-021
+    source: CON-012
+    destination: CON-013
+    description: Worker tasks use RDS for outbox, inbox, command, ledger, and audit state.
+    protocol_or_mechanism: PostgreSQL connection from ECS task security group.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-006, DF-010, DF-012, DF-013, DF-014, DF-015, DF-018]
+    related_diagrams: [c4-02-aws-sandbox-containers.md]
+    source_files: [infra/aws-simulation/main.tf, services/worker/src/workers/mod.rs]
+  - id: REL-022
+    source: CON-012
+    destination: CON-007
+    description: Sandbox outbox worker publishes events to SNS.
+    protocol_or_mechanism: SNS Publish with task role permissions.
+    interaction_mode: asynchronous
+    related_dfd_flows: [DF-007]
+    related_diagrams: [c4-02-aws-sandbox-containers.md]
+    source_files: [infra/aws-simulation/main.tf, services/worker/src/workers/mod.rs]
+  - id: REL-023
+    source: CON-007
+    destination: CON-008
+    description: SNS delivers sandbox events to encrypted SQS queues.
+    protocol_or_mechanism: SNS to SQS subscription.
+    interaction_mode: asynchronous
+    related_dfd_flows: [DF-008]
+    related_diagrams: [c4-02-aws-sandbox-containers.md]
+    source_files: [infra/aws-simulation/main.tf]
+  - id: REL-024
+    source: CON-012
+    destination: CON-008
+    description: Worker tasks poll sandbox queues and delete processed messages.
+    protocol_or_mechanism: SQS ReceiveMessage and DeleteMessage.
+    interaction_mode: asynchronous
+    related_dfd_flows: [DF-009, DF-010, DF-023]
+    related_diagrams: [c4-02-aws-sandbox-containers.md]
+    source_files: [infra/aws-simulation/main.tf, services/worker/src/workers/mod.rs]
+  - id: REL-025
+    source: CON-012
+    destination: CON-004
+    description: Sandbox transfer-agent worker calls mock transfer-agent task.
+    protocol_or_mechanism: HTTP JSON inside ECS task security group.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-011]
+    related_diagrams: [c4-02-aws-sandbox-containers.md]
+    source_files: [infra/aws-simulation/main.tf, services/worker/src/workers/mod.rs]
+  - id: REL-026
+    source: CON-014
+    destination: CON-011
+    description: Secrets Manager provides database URL to API task.
+    protocol_or_mechanism: ECS secret injection.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-024]
+    related_diagrams: [c4-02-aws-sandbox-containers.md]
+    source_files: [infra/aws-simulation/main.tf]
+  - id: REL-027
+    source: CON-014
+    destination: CON-012
+    description: Secrets Manager provides database URL to worker tasks.
+    protocol_or_mechanism: ECS secret injection.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-024]
+    related_diagrams: [c4-02-aws-sandbox-containers.md]
+    source_files: [infra/aws-simulation/main.tf]
+  - id: REL-028
+    source: CON-011
+    destination: CON-016
+    description: API task emits logs to CloudWatch Logs.
+    protocol_or_mechanism: ECS awslogs driver.
+    interaction_mode: asynchronous
+    related_dfd_flows: [DF-025]
+    related_diagrams: [c4-02-aws-sandbox-containers.md]
+    source_files: [infra/aws-simulation/main.tf]
+  - id: REL-029
+    source: CON-012
+    destination: CON-016
+    description: Worker tasks emit logs to CloudWatch Logs.
+    protocol_or_mechanism: ECS awslogs driver.
+    interaction_mode: asynchronous
+    related_dfd_flows: [DF-025]
+    related_diagrams: [c4-02-aws-sandbox-containers.md]
+    source_files: [infra/aws-simulation/main.tf]
+  - id: REL-030
+    source: CON-015
+    destination: CON-013
+    description: KMS key protects sandbox RDS storage.
+    protocol_or_mechanism: AWS KMS storage encryption.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-024]
+    related_diagrams: [c4-02-aws-sandbox-containers.md]
+    source_files: [infra/aws-simulation/main.tf]
+  - id: REL-031
+    source: CON-017
+    destination: CON-012
+    description: FIS experiment stops one worker task during the sandbox campaign.
+    protocol_or_mechanism: AWS FIS ECS stop-task action.
+    interaction_mode: asynchronous
+    related_dfd_flows: [DF-022]
+    related_diagrams: [c4-02-aws-sandbox-containers.md]
+    source_files: [infra/aws-simulation/main.tf, scripts/aws-cert-run.sh]
+  - id: REL-032
+    source: PER-002
+    destination: CON-018
+    description: Platform engineer collects sandbox evidence artifacts.
+    protocol_or_mechanism: Shell scripts and local artifact directory.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-020]
+    related_diagrams: [c4-02-aws-sandbox-containers.md]
+    source_files: [scripts/aws-cert-collect.sh, docs/runbooks/aws-simulation.md]
+  - id: REL-033
+    source: CON-016
+    destination: CON-018
+    description: CloudWatch Logs provide sandbox log evidence.
+    protocol_or_mechanism: AWS logs collection through evidence scripts.
+    interaction_mode: asynchronous
+    related_dfd_flows: [DF-025]
+    related_diagrams: [c4-02-aws-sandbox-containers.md]
+    source_files: [scripts/aws-cert-collect.sh, infra/aws-simulation/main.tf]
+  - id: REL-034
+    source: CON-008
+    destination: CON-018
+    description: Queue and DLQ attributes provide drain evidence.
+    protocol_or_mechanism: SQS attribute inspection.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-023]
+    related_diagrams: [c4-02-aws-sandbox-containers.md]
+    source_files: [scripts/aws-cert-wait-queues-drained.sh, scripts/aws-cert-collect.sh]
+  - id: REL-035
+    source: CMP-001
+    destination: CMP-002
+    description: Router applies required write-header metadata behavior.
+    protocol_or_mechanism: Axum handler and HeaderMap parsing.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-001, DF-002, DF-016, DF-018]
+    related_diagrams: [c4-03-api-components.md]
+    source_files: [services/api/src/lib.rs, services/api/src/middleware/mod.rs]
+  - id: REL-036
+    source: CMP-001
+    destination: CMP-003
+    description: Router serves the OpenAPI YAML contract.
+    protocol_or_mechanism: HTTP GET /openapi.yaml.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-021]
+    related_diagrams: [c4-03-api-components.md]
+    source_files: [services/api/src/routes/mod.rs, services/api/src/openapi.rs, spec/openapi.yaml]
+  - id: REL-037
+    source: CMP-001
+    destination: CMP-004
+    description: Router dispatches sweep policy and sweep order route handlers.
+    protocol_or_mechanism: Axum route matching.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-001, DF-002]
+    related_diagrams: [c4-03-api-components.md]
+    source_files: [services/api/src/routes/mod.rs]
+  - id: REL-038
+    source: CMP-001
+    destination: CMP-005
+    description: Router dispatches command and redemption route handlers.
+    protocol_or_mechanism: Axum route matching.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-016, DF-017]
+    related_diagrams: [c4-03-api-components.md]
+    source_files: [services/api/src/routes/mod.rs]
+  - id: REL-039
+    source: CMP-001
+    destination: CMP-006
+    description: Router dispatches read, audit, metrics, readiness, and local development routes.
+    protocol_or_mechanism: Axum route matching.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-018, DF-019, DF-025]
+    related_diagrams: [c4-03-api-components.md]
+    source_files: [services/api/src/routes/mod.rs]
+  - id: REL-040
+    source: CMP-004
+    destination: CMP-007
+    description: Policy and order routes call persistence write repositories.
+    protocol_or_mechanism: Rust async function call.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-001, DF-002, DF-003, DF-004, DF-005]
+    related_diagrams: [c4-03-api-components.md]
+    source_files: [services/api/src/routes/mod.rs, crates/persistence/src/repositories.rs]
+  - id: REL-041
+    source: CMP-005
+    destination: CMP-007
+    description: Command and redemption routes call command persistence.
+    protocol_or_mechanism: Rust async function call.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-015, DF-016, DF-017]
+    related_diagrams: [c4-03-api-components.md]
+    source_files: [services/api/src/routes/mod.rs, crates/persistence/src/repositories.rs]
+  - id: REL-042
+    source: CMP-006
+    destination: CMP-007
+    description: Read and local dev routes query persistence state.
+    protocol_or_mechanism: Rust async function call and SQLx reads.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-018, DF-019]
+    related_diagrams: [c4-03-api-components.md]
+    source_files: [services/api/src/routes/mod.rs, crates/persistence/src/repositories.rs]
+  - id: REL-043
+    source: CMP-007
+    destination: CMP-008
+    description: Persistence calls the domain transition function for status changes.
+    protocol_or_mechanism: Rust function call.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-015, DF-017]
+    related_diagrams: [c4-03-api-components.md]
+    source_files: [crates/persistence/src/repositories.rs, crates/domain/src/sweep.rs]
+  - id: REL-044
+    source: CMP-008
+    destination: CMP-009
+    description: Transition kernel uses domain asset and guard checks.
+    protocol_or_mechanism: Rust function call.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-002, DF-011, DF-012, DF-015]
+    related_diagrams: [c4-03-api-components.md]
+    source_files: [crates/domain/src/sweep.rs, crates/domain/src/invariants.rs, crates/domain/src/ledger.rs]
+  - id: REL-045
+    source: CMP-007
+    destination: CON-006
+    description: Persistence repositories execute SQL transactions against Postgres.
+    protocol_or_mechanism: SQLx over Postgres connection.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-003, DF-004, DF-005, DF-014, DF-015, DF-017, DF-018]
+    related_diagrams: [c4-03-api-components.md]
+    source_files: [crates/persistence/src/repositories.rs, crates/persistence/migrations/20260616150400_initial.sql]
+  - id: REL-046
+    source: CMP-017
+    destination: CMP-007
+    description: Outbox publisher leases pending outbox rows.
+    protocol_or_mechanism: Rust async repository call.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-006]
+    related_diagrams: [c4-04-worker-components.md]
+    source_files: [services/worker/src/workers/mod.rs, crates/persistence/src/outbox.rs]
+  - id: REL-047
+    source: CMP-017
+    destination: CMP-015
+    description: Outbox publisher sends event envelopes to the SNS publisher adapter.
+    protocol_or_mechanism: Rust async function call.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-007]
+    related_diagrams: [c4-04-worker-components.md]
+    source_files: [services/worker/src/workers/mod.rs, crates/messaging/src/sns.rs]
+  - id: REL-048
+    source: CMP-015
+    destination: CON-007
+    description: SNS publisher adapter publishes the event envelope to the topic.
+    protocol_or_mechanism: SNS Publish.
+    interaction_mode: asynchronous
+    related_dfd_flows: [DF-007]
+    related_diagrams: [c4-04-worker-components.md]
+    source_files: [crates/messaging/src/sns.rs]
+  - id: REL-049
+    source: CON-007
+    destination: CON-008
+    description: Topic fanout delivers events to worker queues.
+    protocol_or_mechanism: SNS to SQS subscription.
+    interaction_mode: asynchronous
+    related_dfd_flows: [DF-008]
+    related_diagrams: [c4-04-worker-components.md]
+    source_files: [scripts/localstack-init.sh, infra/aws-simulation/main.tf]
+  - id: REL-050
+    source: CMP-016
+    destination: CON-008
+    description: SQS consumer adapter receives worker queue messages.
+    protocol_or_mechanism: SQS ReceiveMessage.
+    interaction_mode: asynchronous
+    related_dfd_flows: [DF-009]
+    related_diagrams: [c4-04-worker-components.md]
+    source_files: [crates/messaging/src/sqs.rs, services/worker/src/workers/mod.rs]
+  - id: REL-051
+    source: CMP-018
+    destination: CMP-016
+    description: Transfer-agent worker consumes messages through the SQS adapter.
+    protocol_or_mechanism: Worker handler callback.
+    interaction_mode: asynchronous
+    related_dfd_flows: [DF-009, DF-010]
+    related_diagrams: [c4-04-worker-components.md]
+    source_files: [services/worker/src/workers/mod.rs]
+  - id: REL-052
+    source: CMP-019
+    destination: CMP-016
+    description: Reconciliation worker consumes messages through the SQS adapter.
+    protocol_or_mechanism: Worker handler callback.
+    interaction_mode: asynchronous
+    related_dfd_flows: [DF-009, DF-010]
+    related_diagrams: [c4-04-worker-components.md]
+    source_files: [services/worker/src/workers/mod.rs]
+  - id: REL-053
+    source: CMP-020
+    destination: CMP-016
+    description: Chain-watcher worker consumes messages through the SQS adapter.
+    protocol_or_mechanism: Worker handler callback.
+    interaction_mode: asynchronous
+    related_dfd_flows: [DF-009, DF-010]
+    related_diagrams: [c4-04-worker-components.md]
+    source_files: [services/worker/src/workers/mod.rs]
+  - id: REL-054
+    source: CMP-021
+    destination: CMP-016
+    description: Notification worker consumes messages through the SQS adapter.
+    protocol_or_mechanism: Worker handler callback.
+    interaction_mode: asynchronous
+    related_dfd_flows: [DF-009, DF-010, DF-025]
+    related_diagrams: [c4-04-worker-components.md]
+    source_files: [services/worker/src/workers/mod.rs]
+  - id: REL-055
+    source: CMP-018
+    destination: CON-004
+    description: Transfer-agent worker calls the simulator for confirmation.
+    protocol_or_mechanism: HTTP JSON request.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-011]
+    related_diagrams: [c4-04-worker-components.md]
+    source_files: [services/worker/src/workers/mod.rs, services/mock-transfer-agent/src/main.rs]
+  - id: REL-056
+    source: CMP-018
+    destination: CMP-007
+    description: Transfer-agent worker writes confirmation, position, ledger, and audit effects.
+    protocol_or_mechanism: Rust async repository calls.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-012, DF-014, DF-015]
+    related_diagrams: [c4-04-worker-components.md]
+    source_files: [services/worker/src/workers/mod.rs, crates/persistence/src/repositories.rs]
+  - id: REL-057
+    source: CMP-019
+    destination: CMP-007
+    description: Reconciliation worker writes reconciliation, activation, or exception effects.
+    protocol_or_mechanism: Rust async repository calls.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-013, DF-015, DF-018]
+    related_diagrams: [c4-04-worker-components.md]
+    source_files: [services/worker/src/workers/mod.rs, crates/persistence/src/repositories.rs]
+  - id: REL-058
+    source: CMP-007
+    destination: CON-006
+    description: Worker persistence calls execute SQL against Postgres.
+    protocol_or_mechanism: SQLx over Postgres connection.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-006, DF-010, DF-012, DF-013, DF-014, DF-015]
+    related_diagrams: [c4-04-worker-components.md]
+    source_files: [crates/persistence/src/repositories.rs, crates/persistence/migrations/20260616150400_initial.sql]
+  - id: REL-059
+    source: CMP-007
+    destination: CMP-010
+    description: Persistence writes and checks idempotency records.
+    protocol_or_mechanism: Rust repository call and SQLx.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-003, DF-017]
+    related_diagrams: [c4-05-persistence-domain-components.md]
+    source_files: [crates/persistence/src/repositories.rs, crates/persistence/src/idempotency.rs]
+  - id: REL-060
+    source: CMP-007
+    destination: CMP-011
+    description: Persistence writes and leases outbox records.
+    protocol_or_mechanism: Rust repository call and SQLx.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-005, DF-006]
+    related_diagrams: [c4-05-persistence-domain-components.md]
+    source_files: [crates/persistence/src/repositories.rs, crates/persistence/src/outbox.rs]
+  - id: REL-061
+    source: CMP-007
+    destination: CMP-012
+    description: Persistence writes inbox dedupe records.
+    protocol_or_mechanism: Rust repository call and SQLx.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-010]
+    related_diagrams: [c4-05-persistence-domain-components.md]
+    source_files: [crates/persistence/src/inbox.rs, crates/persistence/src/repositories.rs]
+  - id: REL-062
+    source: CMP-007
+    destination: CMP-013
+    description: Persistence writes ledger entries and positions.
+    protocol_or_mechanism: Rust repository call and SQLx.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-012, DF-014, DF-017]
+    related_diagrams: [c4-05-persistence-domain-components.md]
+    source_files: [crates/persistence/src/repositories.rs, crates/domain/src/ledger.rs]
+  - id: REL-063
+    source: CMP-007
+    destination: CMP-014
+    description: Persistence writes audit events and state transitions.
+    protocol_or_mechanism: Rust repository call and SQLx.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-015, DF-018]
+    related_diagrams: [c4-05-persistence-domain-components.md]
+    source_files: [crates/persistence/src/repositories.rs, crates/domain/src/events.rs]
+  - id: REL-064
+    source: CMP-007
+    destination: CMP-008
+    description: Persistence calls transition kernel before status changes.
+    protocol_or_mechanism: Rust function call.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-015, DF-017]
+    related_diagrams: [c4-05-persistence-domain-components.md]
+    source_files: [crates/persistence/src/repositories.rs, crates/domain/src/sweep.rs]
+  - id: REL-065
+    source: CMP-008
+    destination: CMP-009
+    description: Transition kernel uses invariant guards and asset rules.
+    protocol_or_mechanism: Rust function call.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-002, DF-011, DF-012, DF-015]
+    related_diagrams: [c4-05-persistence-domain-components.md]
+    source_files: [crates/domain/src/sweep.rs, crates/domain/src/invariants.rs, crates/domain/src/asset.rs]
+  - id: REL-066
+    source: CMP-008
+    destination: MOD-001
+    description: Transition kernel implements the state-machine contract.
+    protocol_or_mechanism: Source traceability through spec and tests.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-015, DF-017]
+    related_diagrams: [c4-05-persistence-domain-components.md]
+    source_files: [crates/domain/src/sweep.rs, spec/domain/sweep_order.machine.yaml]
+  - id: REL-067
+    source: CMP-010
+    destination: CON-006
+    description: Idempotency component persists records in Postgres.
+    protocol_or_mechanism: SQLx over Postgres.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-003, DF-017]
+    related_diagrams: [c4-05-persistence-domain-components.md]
+    source_files: [crates/persistence/src/idempotency.rs, crates/persistence/migrations/20260616150400_initial.sql]
+  - id: REL-068
+    source: CMP-011
+    destination: CON-006
+    description: Outbox component persists event rows in Postgres.
+    protocol_or_mechanism: SQLx over Postgres.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-005, DF-006]
+    related_diagrams: [c4-05-persistence-domain-components.md]
+    source_files: [crates/persistence/src/outbox.rs, crates/persistence/migrations/20260616150400_initial.sql]
+  - id: REL-069
+    source: CMP-012
+    destination: CON-006
+    description: Inbox component persists dedupe rows in Postgres.
+    protocol_or_mechanism: SQLx over Postgres.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-010]
+    related_diagrams: [c4-05-persistence-domain-components.md]
+    source_files: [crates/persistence/src/inbox.rs, crates/persistence/migrations/20260616150400_initial.sql]
+  - id: REL-070
+    source: CMP-013
+    destination: CON-006
+    description: Ledger and position component persists financial records.
+    protocol_or_mechanism: SQLx over Postgres.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-012, DF-014, DF-017]
+    related_diagrams: [c4-05-persistence-domain-components.md]
+    source_files: [crates/persistence/src/repositories.rs, crates/persistence/migrations/20260616150400_initial.sql]
+  - id: REL-071
+    source: CMP-014
+    destination: CON-006
+    description: Audit and transition component persists trace records.
+    protocol_or_mechanism: SQLx over Postgres.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-015, DF-018]
+    related_diagrams: [c4-05-persistence-domain-components.md]
+    source_files: [crates/persistence/src/repositories.rs, crates/persistence/migrations/20260616150400_initial.sql]
+  - id: REL-072
+    source: MOD-002
+    destination: CON-006
+    description: SQL migration defines financial and evidence tables.
+    protocol_or_mechanism: SQLx migration.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-003, DF-004, DF-005, DF-010, DF-012, DF-014, DF-015]
+    related_diagrams: [c4-05-persistence-domain-components.md]
+    source_files: [crates/persistence/migrations/20260616150400_initial.sql]
+  - id: REL-073
+    source: PER-002
+    destination: SYS-004
+    description: Platform engineer reviews and pushes source changes.
+    protocol_or_mechanism: Git workflow.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-021]
+    related_diagrams: [c4-06-ci-evidence-operations.md]
+    source_files: [AGENTS.md, .github/workflows/ci.yml]
+  - id: REL-074
+    source: SYS-004
+    destination: CON-018
+    description: CI runs validation gates and preserves status evidence.
+    protocol_or_mechanism: GitHub Actions running make validate.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-021]
+    related_diagrams: [c4-06-ci-evidence-operations.md]
+    source_files: [.github/workflows/ci.yml, scripts/validate-all.sh]
+  - id: REL-075
+    source: SYS-004
+    destination: CMP-022
+    description: CI builds the certifier crate as part of Rust validation.
+    protocol_or_mechanism: Cargo test and build graph.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-019, DF-021]
+    related_diagrams: [c4-06-ci-evidence-operations.md]
+    source_files: [.github/workflows/ci.yml, services/certifier/src/main.rs]
+  - id: REL-076
+    source: CMP-022
+    destination: CON-006
+    description: Certifier reads database invariant evidence.
+    protocol_or_mechanism: SQLx read queries.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-019]
+    related_diagrams: [c4-06-ci-evidence-operations.md]
+    source_files: [services/certifier/src/main.rs]
+  - id: REL-077
+    source: PER-002
+    destination: SYS-003
+    description: Platform engineer runs opt-in AWS sandbox scripts.
+    protocol_or_mechanism: Shell scripts with preflight guardrails.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-020, DF-022, DF-023]
+    related_diagrams: [c4-06-ci-evidence-operations.md]
+    source_files: [scripts/aws-cert-preflight.sh, scripts/aws-cert-run.sh, scripts/aws-cert-collect.sh]
+  - id: REL-078
+    source: SYS-003
+    destination: CON-018
+    description: AWS sandbox run produces evidence artifacts.
+    protocol_or_mechanism: Shell scripts collecting JSON and logs.
+    interaction_mode: asynchronous
+    related_dfd_flows: [DF-020]
+    related_diagrams: [c4-06-ci-evidence-operations.md]
+    source_files: [scripts/aws-cert-collect.sh, docs/certification/aws-simulation-internal-certification-report-2026-06-17.md]
+  - id: REL-079
+    source: CON-017
+    destination: CON-018
+    description: FIS experiment produces worker-stop evidence.
+    protocol_or_mechanism: AWS FIS output captured by scripts.
+    interaction_mode: asynchronous
+    related_dfd_flows: [DF-022]
+    related_diagrams: [c4-06-ci-evidence-operations.md]
+    source_files: [scripts/aws-cert-run.sh, scripts/aws-cert-check-fis-targets.sh]
+  - id: REL-080
+    source: CON-008
+    destination: CON-018
+    description: Queue drain scripts produce source-queue and DLQ evidence.
+    protocol_or_mechanism: SQS attribute inspection.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-023]
+    related_diagrams: [c4-06-ci-evidence-operations.md]
+    source_files: [scripts/aws-cert-wait-queues-drained.sh, scripts/aws-cert-collect.sh]
+  - id: REL-081
+    source: CON-016
+    destination: CON-018
+    description: CloudWatch Logs produce service-log evidence.
+    protocol_or_mechanism: CloudWatch Logs collection.
+    interaction_mode: asynchronous
+    related_dfd_flows: [DF-025]
+    related_diagrams: [c4-06-ci-evidence-operations.md]
+    source_files: [scripts/aws-cert-collect.sh, infra/aws-simulation/main.tf]
+  - id: REL-082
+    source: CON-018
+    destination: PER-002
+    description: Evidence artifacts support internal readiness review.
+    protocol_or_mechanism: Markdown, YAML, JSON, command logs, and tracker review.
+    interaction_mode: synchronous
+    related_dfd_flows: [DF-020, DF-021]
+    related_diagrams: [c4-06-ci-evidence-operations.md]
+    source_files: [docs/trackers/c4-evidence-pack.md, docs/architecture/c4/README.md]
