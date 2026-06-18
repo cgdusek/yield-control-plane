@@ -1,0 +1,141 @@
+schema_version: "1.0.0"
+boundaries:
+  - id: TB-001
+    name: Public Internet / external user boundary
+    description: Boundary between an institutional operator or browser client and the Yield Control Plane ingress surface.
+    crossing_flows:
+      - DF-001
+      - DF-002
+      - DF-016
+      - DF-018
+    required_controls:
+      - CTL-SEC-001
+      - CTL-PI-001
+      - CTL-AUDIT-001
+    residual_assumptions:
+      - Local demo traffic uses localhost; production internet exposure, real identity providers, and external operator onboarding remain outside this repo.
+  - id: TB-002
+    name: Application ingress boundary
+    description: Boundary where HTTP requests enter the Rust API or AWS ALB-to-API path.
+    crossing_flows:
+      - DF-001
+      - DF-002
+      - DF-016
+      - DF-018
+    required_controls:
+      - CTL-SEC-001
+      - CTL-PI-001
+      - CTL-AUDIT-001
+    residual_assumptions:
+      - The current local API requires idempotency and correlation headers but does not implement production authentication or authorization.
+  - id: TB-003
+    name: Application service boundary
+    description: Boundary among API, domain command handling, workers, mock services, and shared Rust crates.
+    crossing_flows:
+      - DF-003
+      - DF-004
+      - DF-005
+      - DF-006
+      - DF-009
+      - DF-010
+      - DF-012
+      - DF-013
+      - DF-014
+      - DF-015
+      - DF-017
+    required_controls:
+      - CTL-PI-002
+      - CTL-PI-003
+      - CTL-AUDIT-001
+    residual_assumptions:
+      - Domain transitions are enforced in Rust; production service-to-service identity and network policy are future owner work.
+  - id: TB-004
+    name: Messaging boundary
+    description: Boundary across outbox publishing, SNS topics, SQS source queues, SQS dead-letter queues, and worker consumers.
+    crossing_flows:
+      - DF-007
+      - DF-008
+      - DF-009
+      - DF-023
+    required_controls:
+      - CTL-AVAIL-001
+      - CTL-SEC-002
+      - CTL-AUDIT-001
+    residual_assumptions:
+      - Local messaging uses LocalStack; AWS sandbox messaging is opt-in and non-production.
+  - id: TB-005
+    name: Database financial-record boundary
+    description: Boundary around Postgres financial records, including orders, idempotency, outbox, inbox, ledger, positions, audit events, and reconciliation breaks.
+    crossing_flows:
+      - DF-003
+      - DF-004
+      - DF-005
+      - DF-006
+      - DF-010
+      - DF-012
+      - DF-013
+      - DF-014
+      - DF-015
+      - DF-017
+      - DF-018
+      - DF-019
+    required_controls:
+      - CTL-PI-001
+      - CTL-PI-002
+      - CTL-PI-003
+      - CTL-CONF-001
+      - CTL-AUDIT-001
+    residual_assumptions:
+      - Production backup, restore, retention, and privileged database access workflows remain outside the local implementation.
+  - id: TB-006
+    name: AWS account / cloud control-plane boundary
+    description: Boundary for the non-production AWS sandbox control plane, including ALB, ECS/Fargate, RDS, SNS, SQS, KMS, Secrets Manager, CloudWatch, FIS, IAM, and budget guardrails.
+    crossing_flows:
+      - DF-020
+      - DF-022
+      - DF-023
+      - DF-024
+      - DF-025
+    required_controls:
+      - CTL-SEC-002
+      - CTL-SEC-003
+      - CTL-AVAIL-002
+      - CTL-AUDIT-002
+    residual_assumptions:
+      - The AWS path is a dedicated sandbox simulation and is not production infrastructure.
+  - id: TB-007
+    name: CI/CD and source-control boundary
+    description: Boundary where source changes, CI jobs, and validation commands enforce specification, code, documentation, and evidence drift checks.
+    crossing_flows:
+      - DF-021
+    required_controls:
+      - CTL-CHANGE-001
+      - CTL-AUDIT-001
+    residual_assumptions:
+      - Repository administration, branch protection, and external change-approval records are not modeled in this repo.
+  - id: TB-008
+    name: Evidence artifact boundary
+    description: Boundary around generated local or AWS sandbox evidence artifacts and reviewer packets.
+    crossing_flows:
+      - DF-019
+      - DF-020
+      - DF-021
+      - DF-023
+    required_controls:
+      - CTL-AUDIT-002
+      - CTL-CONF-001
+      - CTL-CHANGE-001
+    residual_assumptions:
+      - Account-specific evidence is intentionally git-ignored and must be handled in an access-controlled evidence room.
+  - id: TB-009
+    name: External transfer-agent / custodian integration boundary
+    description: Boundary for the deterministic local mock transfer-agent path and any future real transfer-agent or custodian integration.
+    crossing_flows:
+      - DF-011
+      - DF-012
+    required_controls:
+      - CTL-SEC-001
+      - CTL-PI-002
+      - CTL-AUDIT-001
+    residual_assumptions:
+      - The current implementation uses a mock transfer agent only; production contract, vendor risk, and custodian controls are future owner work.

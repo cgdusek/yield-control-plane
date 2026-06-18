@@ -8,6 +8,7 @@ Start here for the local institutional yield control plane.
 - [Testing](testing.md)
 - [Operations](operations.md)
 - [Security](security.md)
+- [Data-flow diagrams and control map](security/dfd/README.md)
 - [Formal verification](formal-verification.md)
 - [Liveness verification](liveness-verification.md)
 - [Standards and certification readiness](compliance-readiness.md)
@@ -33,3 +34,5 @@ Primary specs:
 - [Liveness coverage matrix](../spec/refinement/liveness_coverage.yaml)
 - [AWS certification coverage map](../spec/certification/aws_certification_coverage_map.json)
 - [Standards readiness map](../spec/certification/standards_readiness_map.json)
+- [DFD data-flow catalog](security/dfd/data-flow-catalog.yaml)
+- [DFD control map](security/dfd/control-map.yaml)

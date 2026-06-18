@@ -1,0 +1,111 @@
+schema_version: "1.0.0"
+classification_model: yield-control-plane-dfd
+classes:
+  public:
+    description: Information intended for unrestricted publication.
+    examples:
+      - repository README text
+      - public OpenAPI route names
+      - public documentation index entries
+    encryption_requirement: Encryption is not required by classification, but standard transport protection is still expected for served content.
+    retention_expectation: Retain according to repository history and documentation retention practices.
+    access_expectation: Public repository readers may access this data.
+    logging_expectation: Logs may include route names and validation command names without sensitive values.
+    soc2_relevance:
+      - Security
+      - Availability
+  internal:
+    description: Engineering information useful to maintainers but not sensitive financial, secret, or customer data.
+    examples:
+      - service names
+      - worker kinds
+      - local runtime topology
+      - validation command names
+    encryption_requirement: Protect in transit when transmitted across service or repository boundaries.
+    retention_expectation: Retain while the engineering evidence remains useful.
+    access_expectation: Repository maintainers and reviewers with project access.
+    logging_expectation: May be logged when it does not include secrets, credentials, or restricted financial fields.
+    soc2_relevance:
+      - Security
+      - Availability
+      - Processing Integrity
+  confidential:
+    description: Non-public implementation or operational data that could aid misuse or disclose internal control design.
+    examples:
+      - internal control mappings
+      - infrastructure topology details
+      - non-public evidence manifest contents
+    encryption_requirement: Encrypt in transit and encrypt at rest in managed storage or private evidence rooms.
+    retention_expectation: Retain according to control-evidence needs and prune stale copies.
+    access_expectation: Project maintainers, security reviewers, and approved auditors.
+    logging_expectation: Log only identifiers and correlation metadata; avoid full payload dumps.
+    soc2_relevance:
+      - Security
+      - Confidentiality
+      - Auditability
+  restricted_financial_record:
+    description: Financial workflow records, order state, ledger records, position records, reconciliation breaks, and idempotency records.
+    examples:
+      - account_id
+      - order_id
+      - amount
+      - cash_asset
+      - product_asset
+      - ledger_entries
+      - positions
+      - reconciliation_breaks
+    encryption_requirement: Encrypt in transit and encrypt at rest in database, queue, log, and evidence stores where supported.
+    retention_expectation: Retain according to ledger, audit, and reconciliation evidence requirements set by the system owner.
+    access_expectation: Least-privilege application services, financial-control reviewers, and approved auditors.
+    logging_expectation: Log correlation_id, request_id, event_id, aggregate_id, and status metadata; do not log raw credentials or secrets.
+    soc2_relevance:
+      - Security
+      - Processing Integrity
+      - Confidentiality
+      - Auditability
+  restricted_secret:
+    description: Credentials, private keys, database URLs, temporary AWS bootstrap material, and runtime secret values.
+    examples:
+      - DATABASE_URL
+      - AWS temporary session credentials
+      - database password
+      - KMS key administrative material
+    encryption_requirement: Encrypt in transit and at rest using secret stores or key-management services; never commit to git.
+    retention_expectation: Keep only for the lifetime required by the runtime or sandbox campaign; rotate or delete after use.
+    access_expectation: Runtime principals and explicitly authorized operators only.
+    logging_expectation: Never log secret values; log secret reference names and access result metadata only.
+    soc2_relevance:
+      - Security
+      - Confidentiality
+  restricted_audit_evidence:
+    description: Evidence artifacts that may contain account-specific identifiers, command manifests, queue states, cost data, and invariant reports.
+    examples:
+      - artifacts/aws-certification/db-invariant-report.json
+      - artifacts/aws-certification/queue-drain-final.json
+      - artifacts/aws-certification/aws-inventory.json
+      - external auditor workpapers
+    encryption_requirement: Encrypt in transit and at rest; store private evidence outside the public repository.
+    retention_expectation: Retain for the chosen review period, then archive or dispose according to owner policy.
+    access_expectation: Engineering owners, control owners, approved auditors, and approved reviewers.
+    logging_expectation: Log artifact path, hash, command, and generation timestamp; avoid copying account-specific secrets into logs.
+    soc2_relevance:
+      - Security
+      - Availability
+      - Processing Integrity
+      - Confidentiality
+      - Auditability
+  pii_if_enabled:
+    description: Personal data if a future deployment adds real operators, customers, contacts, or account holder attributes.
+    examples:
+      - operator email
+      - customer legal name
+      - contact address
+      - data subject request identifier
+    encryption_requirement: Encrypt in transit and at rest; apply minimization, access review, and privacy-owner handling.
+    retention_expectation: Retain according to an approved privacy retention schedule.
+    access_expectation: Privacy-approved roles only.
+    logging_expectation: Avoid logging personal data; log opaque identifiers and request metadata only.
+    soc2_relevance:
+      - Security
+      - Confidentiality
+      - Privacy

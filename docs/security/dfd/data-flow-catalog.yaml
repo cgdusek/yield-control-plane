@@ -1,0 +1,1252 @@
+schema_version: "1.0.0"
+catalog: yield-control-plane-dfd
+source_of_truth: docs/security/dfd/data-flow-catalog.yaml
+flows:
+  - id: DF-001
+    name: Operator creates sweep policy
+    description: An institutional operator or React console submits a sweep policy for an account through the API.
+    source: EXT-001 Institutional Operator
+    destination: P-001 API Service
+    trust_boundaries_crossed:
+      - TB-001
+      - TB-002
+    protocol_or_mechanism: HTTPS or localhost HTTP JSON POST /sweep-policies
+    data_elements:
+      - account_id
+      - minimum_cash_balance
+      - target_product
+      - idempotency_key
+      - correlation_id
+    data_classification: restricted_financial_record
+    purpose: Configure the local account sweep policy used by smoke and operator workflows.
+    trigger: Operator submits CreateSweepPolicyRequest.
+    persistence: Stored in sweep_policies and idempotency_records.
+    retention: Retained while the policy remains active and while idempotency evidence is needed.
+    authentication: operator_identity in future deployment; local demo uses required write headers only.
+    authorization: policy_authorization in future deployment; local demo route does not implement production authorization.
+    encryption_in_transit: TLS expected outside localhost; localhost HTTP is accepted only for local simulation.
+    encryption_at_rest: Postgres storage; AWS sandbox RDS storage is KMS encrypted.
+    integrity_controls:
+      - CTL-PI-001 hashes idempotency key and request body.
+      - CTL-AUDIT-001 records correlation metadata.
+    replay_or_deduplication_controls:
+      - idempotency_records primary key on scope and key_hash.
+    logging_and_audit_evidence:
+      - correlation_id
+      - idempotency scope
+      - API response resource_id
+    monitoring_or_alerting:
+      - API readiness and smoke command results.
+    failure_mode: Invalid decimal or persistence error returns typed API error.
+    recovery_or_compensation: Resubmit with same idempotency key for same body or resolve conflict before retry.
+    related_controls:
+      - CTL-SEC-001
+      - CTL-PI-001
+      - CTL-AUDIT-001
+      - CTL-PRIV-001
+    related_diagrams:
+      - dfd-00-system-boundary.md
+    source_files:
+      - spec/openapi.yaml
+      - services/api/src/routes/mod.rs
+      - crates/persistence/src/repositories.rs
+      - crates/persistence/migrations/20260616150400_initial.sql
+      - scripts/smoke-create-sweep.sh
+  - id: DF-002
+    name: Operator creates sweep order with idempotency key
+    description: An operator submits a sweep order that creates a Created order and emits the initial domain event.
+    source: EXT-001 Institutional Operator
+    destination: P-001 API Service
+    trust_boundaries_crossed:
+      - TB-001
+      - TB-002
+    protocol_or_mechanism: HTTPS or localhost HTTP JSON POST /sweep-orders
+    data_elements:
+      - account_id
+      - amount
+      - cash_asset
+      - product_asset
+      - idempotency_key
+      - correlation_id
+    data_classification: restricted_financial_record
+    purpose: Start the sweep lifecycle while enforcing idempotent request handling.
+    trigger: Operator submits CreateSweepOrderRequest.
+    persistence: Stored through downstream DB writes DF-003, DF-004, and DF-005.
+    retention: Retained through order, audit, and ledger evidence lifecycle.
+    authentication: operator_identity in future deployment; local demo uses required write headers only.
+    authorization: policy_authorization in future deployment; local demo validates assets and state rules.
+    encryption_in_transit: TLS expected outside localhost; localhost HTTP is accepted only for local simulation.
+    encryption_at_rest: Not persisted at this hop; persistence occurs in Postgres flows.
+    integrity_controls:
+      - FIDD is accepted only as a cash rail, not as a yield-bearing product.
+      - CTL-PI-001 controls idempotent replay.
+    replay_or_deduplication_controls:
+      - Idempotency-Key header is required on write route.
+    logging_and_audit_evidence:
+      - correlation_id
+      - order_id after creation
+      - typed API error on conflict
+    monitoring_or_alerting:
+      - smoke-created order status polling.
+    failure_mode: Conflicting idempotency body returns 409; invalid product or FIDD yield source returns error.
+    recovery_or_compensation: Use same key and body for replay or create a new key for a new order.
+    related_controls:
+      - CTL-SEC-001
+      - CTL-PI-001
+      - CTL-AUDIT-001
+      - CTL-PRIV-001
+    related_diagrams:
+      - dfd-00-system-boundary.md
+      - dfd-03-sweep-order-flow.md
+    source_files:
+      - spec/openapi.yaml
+      - services/api/src/routes/mod.rs
+      - services/api/src/middleware/mod.rs
+      - crates/persistence/src/repositories.rs
+      - crates/domain/src/asset.rs
+      - scripts/smoke-create-sweep.sh
+  - id: DF-003
+    name: API writes idempotency record
+    description: The API persistence path writes or reuses an idempotency record keyed by scope and key hash.
+    source: P-001 API Service
+    destination: DS-001 Postgres Financial Store
+    trust_boundaries_crossed:
+      - TB-003
+      - TB-005
+    protocol_or_mechanism: SQLx transaction
+    data_elements:
+      - scope
+      - key_hash
+      - request_hash
+      - response_json
+      - resource_id
+    data_classification: restricted_financial_record
+    purpose: Prevent duplicate or conflicting writes.
+    trigger: Create policy, create order, approve, cancel, or request redemption command with idempotency key.
+    persistence: idempotency_records table.
+    retention: Retained for replay and audit evidence until the owner-defined retention period expires.
+    authentication: database credential or AWS task role plus Secrets Manager provided DATABASE_URL.
+    authorization: database grants and service role access to the application database.
+    encryption_in_transit: Postgres connection transport protection is expected in managed deployments.
+    encryption_at_rest: Local Postgres volume in dev; AWS sandbox RDS is KMS encrypted.
+    integrity_controls:
+      - CTL-PI-001 compares request_hash for matching key reuse.
+      - Primary key prevents duplicate scope/key_hash records.
+    replay_or_deduplication_controls:
+      - existing_idempotent_resource rejects mismatched request_hash.
+    logging_and_audit_evidence:
+      - idempotency scope
+      - resource_id
+      - API error code idempotency_conflict
+    monitoring_or_alerting:
+      - persistence tests and certifier duplicate-idempotency checks.
+    failure_mode: Mismatched request hash returns an idempotency conflict.
+    recovery_or_compensation: Retry same request body with same key or use a new key after resolving operator intent.
+    related_controls:
+      - CTL-PI-001
+      - CTL-CONF-001
+      - CTL-AUDIT-001
+    related_diagrams:
+      - dfd-01-logical-runtime.md
+      - dfd-03-sweep-order-flow.md
+      - dfd-04-redemption-flow.md
+    source_files:
+      - crates/persistence/src/idempotency.rs
+      - crates/persistence/src/repositories.rs
+      - crates/persistence/migrations/20260616150400_initial.sql
+      - services/certifier/src/main.rs
+  - id: DF-004
+    name: API writes sweep order
+    description: The create-order path inserts a Created sweep order in Postgres.
+    source: P-001 API Service
+    destination: DS-001 Postgres Financial Store
+    trust_boundaries_crossed:
+      - TB-003
+      - TB-005
+    protocol_or_mechanism: SQLx transaction insert into sweep_orders
+    data_elements:
+      - order_id
+      - account_id
+      - idempotency_key_hash
+      - correlation_id
+      - status
+      - amount
+      - cash_asset
+      - product_asset
+    data_classification: restricted_financial_record
+    purpose: Persist the authoritative sweep order record.
+    trigger: Accepted create sweep order request.
+    persistence: sweep_orders table.
+    retention: Retained as financial workflow evidence.
+    authentication: database credential or AWS task role plus Secrets Manager provided DATABASE_URL.
+    authorization: application database write permission.
+    encryption_in_transit: Postgres connection transport protection is expected in managed deployments.
+    encryption_at_rest: Local Postgres volume in dev; AWS sandbox RDS is KMS encrypted.
+    integrity_controls:
+      - SQL constraints validate status, positive amount, supported cash asset, and uniqueness.
+      - CTL-PI-002 requires future status changes to use domain transitions.
+    replay_or_deduplication_controls:
+      - unique account_id and idempotency_key_hash pair.
+    logging_and_audit_evidence:
+      - correlation_id
+      - state transition to Created
+      - audit event for sweep.order.created.v1
+    monitoring_or_alerting:
+      - smoke polling of order status.
+    failure_mode: Constraint violation or persistence failure rejects the write.
+    recovery_or_compensation: Correct invalid input or retry idempotently.
+    related_controls:
+      - CTL-PI-002
+      - CTL-CONF-001
+      - CTL-AUDIT-001
+    related_diagrams:
+      - dfd-01-logical-runtime.md
+      - dfd-03-sweep-order-flow.md
+    source_files:
+      - crates/persistence/src/repositories.rs
+      - crates/persistence/migrations/20260616150400_initial.sql
+      - spec/domain/sweep_order.machine.yaml
+  - id: DF-005
+    name: API writes outbox event
+    description: The same transaction inserts the domain event into outbox_events and audit_events.
+    source: P-001 API Service
+    destination: DS-001 Postgres Financial Store
+    trust_boundaries_crossed:
+      - TB-003
+      - TB-005
+    protocol_or_mechanism: SQLx transaction insert into outbox_events and audit_events
+    data_elements:
+      - event_id
+      - event_type
+      - aggregate_id
+      - correlation_id
+      - causation_id
+      - payload
+    data_classification: restricted_financial_record
+    purpose: Create durable asynchronous event and audit evidence.
+    trigger: Domain event emitted by create order or command transition.
+    persistence: outbox_events and audit_events tables.
+    retention: Retained for event publication, replay analysis, and audit trail.
+    authentication: database credential or AWS task role plus Secrets Manager provided DATABASE_URL.
+    authorization: application database write permission.
+    encryption_in_transit: Postgres connection transport protection is expected in managed deployments.
+    encryption_at_rest: Local Postgres volume in dev; AWS sandbox RDS is KMS encrypted.
+    integrity_controls:
+      - EventEnvelope carries event_id, event_type, aggregate_id, and correlation_id.
+      - Outbox status tracks pending, leased, published, and failed states.
+    replay_or_deduplication_controls:
+      - event_id primary key and outbox retry state.
+    logging_and_audit_evidence:
+      - outbox_events rows
+      - audit_events rows
+      - state_transitions emitted_events field
+    monitoring_or_alerting:
+      - certifier stale outbox check.
+    failure_mode: Failed insert aborts the transaction and prevents partial workflow state.
+    recovery_or_compensation: Retry the command after persistence error is resolved.
+    related_controls:
+      - CTL-CONF-001
+      - CTL-AUDIT-001
+    related_diagrams:
+      - dfd-01-logical-runtime.md
+      - dfd-03-sweep-order-flow.md
+      - dfd-04-redemption-flow.md
+    source_files:
+      - crates/persistence/src/repositories.rs
+      - crates/persistence/src/outbox.rs
+      - crates/domain/src/events.rs
+      - spec/asyncapi.yaml
+  - id: DF-006
+    name: Outbox publisher leases pending event
+    description: The outbox publisher leases pending or failed outbox rows with skip-locked semantics.
+    source: P-002 Outbox Publisher Worker
+    destination: DS-001 Postgres Financial Store
+    trust_boundaries_crossed:
+      - TB-003
+      - TB-005
+    protocol_or_mechanism: SQLx lease query with for update skip locked
+    data_elements:
+      - event_id
+      - event_type
+      - payload
+      - attempts
+      - leased_until
+      - status
+    data_classification: restricted_financial_record
+    purpose: Safely claim unpublished events for publication.
+    trigger: Outbox publisher loop.
+    persistence: Updates outbox_events status, attempts, and lease fields.
+    retention: Outbox row remains for publication evidence and stale-event checks.
+    authentication: database credential or AWS task role plus Secrets Manager provided DATABASE_URL.
+    authorization: worker database update permission.
+    encryption_in_transit: Postgres connection transport protection is expected in managed deployments.
+    encryption_at_rest: Local Postgres volume in dev; AWS sandbox RDS is KMS encrypted.
+    integrity_controls:
+      - CTL-AVAIL-001 uses lease and retry state to avoid concurrent duplicate publication attempts.
+    replay_or_deduplication_controls:
+      - failed events become leasable again; published events are not selected.
+    logging_and_audit_evidence:
+      - attempts
+      - leased_until
+      - published_at or last_error
+    monitoring_or_alerting:
+      - certifier stale unpublished event check.
+    failure_mode: Lease query failure logs an outbox lease error.
+    recovery_or_compensation: Publisher loop retries on the next interval.
+    related_controls:
+      - CTL-AVAIL-001
+    related_diagrams:
+      - dfd-01-logical-runtime.md
+      - dfd-03-sweep-order-flow.md
+    source_files:
+      - services/worker/src/workers/mod.rs
+      - crates/persistence/src/outbox.rs
+      - crates/persistence/tests/repository_tests.rs
+  - id: DF-007
+    name: Outbox publisher publishes to SNS
+    description: The outbox publisher sends the event envelope to the configured SNS domain-events topic.
+    source: P-002 Outbox Publisher Worker
+    destination: MQ-001 SNS Domain Events Topic
+    trust_boundaries_crossed:
+      - TB-004
+    protocol_or_mechanism: AWS SDK SNS Publish or LocalStack SNS publish
+    data_elements:
+      - event_id
+      - event_type
+      - aggregate_id
+      - correlation_id
+      - payload
+    data_classification: restricted_financial_record
+    purpose: Fan out domain events to worker queues.
+    trigger: Leased outbox event.
+    persistence: SNS message is transient; publication status is persisted in outbox_events.
+    retention: SNS does not provide durable retention; SQS queues retain delivered messages.
+    authentication: LocalStack dummy credentials in local mode; AWS sandbox task role in cert mode.
+    authorization: SNS publish permission scoped to the domain-events topic in AWS sandbox mode.
+    encryption_in_transit: AWS SDK HTTPS in AWS sandbox; LocalStack local HTTP in dev.
+    encryption_at_rest: AWS sandbox SNS topic is KMS encrypted; LocalStack storage is local simulation state.
+    integrity_controls:
+      - Message body is serialized EventEnvelope.
+      - Published events are marked in Postgres after publish success.
+    replay_or_deduplication_controls:
+      - Outbox event status and event_id identity.
+    logging_and_audit_evidence:
+      - event_id
+      - SNS message_id
+      - outbox published_at
+    monitoring_or_alerting:
+      - CloudWatch SNS metrics in AWS sandbox; LocalStack smoke output locally.
+    failure_mode: Publish failure marks outbox row failed for retry.
+    recovery_or_compensation: Outbox publisher leases failed row on a later loop.
+    related_controls:
+      - CTL-SEC-002
+      - CTL-AVAIL-001
+    related_diagrams:
+      - dfd-01-logical-runtime.md
+      - dfd-02-aws-certification-sandbox.md
+      - dfd-03-sweep-order-flow.md
+    source_files:
+      - services/worker/src/workers/mod.rs
+      - crates/messaging/src/sns.rs
+      - crates/persistence/src/outbox.rs
+      - infra/aws-simulation/main.tf
+  - id: DF-008
+    name: SNS fans out to SQS worker queues
+    description: SNS delivers raw domain event messages to each worker SQS queue.
+    source: MQ-001 SNS Domain Events Topic
+    destination: MQ-002 SQS Worker Queues
+    trust_boundaries_crossed:
+      - TB-004
+    protocol_or_mechanism: SNS to SQS subscription with raw message delivery
+    data_elements:
+      - event envelope JSON
+      - event_id
+      - event_type
+      - aggregate_id
+      - correlation_id
+    data_classification: restricted_financial_record
+    purpose: Deliver each domain event to transfer-agent, reconciliation, chain-watcher, and notification workers.
+    trigger: SNS receives a published EventEnvelope.
+    persistence: SQS source queues retain messages until workers delete them.
+    retention: LocalStack simulated queue retention; AWS sandbox SQS source queue retention is configured in Terraform.
+    authentication: AWS service principal delivers to SQS; LocalStack simulates service delivery locally.
+    authorization: Queue policy permits SNS source topic to send messages.
+    encryption_in_transit: AWS service transport in sandbox; LocalStack local HTTP in dev.
+    encryption_at_rest: AWS sandbox SQS queues and DLQs are KMS encrypted.
+    integrity_controls:
+      - Raw message delivery preserves the EventEnvelope body expected by workers.
+    replay_or_deduplication_controls:
+      - At-least-once delivery is handled by inbox dedupe in DF-010.
+    logging_and_audit_evidence:
+      - queue attributes
+      - subscription configuration
+      - worker message_id
+    monitoring_or_alerting:
+      - CloudWatch DLQ alarms and queue drain scripts.
+    failure_mode: Delivery failure or poison messages can leave source or DLQ backlog.
+    recovery_or_compensation: Queue drain gates and DLQ review identify failed delivery.
+    related_controls:
+      - CTL-SEC-002
+      - CTL-AVAIL-001
+    related_diagrams:
+      - dfd-01-logical-runtime.md
+      - dfd-02-aws-certification-sandbox.md
+      - dfd-03-sweep-order-flow.md
+    source_files:
+      - infra/aws-simulation/main.tf
+      - scripts/localstack-init.sh
+      - spec/asyncapi.yaml
+      - scripts/aws-cert-wait-queues-drained.sh
+  - id: DF-009
+    name: Worker receives SQS message
+    description: Worker services receive and parse SQS messages as EventEnvelope payloads.
+    source: MQ-002 SQS Worker Queues
+    destination: P-003 Worker Services
+    trust_boundaries_crossed:
+      - TB-003
+      - TB-004
+    protocol_or_mechanism: AWS SDK SQS ReceiveMessage and DeleteMessage or LocalStack equivalent
+    data_elements:
+      - message_id
+      - receipt_handle
+      - event envelope body
+      - worker kind
+    data_classification: restricted_financial_record
+    purpose: Consume domain events for asynchronous workflow progression.
+    trigger: Worker receive loop polls queue.
+    persistence: Message remains in SQS until deleted; invalid-body poison messages are deleted by worker policy.
+    retention: SQS queue retention or LocalStack simulated retention.
+    authentication: LocalStack dummy credentials in local mode; AWS sandbox task role in cert mode.
+    authorization: SQS receive, delete, get-attributes, and get-queue-url permissions for worker queues.
+    encryption_in_transit: AWS SDK HTTPS in AWS sandbox; LocalStack local HTTP in dev.
+    encryption_at_rest: AWS sandbox SQS queues are KMS encrypted.
+    integrity_controls:
+      - Worker deserializes EventEnvelope before handling.
+      - Handler and inbox errors are retried; invalid body is treated as deleteable poison message.
+    replay_or_deduplication_controls:
+      - Inbox dedupe records in DF-010.
+    logging_and_audit_evidence:
+      - consumer_name
+      - message_id
+      - event_id
+      - event_type
+      - handler error logs
+    monitoring_or_alerting:
+      - queue drain reports and DLQ alarms.
+    failure_mode: Handler or inbox recording failure leaves message for retry.
+    recovery_or_compensation: SQS redelivery and DLQ review after max receives.
+    related_controls:
+      - CTL-AVAIL-001
+    related_diagrams:
+      - dfd-01-logical-runtime.md
+      - dfd-03-sweep-order-flow.md
+      - dfd-04-redemption-flow.md
+    source_files:
+      - services/worker/src/workers/mod.rs
+      - crates/messaging/src/sqs.rs
+      - infra/aws-simulation/main.tf
+  - id: DF-010
+    name: Worker applies inbox deduplication
+    description: Worker services record the SQS message_id and event_id before applying handler side effects.
+    source: P-003 Worker Services
+    destination: DS-001 Postgres Financial Store
+    trust_boundaries_crossed:
+      - TB-003
+      - TB-005
+    protocol_or_mechanism: SQLx insert into inbox_messages
+    data_elements:
+      - consumer
+      - message_id
+      - event_id
+      - processed_at
+    data_classification: restricted_financial_record
+    purpose: Prevent duplicate worker side effects from at-least-once queue delivery.
+    trigger: Worker receives a valid EventEnvelope.
+    persistence: inbox_messages table primary key on consumer and message_id.
+    retention: Retained as worker processing evidence.
+    authentication: database credential or AWS task role plus Secrets Manager provided DATABASE_URL.
+    authorization: worker database insert permission.
+    encryption_in_transit: Postgres connection transport protection is expected in managed deployments.
+    encryption_at_rest: Local Postgres volume in dev; AWS sandbox RDS is KMS encrypted.
+    integrity_controls:
+      - Primary key prevents duplicate message processing for each consumer.
+    replay_or_deduplication_controls:
+      - Duplicate insert returns rows_affected zero and skips handler side effects.
+    logging_and_audit_evidence:
+      - consumer
+      - message_id
+      - event_id
+      - inbox_deduplicates_worker_effects certifier check
+    monitoring_or_alerting:
+      - certifier DB invariant report.
+    failure_mode: Inbox write failure causes message retry.
+    recovery_or_compensation: SQS redelivers message after visibility timeout.
+    related_controls:
+      - CTL-AVAIL-001
+    related_diagrams:
+      - dfd-01-logical-runtime.md
+      - dfd-03-sweep-order-flow.md
+      - dfd-04-redemption-flow.md
+    source_files:
+      - crates/persistence/src/inbox.rs
+      - services/worker/src/workers/mod.rs
+      - services/certifier/src/main.rs
+  - id: DF-011
+    name: Transfer-agent worker calls mock transfer agent
+    description: The transfer-agent worker posts a subscription request to the deterministic mock transfer-agent service.
+    source: P-003 Worker Services
+    destination: EXT-002 Mock Transfer Agent
+    trust_boundaries_crossed:
+      - TB-003
+      - TB-009
+    protocol_or_mechanism: HTTP POST /subscriptions in local or sandbox simulation
+    data_elements:
+      - order_id
+      - idempotency_key
+      - amount
+      - product_asset
+    data_classification: restricted_financial_record
+    purpose: Simulate transfer-agent subscription confirmation.
+    trigger: Transfer-agent worker sees order status SubscriptionSubmitted.
+    persistence: Mock service keeps in-memory confirmation by idempotency key; confirmation is persisted downstream in Postgres.
+    retention: In-memory mock retention lasts for service lifetime only.
+    authentication: local_service_call in current simulation; future transfer-agent identity required for real integration.
+    authorization: mock integration accepts local worker requests; future custodian authorization is out of scope.
+    encryption_in_transit: Local HTTP inside demo network; TLS required for any real external integration.
+    encryption_at_rest: Not persisted at this hop except mock in-memory state.
+    integrity_controls:
+      - Mock returns the same confirmation for repeated idempotency key.
+      - Worker applies domain ConfirmTransferAgent command after success.
+    replay_or_deduplication_controls:
+      - subscription order_id idempotency key.
+    logging_and_audit_evidence:
+      - order_id
+      - confirmation_ref
+      - worker event_id logs
+    monitoring_or_alerting:
+      - worker logs and smoke status progression.
+    failure_mode: HTTP or status error returns handler failure and message retry.
+    recovery_or_compensation: SQS retry runs handler again; mock idempotency returns stable confirmation.
+    related_controls:
+      - CTL-SEC-001
+      - CTL-PI-002
+    related_diagrams:
+      - dfd-03-sweep-order-flow.md
+    source_files:
+      - services/worker/src/workers/mod.rs
+      - services/mock-transfer-agent/src/main.rs
+      - docs/runbooks/aws-simulation.md
+  - id: DF-012
+    name: Transfer-agent confirmation writes position
+    description: After transfer-agent confirmation, worker commands record transfer confirmation and book a position.
+    source: P-003 Worker Services
+    destination: DS-001 Postgres Financial Store
+    trust_boundaries_crossed:
+      - TB-003
+      - TB-005
+      - TB-009
+    protocol_or_mechanism: Domain command handler and SQLx transaction
+    data_elements:
+      - order_id
+      - confirmation_ref
+      - account_id
+      - product_asset
+      - quantity
+      - state transition
+      - position_id
+    data_classification: restricted_financial_record
+    purpose: Establish that a confirmed subscription produced exactly one booked position.
+    trigger: Mock transfer-agent returns confirmation_ref.
+    persistence: sweep_orders, state_transitions, positions, ledger_entries, outbox_events, and audit_events.
+    retention: Retained as financial record and audit evidence.
+    authentication: database credential or AWS task role plus Secrets Manager provided DATABASE_URL.
+    authorization: worker database write permission and domain command authorization assumptions.
+    encryption_in_transit: Postgres connection transport protection is expected in managed deployments.
+    encryption_at_rest: Local Postgres volume in dev; AWS sandbox RDS is KMS encrypted.
+    integrity_controls:
+      - PositionBooked requires transfer-agent confirmation.
+      - positions unique order_id and unique transfer_agent_confirmation_ref.
+      - balanced ledger entries for position booking.
+    replay_or_deduplication_controls:
+      - Inbox dedupe prevents duplicate handler effects.
+      - Position insert uses on conflict order_id do nothing.
+    logging_and_audit_evidence:
+      - state_transitions entries
+      - audit_events entries
+      - certifier one_position_per_order check
+      - no_duplicate_transfer_agent_confirmations check
+    monitoring_or_alerting:
+      - smoke verifies exactly one position for the order.
+    failure_mode: Missing confirmation or database constraint failure prevents position booking.
+    recovery_or_compensation: Queue retry after transient failure; reconciliation break path for mismatch conditions.
+    related_controls:
+      - CTL-PI-002
+      - CTL-PI-003
+      - CTL-CONF-001
+      - CTL-AUDIT-001
+    related_diagrams:
+      - dfd-01-logical-runtime.md
+      - dfd-03-sweep-order-flow.md
+    source_files:
+      - services/worker/src/workers/mod.rs
+      - crates/persistence/src/repositories.rs
+      - crates/persistence/migrations/20260616150400_initial.sql
+      - crates/domain/src/sweep.rs
+      - services/certifier/src/main.rs
+  - id: DF-013
+    name: Reconciliation worker validates reconciled history
+    description: The reconciliation worker consumes position-booked events, reconciles the order, and activates it when no mismatch is injected.
+    source: P-003 Worker Services
+    destination: DS-001 Postgres Financial Store
+    trust_boundaries_crossed:
+      - TB-003
+      - TB-005
+    protocol_or_mechanism: Domain command handler and SQLx transaction
+    data_elements:
+      - order_id
+      - event_id
+      - correlation_id
+      - status
+      - reconciliation result
+    data_classification: restricted_financial_record
+    purpose: Ensure Active status follows Reconciled history or open an exception path.
+    trigger: sweep.position.booked.v1 event.
+    persistence: sweep_orders, state_transitions, outbox_events, audit_events, and optional reconciliation_breaks.
+    retention: Retained as workflow and exception evidence.
+    authentication: database credential or AWS task role plus Secrets Manager provided DATABASE_URL.
+    authorization: worker database write permission and domain command authorization assumptions.
+    encryption_in_transit: Postgres connection transport protection is expected in managed deployments.
+    encryption_at_rest: Local Postgres volume in dev; AWS sandbox RDS is KMS encrypted.
+    integrity_controls:
+      - Active requires Reconciled in the state machine and certifier.
+      - Reconciliation mismatch opens ExceptionOpen instead of activating.
+    replay_or_deduplication_controls:
+      - Inbox dedupe prevents duplicate reconciliation effects.
+    logging_and_audit_evidence:
+      - state_transitions to Reconciled and Active
+      - reconciliation_breaks on mismatch
+      - active_requires_reconciled_history certifier check
+    monitoring_or_alerting:
+      - smoke and failure-path smoke.
+    failure_mode: Mismatch opens a reconciliation break; handler failure retries the SQS message.
+    recovery_or_compensation: Resolve break through API or disable injection and create a new test flow.
+    related_controls:
+      - CTL-PI-002
+      - CTL-AUDIT-001
+      - CTL-IR-001
+    related_diagrams:
+      - dfd-01-logical-runtime.md
+      - dfd-03-sweep-order-flow.md
+      - dfd-05-reconciliation-exception-flow.md
+    source_files:
+      - services/worker/src/workers/mod.rs
+      - crates/persistence/src/repositories.rs
+      - spec/domain/sweep_order.machine.yaml
+      - services/certifier/src/main.rs
+      - scripts/smoke-failure-paths.sh
+  - id: DF-014
+    name: Ledger entries are written
+    description: Domain command side effects insert balanced ledger entries for cash lock and position booking.
+    source: P-005 Domain Command Handler
+    destination: DS-001 Postgres Financial Store
+    trust_boundaries_crossed:
+      - TB-003
+      - TB-005
+    protocol_or_mechanism: SQLx transaction insert into ledger_entries
+    data_elements:
+      - entry_id
+      - account_id
+      - order_id
+      - asset
+      - amount
+      - debit_credit
+      - ledger_account
+      - entry_kind
+    data_classification: restricted_financial_record
+    purpose: Record balanced financial ledger effects for supported sweep lifecycle transitions.
+    trigger: LockCash or BookPosition domain command side effect.
+    persistence: ledger_entries table with append-only trigger.
+    retention: Retained as financial-control evidence.
+    authentication: database credential or AWS task role plus Secrets Manager provided DATABASE_URL.
+    authorization: application or worker database write permission.
+    encryption_in_transit: Postgres connection transport protection is expected in managed deployments.
+    encryption_at_rest: Local Postgres volume in dev; AWS sandbox RDS is KMS encrypted.
+    integrity_controls:
+      - validate_ledger_balances checks debit and credit balance per asset.
+      - Postgres trigger prevents update or delete of ledger entries.
+    replay_or_deduplication_controls:
+      - Inbox dedupe and position uniqueness reduce duplicate ledger side effects for worker events.
+    logging_and_audit_evidence:
+      - ledger_entries rows
+      - ledger_balanced_per_asset_order_kind certifier check
+      - ledger_append_only_trigger_enforced certifier check
+    monitoring_or_alerting:
+      - DB invariant certifier report.
+    failure_mode: Out-of-balance entries or append-only mutation attempts fail.
+    recovery_or_compensation: Correct the command path and rerun tests or certifier after restoring from valid state.
+    related_controls:
+      - CTL-PI-003
+      - CTL-CONF-001
+    related_diagrams:
+      - dfd-01-logical-runtime.md
+      - dfd-03-sweep-order-flow.md
+      - dfd-04-redemption-flow.md
+    source_files:
+      - crates/domain/src/ledger.rs
+      - crates/persistence/src/repositories.rs
+      - crates/persistence/migrations/20260616150400_initial.sql
+      - services/certifier/src/main.rs
+  - id: DF-015
+    name: Audit events and state transitions are written
+    description: Each accepted create or command transition records timeline and audit evidence.
+    source: P-005 Domain Command Handler
+    destination: DS-001 Postgres Financial Store
+    trust_boundaries_crossed:
+      - TB-003
+      - TB-005
+    protocol_or_mechanism: SQLx transaction insert into state_transitions and audit_events
+    data_elements:
+      - transition_id
+      - order_id
+      - from_status
+      - to_status
+      - command
+      - emitted_events
+      - guard_results
+      - event_id
+      - event_type
+      - correlation_id
+    data_classification: restricted_financial_record
+    purpose: Create an auditable timeline for every workflow transition.
+    trigger: Accepted create order or domain command.
+    persistence: state_transitions and audit_events tables.
+    retention: Retained as audit and traceability evidence.
+    authentication: database credential or AWS task role plus Secrets Manager provided DATABASE_URL.
+    authorization: application or worker database write permission.
+    encryption_in_transit: Postgres connection transport protection is expected in managed deployments.
+    encryption_at_rest: Local Postgres volume in dev; AWS sandbox RDS is KMS encrypted.
+    integrity_controls:
+      - Domain transition output supplies from_status, to_status, command, guards, and emitted events.
+    replay_or_deduplication_controls:
+      - Event IDs are primary keys in audit_events and outbox_events.
+    logging_and_audit_evidence:
+      - state_transitions timeline
+      - audit_events
+      - /audit-events API route
+    monitoring_or_alerting:
+      - audit event API and certifier duplicate-business-event check.
+    failure_mode: Transaction failure prevents partial transition/audit state.
+    recovery_or_compensation: Retry command after persistence issue is resolved.
+    related_controls:
+      - CTL-PI-002
+      - CTL-AUDIT-001
+      - CTL-IR-001
+    related_diagrams:
+      - dfd-01-logical-runtime.md
+      - dfd-03-sweep-order-flow.md
+      - dfd-04-redemption-flow.md
+      - dfd-05-reconciliation-exception-flow.md
+    source_files:
+      - crates/persistence/src/repositories.rs
+      - crates/persistence/migrations/20260616150400_initial.sql
+      - services/api/src/routes/mod.rs
+      - spec/asyncapi.yaml
+  - id: DF-016
+    name: Redemption is requested
+    description: An operator requests redemption for an existing active order.
+    source: EXT-001 Institutional Operator
+    destination: P-001 API Service
+    trust_boundaries_crossed:
+      - TB-001
+      - TB-002
+    protocol_or_mechanism: HTTPS or localhost HTTP JSON POST /redemptions
+    data_elements:
+      - order_id
+      - idempotency_key
+      - correlation_id
+    data_classification: restricted_financial_record
+    purpose: Move an active order into the redemption lifecycle.
+    trigger: Operator submits CreateRedemptionRequest.
+    persistence: Downstream command path writes idempotency, state transition, outbox, and audit records.
+    retention: Retained as workflow and audit evidence.
+    authentication: operator_identity in future deployment; local demo uses required write headers only.
+    authorization: redemption_authorization in future deployment; domain guards require redeemable position.
+    encryption_in_transit: TLS expected outside localhost; localhost HTTP is accepted only for local simulation.
+    encryption_at_rest: Not persisted at this hop; persistence occurs in Postgres flows.
+    integrity_controls:
+      - RequestRedemption transition requires redeemable_position guard.
+      - Idempotency key protects replay.
+    replay_or_deduplication_controls:
+      - Idempotency record for order-command scope.
+    logging_and_audit_evidence:
+      - correlation_id
+      - state transition to RedemptionRequested
+      - redemption.requested.v1 event
+    monitoring_or_alerting:
+      - AWS sandbox k6 includes redemption request handling.
+    failure_mode: Invalid state or duplicate conflicting idempotency request returns typed error.
+    recovery_or_compensation: Retry same request body or resolve order state before retry.
+    related_controls:
+      - CTL-SEC-001
+      - CTL-PI-001
+      - CTL-AUDIT-001
+      - CTL-PRIV-001
+    related_diagrams:
+      - dfd-00-system-boundary.md
+      - dfd-04-redemption-flow.md
+    source_files:
+      - spec/openapi.yaml
+      - spec/domain/sweep_order.machine.yaml
+      - services/api/src/routes/mod.rs
+      - crates/persistence/src/repositories.rs
+      - spec/certification/aws_certification_load.js
+  - id: DF-017
+    name: Redemption cash credit is processed
+    description: The modeled redemption command path advances through redemption confirmation and cash credit transitions, recording audit evidence. The current public runtime exposes request creation; full settlement invocation is not a dedicated public workflow.
+    source: P-005 Domain Command Handler
+    destination: DS-001 Postgres Financial Store
+    trust_boundaries_crossed:
+      - TB-003
+      - TB-005
+    protocol_or_mechanism: Domain command handler and SQLx transaction
+    data_elements:
+      - order_id
+      - command
+      - confirmation_ref
+      - status
+      - correlation_id
+      - event_type
+    data_classification: restricted_financial_record
+    purpose: Represent the cash-credit step required by the redemption state machine and audit trail.
+    trigger: ConfirmRedemption and CreditCash commands after shares are reserved and redemption is submitted.
+    persistence: sweep_orders, state_transitions, outbox_events, audit_events, and modeled ledger evidence where supported by command side effects.
+    retention: Retained as redemption workflow evidence.
+    authentication: database credential or AWS task role plus Secrets Manager provided DATABASE_URL.
+    authorization: redemption workflow authorization in future deployment; domain guards require redemption confirmation before cash credit.
+    encryption_in_transit: Postgres connection transport protection is expected in managed deployments.
+    encryption_at_rest: Local Postgres volume in dev; AWS sandbox RDS is KMS encrypted.
+    integrity_controls:
+      - CashCredited requires redemption confirmation in the state machine and source proofs.
+      - Idempotency may be applied to command invocations that carry operator keys.
+    replay_or_deduplication_controls:
+      - Command idempotency record when a key is supplied.
+      - Audit event primary key prevents duplicate event rows.
+    logging_and_audit_evidence:
+      - state_transitions
+      - audit_events
+      - cash_credited_can_only_be_reached_after_redemption_confirmation test evidence
+    monitoring_or_alerting:
+      - domain tests and full validation gate.
+    failure_mode: Domain guard failure blocks cash credit without prior confirmation.
+    recovery_or_compensation: Complete required prior redemption states or investigate failed command path before retry.
+    related_controls:
+      - CTL-PI-001
+      - CTL-PI-002
+      - CTL-PI-003
+      - CTL-AUDIT-001
+    related_diagrams:
+      - dfd-04-redemption-flow.md
+    source_files:
+      - spec/domain/sweep_order.machine.yaml
+      - crates/domain/src/sweep.rs
+      - crates/domain/tests/liveness_trace_tests.rs
+      - crates/domain/tests/sweep_property_tests.rs
+      - crates/persistence/src/repositories.rs
+  - id: DF-018
+    name: Reconciliation mismatch injection is enabled and disabled in test mode
+    description: The operator or certification load script toggles local reconciliation mismatch injection through a dev API route.
+    source: EXT-001 Institutional Operator
+    destination: DS-001 Postgres Financial Store
+    trust_boundaries_crossed:
+      - TB-001
+      - TB-002
+      - TB-005
+    protocol_or_mechanism: HTTP POST /dev/failure-injections/reconciliation-mismatch and SQL upsert
+    data_elements:
+      - enabled
+      - idempotency_key
+      - correlation_id
+      - failure_injection key
+      - updated_at
+    data_classification: restricted_financial_record
+    purpose: Exercise reconciliation exception handling in local and sandbox tests.
+    trigger: Failure-path smoke or AWS sandbox load scenario.
+    persistence: failure_injections table.
+    retention: Current toggle value remains until changed or database is reset.
+    authentication: operator_identity in future deployment; local demo uses required write headers only.
+    authorization: test_operator_authorization in future deployment; route is a dev-only control.
+    encryption_in_transit: TLS expected outside localhost; localhost HTTP is accepted only for local simulation.
+    encryption_at_rest: Local Postgres volume in dev; AWS sandbox RDS is KMS encrypted.
+    integrity_controls:
+      - CTL-IR-001 ensures mismatch opens reconciliation break instead of silent activation.
+    replay_or_deduplication_controls:
+      - Write route requires Idempotency-Key, but toggle storage is last-write-wins by key.
+    logging_and_audit_evidence:
+      - correlation_id
+      - failure_injections row
+      - reconciliation_breaks created by subsequent flow
+    monitoring_or_alerting:
+      - smoke-failure-paths script result.
+    failure_mode: Leaving injection enabled can force later test orders into exception path.
+    recovery_or_compensation: Disable injection through the same route and reset local data if necessary.
+    related_controls:
+      - CTL-SEC-001
+      - CTL-PI-002
+      - CTL-AUDIT-001
+      - CTL-IR-001
+    related_diagrams:
+      - dfd-00-system-boundary.md
+      - dfd-05-reconciliation-exception-flow.md
+    source_files:
+      - spec/openapi.yaml
+      - services/api/src/routes/mod.rs
+      - crates/persistence/src/repositories.rs
+      - scripts/smoke-failure-paths.sh
+      - spec/certification/aws_certification_load.js
+  - id: DF-019
+    name: Certifier reads Postgres and emits DB invariant report
+    description: The certifier service reads Postgres invariant surfaces and emits a JSON DB invariant report.
+    source: P-007 Certifier Service
+    destination: DS-004 Evidence Artifacts
+    trust_boundaries_crossed:
+      - TB-005
+      - TB-008
+    protocol_or_mechanism: SQLx reads plus JSON report output
+    data_elements:
+      - idempotency check counts
+      - position uniqueness counts
+      - active reconciliation counts
+      - ledger balance counts
+      - inbox dedupe counts
+      - outbox stale counts
+      - git_sha
+      - generated_at
+    data_classification: restricted_audit_evidence
+    purpose: Provide machine-checkable post-run financial invariant evidence.
+    trigger: AWS cert collection ECS task or local DATABASE_URL certifier run.
+    persistence: Report written to artifact output or stdout; source data remains in Postgres.
+    retention: Retained in private evidence artifacts for the review period selected by the owner.
+    authentication: DATABASE_URL from local environment or AWS Secrets Manager in sandbox.
+    authorization: certifier task role and database read/update permission for append-only trigger probe.
+    encryption_in_transit: Postgres connection transport protection is expected in managed deployments.
+    encryption_at_rest: AWS sandbox evidence artifacts are local files after collection; RDS source data is KMS encrypted.
+    integrity_controls:
+      - CTL-PI-003 checks ledger and position invariants.
+      - CTL-AUDIT-002 requires zero failed checks for collection success.
+    replay_or_deduplication_controls:
+      - Report includes generated_at and git_sha to bind evidence to run context.
+    logging_and_audit_evidence:
+      - db-invariant-report.json
+      - certifier log events
+      - certifier task description
+    monitoring_or_alerting:
+      - collect script exits nonzero on failed checks.
+    failure_mode: Missing or failed report causes evidence collection failure.
+    recovery_or_compensation: Investigate invariant failures, remediate source path, rerun workload and collection.
+    related_controls:
+      - CTL-PI-003
+      - CTL-CONF-001
+      - CTL-AUDIT-002
+    related_diagrams:
+      - dfd-00-system-boundary.md
+      - dfd-02-aws-certification-sandbox.md
+    source_files:
+      - services/certifier/src/main.rs
+      - scripts/aws-cert-collect.sh
+      - docs/certification/aws-simulation-internal-certification-report-2026-06-17.md
+      - spec/certification/aws_certification_coverage_map.json
+  - id: DF-020
+    name: AWS certification scripts collect evidence artifacts
+    description: AWS sandbox collection scripts gather command, identity, queue, certifier, cost, and inventory evidence into artifact files.
+    source: P-008 AWS Certification Scripts
+    destination: DS-004 Evidence Artifacts
+    trust_boundaries_crossed:
+      - TB-006
+      - TB-008
+    protocol_or_mechanism: Bash, AWS CLI, jq, ECS task run, CloudWatch Logs read, local artifact writes
+    data_elements:
+      - command manifest
+      - AWS identity
+      - ECS service inventory
+      - SQS queue attributes
+      - DB invariant report
+      - cost summary
+      - FIS evidence
+    data_classification: restricted_audit_evidence
+    purpose: Collect bounded AWS sandbox evidence without committing account-specific artifacts.
+    trigger: make aws-cert-collect.
+    persistence: artifacts/aws-certification directory, which is ignored by git.
+    retention: Retained outside committed source according to evidence-room policy.
+    authentication: scoped AWS sandbox role after preflight; no root identity for collect.
+    authorization: scoped AWS permissions for describe, logs, SQS attributes, ECS run task, and Cost Explorer where available.
+    encryption_in_transit: AWS CLI HTTPS.
+    encryption_at_rest: Local artifact storage after collection; source AWS services are KMS encrypted where configured.
+    integrity_controls:
+      - Preflight runs in cleanup mode before collection.
+      - Collection fails if DB invariant report is missing or has failed checks.
+    replay_or_deduplication_controls:
+      - Artifact paths include deterministic names and command manifest records git_sha.
+    logging_and_audit_evidence:
+      - command-manifest.json
+      - aws-identity.json
+      - aws-inventory.json
+      - db-invariant-report.json
+      - queue-drain-final.json
+    monitoring_or_alerting:
+      - Script exit code and tracker command log.
+    failure_mode: Missing cloud outputs or missing DATABASE_URL prevents certifier run.
+    recovery_or_compensation: Collect available failed evidence, destroy sandbox stack, and record missing artifacts.
+    related_controls:
+      - CTL-SEC-002
+      - CTL-CONF-001
+      - CTL-AUDIT-002
+    related_diagrams:
+      - dfd-00-system-boundary.md
+      - dfd-02-aws-certification-sandbox.md
+      - dfd-05-reconciliation-exception-flow.md
+    source_files:
+      - scripts/aws-cert-collect.sh
+      - scripts/aws-cert-preflight.sh
+      - docs/runbooks/aws-simulation.md
+      - spec/certification/aws_certification_coverage_map.json
+  - id: DF-021
+    name: CI validates specs, formal checks, AWS static checks, Rust, frontend, and docs
+    description: The full validation path runs local deterministic gates and CI jobs for specification, proof, source, frontend, docs, AWS static, and readiness surfaces.
+    source: EXT-003 CI/CD Runner
+    destination: P-009 Validation Gate
+    trust_boundaries_crossed:
+      - TB-007
+      - TB-008
+    protocol_or_mechanism: make validate, scripts/validate-all.sh, GitHub Actions workflow
+    data_elements:
+      - source files
+      - validation command results
+      - CI job logs
+      - generated coverage map checks
+    data_classification: internal
+    purpose: Detect drift across specs, code, diagrams, evidence maps, and documentation.
+    trigger: Local make validate or CI workflow run.
+    persistence: CI logs and local terminal output; generated maps are committed only when intentionally refreshed.
+    retention: CI retention and repository history.
+    authentication: repository write or CI runner identity.
+    authorization: repository and CI workflow permissions.
+    encryption_in_transit: Git and CI provider transport encryption.
+    encryption_at_rest: CI provider storage and local repository storage.
+    integrity_controls:
+      - CTL-CHANGE-001 runs fail-closed validators.
+    replay_or_deduplication_controls:
+      - Git commit SHA and workflow run ID bind results to source version.
+    logging_and_audit_evidence:
+      - make validate output
+      - GitHub Actions run logs
+      - AGENT_TRACKER.md command log
+    monitoring_or_alerting:
+      - CI pass or fail status.
+    failure_mode: Any validator or test failure blocks full validation success.
+    recovery_or_compensation: Fix source drift, rerun targeted gate, then rerun full validation.
+    related_controls:
+      - CTL-CHANGE-001
+      - CTL-AUDIT-002
+    related_diagrams:
+      - dfd-00-system-boundary.md
+      - dfd-02-aws-certification-sandbox.md
+    source_files:
+      - Makefile
+      - scripts/validate-all.sh
+      - .github/workflows/ci.yml
+      - scripts/validate-docs.sh
+  - id: DF-022
+    name: AWS FIS stops one ECS worker task during certification campaign
+    description: AWS FIS executes a stop-task action against one tagged ECS worker task in the non-production sandbox.
+    source: P-010 AWS FIS Experiment
+    destination: P-003 Worker Services
+    trust_boundaries_crossed:
+      - TB-006
+    protocol_or_mechanism: AWS FIS experiment template with aws:ecs:stop-task action
+    data_elements:
+      - experiment_template_id
+      - experiment_id
+      - ECS task ARN
+      - task tags
+      - experiment status
+    data_classification: restricted_audit_evidence
+    purpose: Exercise worker replacement, queue retry, and asynchronous completion evidence.
+    trigger: make aws-cert-run after k6 and pre-FIS target checks.
+    persistence: FIS experiment evidence under artifacts/aws-certification and AWS FIS service records.
+    retention: Retained as private sandbox evidence for the selected review period.
+    authentication: scoped AWS sandbox role.
+    authorization: FIS role can describe and stop ECS tasks selected by tags.
+    encryption_in_transit: AWS CLI HTTPS and AWS service transport.
+    encryption_at_rest: FIS evidence artifact storage; CloudWatch and service logs use KMS where configured.
+    integrity_controls:
+      - Pre-FIS target check verifies tagged worker tasks exist.
+      - Post-FIS ECS stability and queue drain gates verify recovery.
+    replay_or_deduplication_controls:
+      - Experiment ID and artifact files bind evidence to one run.
+    logging_and_audit_evidence:
+      - fis-start-experiment.json
+      - fis-experiment.json
+      - ecs-services-stability-post-fis.json
+      - queue-drain-post-fis.json
+    monitoring_or_alerting:
+      - Script exits on failed or timed-out experiment.
+    failure_mode: FIS failure or missing targets fails the sandbox run.
+    recovery_or_compensation: Collect failed evidence, remediate tagging or IAM, destroy and rerun clean sandbox.
+    related_controls:
+      - CTL-SEC-002
+      - CTL-AVAIL-002
+    related_diagrams:
+      - dfd-02-aws-certification-sandbox.md
+    source_files:
+      - infra/aws-simulation/main.tf
+      - scripts/aws-cert-run.sh
+      - scripts/aws-cert-check-fis-targets.sh
+      - scripts/aws-cert-wait-ecs-services-stable.sh
+  - id: DF-023
+    name: Queue drain scripts inspect SQS source queues and DLQs
+    description: Queue drain scripts inspect worker source queues and dead-letter queues for visible, in-flight, and delayed message counts.
+    source: P-008 AWS Certification Scripts
+    destination: MQ-003 SQS Dead-Letter Queues
+    trust_boundaries_crossed:
+      - TB-004
+      - TB-006
+      - TB-008
+    protocol_or_mechanism: AWS CLI sqs get-queue-attributes plus JSON artifact output
+    data_elements:
+      - queue kind
+      - queue name
+      - queue URL
+      - visible count
+      - not_visible count
+      - delayed count
+      - total_messages
+      - stage
+    data_classification: restricted_audit_evidence
+    purpose: Prove asynchronous queues and DLQs are drained at required campaign checkpoints.
+    trigger: aws-cert-run and aws-cert-collect queue-drain stages.
+    persistence: queue-drain-stage JSON artifacts.
+    retention: Retained as private evidence for the selected review period.
+    authentication: scoped AWS sandbox role.
+    authorization: SQS GetQueueAttributes permission on source queues and DLQs.
+    encryption_in_transit: AWS CLI HTTPS.
+    encryption_at_rest: Queue service encryption with KMS in AWS sandbox; artifact storage after collection is local.
+    integrity_controls:
+      - Drain script fails when total queued messages remain past timeout.
+    replay_or_deduplication_controls:
+      - Stage-specific artifact names capture each checkpoint.
+    logging_and_audit_evidence:
+      - queue-drain-pre-run.json
+      - queue-drain-post-smoke.json
+      - queue-drain-post-k6.json
+      - queue-drain-post-fis.json
+      - queue-drain-final.json
+    monitoring_or_alerting:
+      - CloudWatch DLQ alarms and script failure status.
+    failure_mode: Nonzero queue total after timeout fails drain gate.
+    recovery_or_compensation: Inspect failed artifact, worker logs, and DLQs; collect evidence before teardown.
+    related_controls:
+      - CTL-AVAIL-001
+      - CTL-AVAIL-002
+      - CTL-AUDIT-002
+    related_diagrams:
+      - dfd-02-aws-certification-sandbox.md
+      - dfd-05-reconciliation-exception-flow.md
+    source_files:
+      - scripts/aws-cert-wait-queues-drained.sh
+      - scripts/aws-cert-collect.sh
+      - infra/aws-simulation/main.tf
+  - id: DF-024
+    name: Secrets Manager provides database URL to ECS tasks
+    description: ECS task definitions inject DATABASE_URL from AWS Secrets Manager for API, workers, and certifier tasks in the sandbox.
+    source: DS-003 AWS Secrets Manager
+    destination: P-001 API Service
+    trust_boundaries_crossed:
+      - TB-006
+    protocol_or_mechanism: ECS task definition secret reference
+    data_elements:
+      - DATABASE_URL
+      - database username
+      - database password
+      - RDS endpoint
+      - secret ARN
+    data_classification: restricted_secret
+    purpose: Avoid hardcoded database credentials in AWS sandbox task definitions.
+    trigger: ECS task start.
+    persistence: Secret version stored in AWS Secrets Manager; environment value exists only in task runtime.
+    retention: Secret remains for sandbox stack lifetime and is force-deleted on destroy path.
+    authentication: ECS task execution role.
+    authorization: IAM policy permits GetSecretValue and KMS Decrypt for the database secret and key.
+    encryption_in_transit: AWS service transport.
+    encryption_at_rest: Secrets Manager secret uses the sandbox KMS key.
+    integrity_controls:
+      - Terraform defines secret source and task definition references.
+      - Static AWS validator checks immediate deletion semantics and secret references.
+    replay_or_deduplication_controls:
+      - Secret version is bound to the current sandbox deploy.
+    logging_and_audit_evidence:
+      - task definition secret ARN
+      - Terraform state output metadata
+      - preflight and deploy command logs
+    monitoring_or_alerting:
+      - aws-cert-deploy validation and ECS task startup status.
+    failure_mode: Missing or scheduled-for-deletion secret blocks deploy or task startup.
+    recovery_or_compensation: Restore or force-delete stale secret and redeploy.
+    related_controls:
+      - CTL-SEC-002
+      - CTL-SEC-003
+      - CTL-CONF-001
+    related_diagrams:
+      - dfd-02-aws-certification-sandbox.md
+    source_files:
+      - infra/aws-simulation/main.tf
+      - scripts/aws-cert-deploy.sh
+      - scripts/validate-aws-certification.sh
+  - id: DF-025
+    name: CloudWatch logs receive service logs encrypted by KMS
+    description: API, worker, mock transfer-agent, and certifier tasks send logs to CloudWatch Logs groups encrypted by the sandbox KMS key.
+    source: P-003 Worker Services
+    destination: DS-005 CloudWatch Logs
+    trust_boundaries_crossed:
+      - TB-006
+      - TB-008
+    protocol_or_mechanism: ECS awslogs driver to CloudWatch Logs with KMS-backed log groups
+    data_elements:
+      - service name
+      - log stream prefix
+      - event_id
+      - message_id
+      - event_type
+      - error metadata
+      - certifier report line
+    data_classification: restricted_audit_evidence
+    purpose: Preserve service operational evidence and certifier output in the AWS sandbox.
+    trigger: ECS task log emission.
+    persistence: CloudWatch Logs group with configured retention; selected certifier logs are copied to artifacts during collection.
+    retention: AWS sandbox log groups retain logs for seven days unless destroyed earlier.
+    authentication: ECS task execution role and CloudWatch Logs service integration.
+    authorization: Task execution role log permissions and KMS policy for logs service.
+    encryption_in_transit: AWS service transport.
+    encryption_at_rest: CloudWatch Logs groups use KMS key defined in Terraform.
+    integrity_controls:
+      - KMS policy scopes logs encryption context to the workload log groups.
+      - Certifier report is parsed from CloudWatch log events during collection.
+    replay_or_deduplication_controls:
+      - Log stream names include task identity; event IDs are included where emitted by services.
+    logging_and_audit_evidence:
+      - CloudWatch log events
+      - certifier-log-events.json
+      - db-invariant-report.raw
+    monitoring_or_alerting:
+      - ALB 5xx and DLQ CloudWatch alarms in sandbox Terraform.
+    failure_mode: Missing log stream prevents collection of certifier report.
+    recovery_or_compensation: Retry log event retrieval or mark collection failure with retained evidence.
+    related_controls:
+      - CTL-SEC-002
+      - CTL-SEC-003
+      - CTL-CONF-001
+    related_diagrams:
+      - dfd-02-aws-certification-sandbox.md
+    source_files:
+      - infra/aws-simulation/main.tf
+      - scripts/aws-cert-collect.sh
+      - crates/observability/src/lib.rs

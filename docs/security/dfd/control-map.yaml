@@ -1,0 +1,428 @@
+schema_version: "1.0.0"
+control_families:
+  - Security
+  - Availability
+  - Processing Integrity
+  - Confidentiality
+  - Privacy
+  - Auditability
+  - Change Management
+  - Incident / Recovery
+controls:
+  - id: CTL-SEC-001
+    name: Ingress transport and request metadata enforcement
+    families:
+      - Security
+      - Processing Integrity
+      - Auditability
+    description: Write routes require correlation and idempotency metadata; deployment owners are expected to protect external transport.
+    control_type: preventive
+    owner_role: application platform owner
+    frequency: every write request and every deploy review
+    evidence:
+      - services/api/src/middleware/mod.rs
+      - spec/openapi.yaml
+      - scripts/smoke-create-sweep.sh
+      - scripts/smoke-failure-paths.sh
+    related_flows:
+      - DF-001
+      - DF-002
+      - DF-016
+      - DF-018
+    related_files:
+      - services/api/src/middleware/mod.rs
+      - spec/openapi.yaml
+    soc2_category_relevance:
+      - Security
+      - Processing Integrity
+    aws_relevance: ALB/API ingress exists only in the opt-in non-production AWS sandbox.
+    residual_gaps:
+      - Production authentication, authorization, TLS termination policy, and operator identity provider integration are outside this repo.
+  - id: CTL-SEC-002
+    name: Local and AWS sandbox endpoint guardrails
+    families:
+      - Security
+      - Change Management
+    description: Local mode rejects real AWS endpoints; the AWS sandbox path requires explicit certification-mode opt-in, scoped role execution, region guardrails, and budget guardrails.
+    control_type: preventive
+    owner_role: platform security owner
+    frequency: every runtime startup and AWS sandbox command
+    evidence:
+      - crates/config/src/lib.rs
+      - crates/messaging/src/localstack.rs
+      - scripts/aws-cert-preflight.sh
+      - docs/runbooks/aws-simulation.md
+    related_flows:
+      - DF-007
+      - DF-008
+      - DF-020
+      - DF-022
+      - DF-023
+      - DF-024
+      - DF-025
+    related_files:
+      - crates/config/src/lib.rs
+      - crates/messaging/src/localstack.rs
+      - scripts/aws-cert-preflight.sh
+    soc2_category_relevance:
+      - Security
+      - Availability
+    aws_relevance: Maps to scoped IAM role execution, region checks, budget guardrails, ECS task roles, and non-production sandbox controls.
+    residual_gaps:
+      - Production AWS account guardrails and organization policies are not part of the local repository.
+  - id: CTL-SEC-003
+    name: Secret and key-management boundary
+    families:
+      - Security
+      - Confidentiality
+    description: AWS sandbox task definitions read the database URL from Secrets Manager and use KMS for RDS, SNS/SQS, CloudWatch Logs, and secret encryption.
+    control_type: preventive
+    owner_role: cloud security owner
+    frequency: every AWS sandbox deploy
+    evidence:
+      - infra/aws-simulation/main.tf
+      - scripts/validate-aws-certification.sh
+    related_flows:
+      - DF-024
+      - DF-025
+    related_files:
+      - infra/aws-simulation/main.tf
+      - scripts/validate-aws-certification.sh
+    soc2_category_relevance:
+      - Security
+      - Confidentiality
+    aws_relevance: Uses AWS KMS, Secrets Manager, RDS storage encryption, encrypted SNS/SQS, and CloudWatch Logs encryption in the sandbox.
+    residual_gaps:
+      - Production secret rotation, key ownership, and access review procedures are future owner work.
+  - id: CTL-AVAIL-001
+    name: Queue retry, dead-letter, and drain evidence
+    families:
+      - Availability
+      - Incident / Recovery
+      - Auditability
+    description: Outbox retry, SQS visibility, DLQs, and drain scripts provide retry and completion evidence for asynchronous workflows.
+    control_type: detective
+    owner_role: reliability owner
+    frequency: every smoke run and AWS sandbox campaign
+    evidence:
+      - crates/persistence/src/outbox.rs
+      - crates/persistence/src/inbox.rs
+      - services/worker/src/workers/mod.rs
+      - scripts/aws-cert-wait-queues-drained.sh
+    related_flows:
+      - DF-006
+      - DF-007
+      - DF-008
+      - DF-009
+      - DF-010
+      - DF-023
+    related_files:
+      - crates/persistence/src/outbox.rs
+      - crates/persistence/src/inbox.rs
+      - scripts/aws-cert-wait-queues-drained.sh
+    soc2_category_relevance:
+      - Availability
+      - Processing Integrity
+    aws_relevance: SQS source queues, DLQs, and queue attribute collection support sandbox retry evidence.
+    residual_gaps:
+      - Production alert routing, on-call ownership, and recovery time objectives are not defined in this repo.
+  - id: CTL-AVAIL-002
+    name: Worker replacement and fault-injection evidence
+    families:
+      - Availability
+      - Incident / Recovery
+    description: AWS FIS stops one worker task during the sandbox campaign and ECS stability checks verify service recovery.
+    control_type: detective
+    owner_role: reliability owner
+    frequency: every AWS sandbox campaign
+    evidence:
+      - infra/aws-simulation/main.tf
+      - scripts/aws-cert-run.sh
+      - scripts/aws-cert-wait-ecs-services-stable.sh
+      - scripts/aws-cert-check-fis-targets.sh
+    related_flows:
+      - DF-022
+      - DF-023
+    related_files:
+      - infra/aws-simulation/main.tf
+      - scripts/aws-cert-run.sh
+      - scripts/aws-cert-wait-ecs-services-stable.sh
+    soc2_category_relevance:
+      - Availability
+    aws_relevance: Uses AWS FIS ECS stop-task action and ECS service stability evidence in the sandbox.
+    residual_gaps:
+      - Broader disaster recovery and multi-region recovery testing remain outside this repository.
+  - id: CTL-PI-001
+    name: Idempotency and replay protection
+    families:
+      - Processing Integrity
+      - Security
+      - Auditability
+    description: API write paths hash idempotency keys and request bodies, reuse matching responses, and reject conflicting replays.
+    control_type: preventive
+    owner_role: application owner
+    frequency: every write request
+    evidence:
+      - crates/persistence/src/idempotency.rs
+      - crates/persistence/src/repositories.rs
+      - crates/persistence/migrations/20260616150400_initial.sql
+      - crates/persistence/tests/repository_tests.rs
+    related_flows:
+      - DF-001
+      - DF-002
+      - DF-003
+      - DF-016
+      - DF-017
+    related_files:
+      - crates/persistence/src/idempotency.rs
+      - crates/persistence/src/repositories.rs
+      - crates/persistence/migrations/20260616150400_initial.sql
+    soc2_category_relevance:
+      - Processing Integrity
+      - Security
+    aws_relevance: Supports replay-safe API and worker behavior during the sandbox load campaign.
+    residual_gaps:
+      - Idempotency retention period policy is not externally owned in this repo.
+  - id: CTL-PI-002
+    name: Domain transition enforcement
+    families:
+      - Processing Integrity
+      - Auditability
+    description: API and workers use the Rust domain transition function and command handlers instead of mutating order status directly.
+    control_type: preventive
+    owner_role: domain owner
+    frequency: every state transition
+    evidence:
+      - crates/domain/src/sweep.rs
+      - spec/domain/sweep_order.machine.yaml
+      - crates/persistence/src/repositories.rs
+      - crates/domain/tests/sweep_state_machine_tests.rs
+    related_flows:
+      - DF-012
+      - DF-013
+      - DF-015
+      - DF-017
+      - DF-018
+    related_files:
+      - crates/domain/src/sweep.rs
+      - crates/persistence/src/repositories.rs
+      - spec/domain/sweep_order.machine.yaml
+    soc2_category_relevance:
+      - Processing Integrity
+    aws_relevance: Same domain rules run in local and AWS sandbox services.
+    residual_gaps:
+      - Production approval workflows and segregation-of-duty policies are outside this repo.
+  - id: CTL-PI-003
+    name: Ledger and position integrity enforcement
+    families:
+      - Processing Integrity
+      - Auditability
+    description: Postgres constraints, unique keys, balanced ledger insertion, and append-only ledger trigger protect financial records.
+    control_type: preventive
+    owner_role: financial systems owner
+    frequency: every ledger or position write
+    evidence:
+      - crates/domain/src/ledger.rs
+      - crates/persistence/migrations/20260616150400_initial.sql
+      - crates/persistence/src/repositories.rs
+      - services/certifier/src/main.rs
+    related_flows:
+      - DF-012
+      - DF-014
+      - DF-017
+      - DF-019
+    related_files:
+      - crates/domain/src/ledger.rs
+      - crates/persistence/migrations/20260616150400_initial.sql
+      - services/certifier/src/main.rs
+    soc2_category_relevance:
+      - Processing Integrity
+    aws_relevance: The sandbox certifier checks DB invariants after the AWS workload run.
+    residual_gaps:
+      - Full redemption settlement ledger side effects are modeled by the domain but are not exposed as a dedicated public runtime workflow.
+  - id: CTL-CONF-001
+    name: Restricted data encryption and minimization
+    families:
+      - Confidentiality
+      - Security
+      - Privacy
+    description: Restricted financial records and evidence are classified, routed through encrypted managed services in AWS sandbox mode, and kept out of committed evidence artifacts.
+    control_type: preventive
+    owner_role: security and privacy owner
+    frequency: every evidence refresh and deploy review
+    evidence:
+      - docs/security.md
+      - infra/aws-simulation/main.tf
+      - .gitignore
+      - .dockerignore
+    related_flows:
+      - DF-003
+      - DF-004
+      - DF-005
+      - DF-012
+      - DF-014
+      - DF-019
+      - DF-020
+      - DF-024
+      - DF-025
+    related_files:
+      - docs/security.md
+      - infra/aws-simulation/main.tf
+      - .dockerignore
+    soc2_category_relevance:
+      - Security
+      - Confidentiality
+      - Privacy
+    aws_relevance: Uses KMS-backed RDS, Secrets Manager, SNS/SQS, and CloudWatch Logs in sandbox mode.
+    residual_gaps:
+      - Real customer data inventory, privacy retention, data subject handling, and subprocessors are outside the current repo.
+  - id: CTL-AUDIT-001
+    name: Correlation, transition, and audit event trail
+    families:
+      - Auditability
+      - Processing Integrity
+    description: State transitions, audit events, outbox records, and correlation IDs create a replayable workflow trail.
+    control_type: detective
+    owner_role: audit evidence owner
+    frequency: every command and event
+    evidence:
+      - crates/persistence/src/repositories.rs
+      - crates/persistence/migrations/20260616150400_initial.sql
+      - spec/asyncapi.yaml
+      - services/api/src/routes/mod.rs
+    related_flows:
+      - DF-001
+      - DF-002
+      - DF-003
+      - DF-004
+      - DF-005
+      - DF-012
+      - DF-013
+      - DF-015
+      - DF-016
+      - DF-017
+      - DF-018
+    related_files:
+      - crates/persistence/src/repositories.rs
+      - spec/asyncapi.yaml
+      - services/api/src/routes/mod.rs
+    soc2_category_relevance:
+      - Security
+      - Processing Integrity
+    aws_relevance: Correlation and audit trail are used during sandbox smoke, load, and fault-injection evidence collection.
+    residual_gaps:
+      - External audit sampling plan and long-term evidence repository are not implemented here.
+  - id: CTL-AUDIT-002
+    name: Evidence collection and invariant reporting
+    families:
+      - Auditability
+      - Processing Integrity
+      - Availability
+    description: Certification scripts collect command manifests, queue drain reports, AWS inventory, FIS evidence, k6 output, cost data, and DB invariant reports.
+    control_type: detective
+    owner_role: evidence owner
+    frequency: every AWS sandbox campaign and final evidence refresh
+    evidence:
+      - scripts/aws-cert-collect.sh
+      - services/certifier/src/main.rs
+      - docs/certification/aws-simulation-internal-certification-report-2026-06-17.md
+      - spec/certification/aws_certification_coverage_map.json
+    related_flows:
+      - DF-019
+      - DF-020
+      - DF-021
+      - DF-023
+    related_files:
+      - scripts/aws-cert-collect.sh
+      - services/certifier/src/main.rs
+      - spec/certification/aws_certification_coverage_map.json
+    soc2_category_relevance:
+      - Security
+      - Availability
+      - Processing Integrity
+    aws_relevance: Records AWS sandbox inventory and evidence outputs without committing private account artifacts.
+    residual_gaps:
+      - Qualified external review, control-period sampling, and private workpaper retention are outside this repo.
+  - id: CTL-CHANGE-001
+    name: Specification, proof, and validation change gate
+    families:
+      - Change Management
+      - Processing Integrity
+      - Auditability
+    description: Local and CI validation run specs, formal checks, AWS static checks, standards readiness, docs, Rust, and frontend tests.
+    control_type: detective
+    owner_role: release owner
+    frequency: every validation run and CI run
+    evidence:
+      - Makefile
+      - scripts/validate-all.sh
+      - .github/workflows/ci.yml
+      - docs/traceability.md
+    related_flows:
+      - DF-021
+    related_files:
+      - Makefile
+      - scripts/validate-all.sh
+      - .github/workflows/ci.yml
+    soc2_category_relevance:
+      - Security
+      - Availability
+      - Processing Integrity
+    aws_relevance: Static AWS sandbox checks are part of `make validate`.
+    residual_gaps:
+      - Human change approval policy and repository branch protection evidence are outside this repo.
+  - id: CTL-IR-001
+    name: Failure injection and reconciliation recovery workflow
+    families:
+      - Incident / Recovery
+      - Processing Integrity
+      - Auditability
+    description: Local failure injection opens reconciliation breaks instead of silently activating mismatched records, and smoke scripts exercise the path.
+    control_type: corrective
+    owner_role: operations owner
+    frequency: every failure-path smoke run
+    evidence:
+      - scripts/smoke-failure-paths.sh
+      - docs/runbooks/reconciliation-breaks.md
+      - services/worker/src/workers/mod.rs
+      - crates/persistence/src/repositories.rs
+    related_flows:
+      - DF-013
+      - DF-015
+      - DF-018
+    related_files:
+      - scripts/smoke-failure-paths.sh
+      - services/worker/src/workers/mod.rs
+      - crates/persistence/src/repositories.rs
+    soc2_category_relevance:
+      - Availability
+      - Processing Integrity
+    aws_relevance: Failure-path smoke is part of the AWS sandbox campaign.
+    residual_gaps:
+      - Production incident response escalation, service-level objectives, and operator runbooks require owner approval outside this repo.
+  - id: CTL-PRIV-001
+    name: Future PII classification boundary
+    families:
+      - Privacy
+      - Confidentiality
+      - Security
+    description: The DFD distinguishes future personal-data handling from the current local demo, which does not include real customer data.
+    control_type: preventive
+    owner_role: privacy owner
+    frequency: every data-model change review
+    evidence:
+      - docs/security/dfd/data-classification.yaml
+      - docs/compliance-readiness.md
+    related_flows:
+      - DF-001
+      - DF-002
+      - DF-016
+    related_files:
+      - docs/security/dfd/data-classification.yaml
+      - docs/compliance-readiness.md
+    soc2_category_relevance:
+      - Privacy
+      - Confidentiality
+    aws_relevance: Future PII storage would require explicit AWS data classification and retention controls.
+    residual_gaps:
+      - No production privacy inventory, data subject workflow, or data processing agreement evidence exists in this repo.

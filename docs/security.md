@@ -2,6 +2,8 @@
 
 The system is local-only by design. It uses dummy secrets, LocalStack, and mock external integrations. It must not be pointed at real AWS or production financial systems.
 
+Data-flow, trust-boundary, classification, and control evidence is tracked in the [DFD evidence pack](security/dfd/README.md).
+
 ## Enforced Local Boundaries
 
 - `AppConfig::validate_local_endpoints` rejects real AWS endpoints in local and dev mode.
@@ -34,4 +36,5 @@ Do not replace these with real credentials in this repository. Production creden
 cargo test -p institutional-yield-config
 cargo test -p institutional-yield-messaging
 make smoke-failure-paths
+make validate-dfd
 ```

@@ -8,10 +8,10 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 - Preserved project copy: `spec/source/fidelity_defi_yield_platform_spec.md` (pending Gate 1)
 
 ## Current Gate
-- Gate: Standards and certification readiness matrix
+- Gate: DFD evidence pack
 - Status: Passed
-- Start Time: 2026-06-18T02:53:48Z
-- End Time: 2026-06-18T03:06:06Z
+- Start Time: 2026-06-18T16:41:44Z
+- End Time: 2026-06-18T17:00:58Z
 
 ## Gate Status Table
 | Gate | Objective | Status | Evidence | Last Updated |
@@ -44,6 +44,7 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 | AWS production-style certification campaign execution | Execute the root-bootstrap-to-scoped-role certification flow: local baseline, non-root AWS preflight, deploy, run, collect evidence, destroy, and final validation | Passed | Dirty stack destroyed; `$750` guardrail configured; scoped-role preflight passed; CI run `27709578309` passed; deploy/run/collect/destroy/root-teardown passed; DB invariant report has 10 passed checks and 0 failures; internal certification report added; post-report validation passed; commit `110a4be` pushed; CI run `27718744119` passed both jobs | 2026-06-17T20:56:02Z |
 | AWS certification closure CI remediation | Keep the post-campaign closure commit green after documentation and coverage-map closure updates | Passed | GitHub Actions run `27719275199` passed integration/smoke but failed static while installing TLAPS on Ubuntu 24.04; workflow remediation pinned the TLAPS-heavy static lane to Ubuntu 22.04 while preserving `make validate`; replacement run `27720066191` passed both jobs on commit `3c5280b` | 2026-06-17T21:20:24Z |
 | Standards and certification readiness matrix | Add US + EU/UK legal, regulatory, SOC, ISO, production, cloud, and security readiness mapping with a static no-claim validation gate | Passed | `spec/certification/standards_readiness_map.json` has 26 validated rows; `make validate-standards-readiness`, `make validate-docs`, `make validate-aws-certification`, `make validate-repo-surface-coverage-map`, `make validate`, and `git diff --check` passed | 2026-06-18T03:06:06Z |
+| DFD evidence pack | Add docs-as-code Mermaid and YAML DFD evidence for SOC 2 / AWS / financial-control readiness without certification or production claims | Passed | `docs/security/dfd/` Mermaid and YAML pack, `scripts/validate-dfd.sh`, `make validate-dfd`, `make validate-docs`, `make validate-aws-certification`, `make validate-repo-surface-coverage-map`, `make validate`, and `git diff --check` passed | 2026-06-18T17:00:58Z |
 
 ## Requirements Traceability Summary
 - Domain model and state machine: `spec/domain/sweep_order.machine.yaml`, `crates/domain`, domain tests.
@@ -59,6 +60,9 @@ Build `institutional-yield-control-plane`: a local, production-shaped Rust + Pos
 ## Commands Run
 | Timestamp | Command | Working Directory | Result | Notes |
 | --- | --- | --- | --- | --- |
+| 2026-06-18T16:41:44Z | DFD evidence pack gate opened; `git checkout -b docs/dfd-evidence-pack main` | `/Users/charlesdusek/Code/yield-control-plane` | In Progress | Started docs-as-code DFD evidence pack. Scope is audit readiness evidence only; no SOC, AWS, regulatory, legal, investment, tax, accounting, transfer-agent, production deployment, or production certification claim. |
+| 2026-06-18T16:41:44Z | DFD source inspection and tracker creation | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Inspected README, docs, OpenAPI, AsyncAPI, state machine, AWS simulation IaC/scripts, API, workers, certifier, mock transfer agent, persistence, messaging, config, Makefile, and validators; created `docs/trackers/dfd-evidence-pack.md` before diagram authoring. |
+| 2026-06-18T17:00:58Z | `bash -n scripts/validate-dfd.sh`; `make validate-dfd`; `make validate-docs`; `make validate-aws-certification`; `make generate-repo-surface-coverage-map`; `make validate-repo-surface-coverage-map`; `make validate`; `git diff --check`; `test ! -d .tlacache`; `test ! -d states` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | DFD evidence pack closed with 25 flows, 14 controls, 9 trust boundaries, docs links, AWS static validation, regenerated repo surface map, full validation, whitespace check, and generated-state cleanup check. |
 | 2026-06-18T02:53:48Z | Standards-readiness implementation gate opened; repo/docs/validator inspection; official-source standards research | `/Users/charlesdusek/Code/yield-control-plane` | In Progress | Started source-backed readiness matrix workstream. Scope is US + EU/UK, internal readiness only, with no legal, regulatory, SOC, ISO, PCI, external audit, production deployment, or production readiness claim. |
 | 2026-06-18T03:06:06Z | `make validate-standards-readiness`; `make validate-docs`; `make validate-aws-certification`; `make generate-repo-surface-coverage-map`; `make validate-repo-surface-coverage-map`; `make validate`; `git diff --check`; `test ! -d .tlacache && test ! -d states` | `/Users/charlesdusek/Code/yield-control-plane` | Passed | Standards readiness matrix closed with 26 validated rows, docs/runbook/tracker artifacts, Makefile and aggregate gate wiring, repo-surface coverage integration, full validation, whitespace check, and generated TLA state cleanup. |
 | 2026-06-17T14:27:50Z | `git status --short --branch`; tracker/docs/config/script/IaC inspection | `/Users/charlesdusek/Code/yield-control-plane` | Passed | AWS certification simulation workstream opened from clean `main`; current repo is local-only with no Terraform/OpenTofu footprint and LocalStack-guarded AWS endpoints. |

@@ -2,6 +2,8 @@
 
 The system is a local institutional yield control plane built from independently runnable services. Local AWS dependencies are simulated with LocalStack SNS/SQS; the application refuses real AWS endpoints when `APP_ENV` is `local` or `dev`.
 
+The audit-oriented data-flow view is maintained in the [DFD evidence pack](security/dfd/README.md).
+
 ```mermaid
 flowchart LR
   Console["React console"] --> API["Rust API"]
@@ -44,5 +46,5 @@ cargo test --workspace --all-features
 RUN_DATABASE_TESTS=1 DATABASE_URL=postgres://yield:yield@127.0.0.1:15432/yield_control cargo test -p institutional-yield-persistence --all-features
 make smoke
 make k8s-smoke
+make validate-dfd
 ```
-

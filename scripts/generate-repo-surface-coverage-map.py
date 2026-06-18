@@ -496,6 +496,32 @@ SURFACES: tuple[Surface, ...] = (
         hardening_frontier=("Add external evidence-room manifest references if qualified auditors or counsel create private review artifacts.",),
     ),
     Surface(
+        id="dfd_evidence_pack",
+        title="Data-Flow Diagram Evidence Pack",
+        patterns=(
+            "docs/security/dfd/**",
+            "docs/trackers/dfd-evidence-pack.md",
+            "scripts/validate-dfd.sh",
+        ),
+        required_axes=("source_inventory", "specification_or_contract", "static_validation", "drift_validator", "ci_gate", "documentation"),
+        evidence={
+            "specification_or_contract": {
+                "paths": [
+                    "docs/security/dfd/data-flow-catalog.yaml",
+                    "docs/security/dfd/data-classification.yaml",
+                    "docs/security/dfd/trust-boundaries.yaml",
+                    "docs/security/dfd/control-map.yaml",
+                ]
+            },
+            "static_validation": {"commands": ["make validate-dfd"], "paths": ["scripts/validate-dfd.sh"]},
+            "drift_validator": {"commands": ["make validate-dfd"], "paths": ["scripts/validate-dfd.sh"]},
+            "ci_gate": {"commands": ["make validate"], "paths": ["scripts/validate-all.sh"]},
+            "documentation": {"paths": ["docs/security/dfd/README.md", "docs/trackers/dfd-evidence-pack.md"]},
+        },
+        formal_scope="docs_as_code_data_flow_and_control_traceability",
+        hardening_frontier=("Export diagrams to SVG or PDF for an external auditor packet when a review owner requests polished packet artifacts.",),
+    ),
+    Surface(
         id="docs_runbooks_adrs",
         title="Documentation, Runbooks, and ADRs",
         patterns=("docs/**", "scripts/validate-docs.sh"),
@@ -505,6 +531,8 @@ SURFACES: tuple[Surface, ...] = (
             "docs/compliance-readiness.md",
             "docs/runbooks/external-audit-readiness.md",
             "docs/trackers/standards-readiness-*.md",
+            "docs/security/dfd/**",
+            "docs/trackers/dfd-evidence-pack.md",
         ),
         required_axes=("source_inventory", "static_validation", "ci_gate", "documentation"),
         evidence={
